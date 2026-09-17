@@ -1,4 +1,4 @@
-import { type Dirent, readdir, type Stats, statSync } from "node:fs";
+import { type Dirent, readdir, readFile, type Stats, statSync } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { ctx } from "../lib/context";
@@ -16,6 +16,7 @@ import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
 import { FileLink } from "./FileLink";
 import { Menu } from "./Menu";
+import { Text } from "./Text";
 
 export class Explorer extends Component<core.ScrollBoxRenderable> {
   private _dirents: Dirent[] = [];
@@ -76,6 +77,20 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
         } catch (error) {
           console.warn(error);
         }
+      } else {
+        readFile(
+          path,
+          { encoding: "utf-8" },
+          (error: NodeJS.ErrnoException | null, content: string): void => {
+            if (error) {
+              console.warn(error);
+
+              return;
+            }
+
+            this.component.add(Text.make(content).component);
+          },
+        );
       }
     });
 
@@ -113,10 +128,6 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
         FileLink.make()
           .label(`${getFileIcon(dirent)}  ${dirent.name}`)
           .onDoubleClick((): void => {
-            // if (dirent.isDirectory()) {
-            //   go(getDirentPath(dirent));
-            // }
-
             go(getDirentPath(dirent));
           })
           .onRightClick((event: core.MouseEvent) => {
