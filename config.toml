@@ -1,0 +1,5 @@
+[theme]
+bg = "#0C0C0C"
+fg = "#fafafa"
+success = "#16a34a"
+danger = "#dc2626"
