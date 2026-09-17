@@ -1,7 +1,6 @@
 import { BoxRenderable } from "@opentui/core";
-import { theme } from "../lib/config";
+import * as config from "../lib/config";
 import { ctx, homeDirectory } from "../lib/context";
-import { go } from "../lib/navigation";
 import { $selectedSidebarLink, $tasks, $trashFull } from "../lib/store";
 import { Bar } from "./Bar";
 import { Component } from "./Component";
@@ -12,6 +11,7 @@ import { Text } from "./Text";
 
 export class Sidebar extends Component<BoxRenderable> {
   private _homeLink: SidebarLink;
+  private _bookmarkLinks: SidebarLink[];
   private _trashLink: SidebarLink;
   private _footer: Bar;
   private _tasksCount: Text;
@@ -22,23 +22,26 @@ export class Sidebar extends Component<BoxRenderable> {
         width: 34,
         height: "100%",
         border: ["left", "right"],
-        borderColor: theme.bg_dark,
+        borderColor: config.theme.bg_dark,
       }),
     );
 
     this._homeLink = SidebarLink.make()
-      .label("\uf015  Home")
-      .onClick((): void => {
-        go(`${homeDirectory}`);
-      });
+      .path(homeDirectory)
+      .label("\uf015  Home");
 
     $selectedSidebarLink.set(this._homeLink);
 
+    this._bookmarkLinks = config.bookmarks.map(
+      (bookmark: config.BookmarkType) =>
+        SidebarLink.make()
+          .path(bookmark.mount)
+          .label(`\uf02e  ${bookmark.label}`),
+    );
+
     this._trashLink = SidebarLink.make()
-      .label("\uf1f8  Trash")
-      .onClick((): void => {
-        go(`${homeDirectory}/.local/share/Trash/files`);
-      });
+      .path(`${homeDirectory}/.local/share/Trash/files`)
+      .label("\uf1f8  Trash");
 
     this._tasksCount = Text.make("[0]");
 
@@ -53,38 +56,24 @@ export class Sidebar extends Component<BoxRenderable> {
       Bar.make().components([Text.make("🐠 Filet").center()]),
       this._homeLink,
       SidebarLink.make()
-        .label("\uf019  Downloads")
-        .onClick((): void => {
-          go(`${homeDirectory}/Downloads`);
-        }),
+        .path(`${homeDirectory}/Downloads`)
+        .label("\uf019  Downloads"),
       SidebarLink.make()
-        .label("\udb85\udd17  Documents")
-        .onClick((): void => {
-          go(`${homeDirectory}/Documents`);
-        }),
+        .path(`${homeDirectory}/Documents`)
+        .label("\udb85\udd17  Documents"),
       SidebarLink.make()
-        .label("\uf03e  Pictures")
-        .onClick((): void => {
-          go(`${homeDirectory}/Pictures`);
-        }),
+        .path(`${homeDirectory}/Pictures`)
+        .label("\uf03e  Pictures"),
+      SidebarLink.make().path(`${homeDirectory}/Music`).label("\uf001  Music"),
       SidebarLink.make()
-        .label("\uf001  Music")
-        .onClick((): void => {
-          go(`${homeDirectory}/Music`);
-        }),
-      SidebarLink.make()
-        .label("\uf03d  Videos")
-        .onClick((): void => {
-          go(`${homeDirectory}/Videos`);
-        }),
+        .path(`${homeDirectory}/Videos`)
+        .label("\uf03d  Videos"),
+      Divider.make(),
+      ...this._bookmarkLinks,
       Divider.make(),
       this._trashLink,
       Divider.make(),
-      SidebarLink.make()
-        .label("\udb85\udedf  Root")
-        .onClick((): void => {
-          go("/");
-        }),
+      SidebarLink.make().path("/").label("\udb85\udedf  Root"),
       Spacer.make(),
       this._footer,
     ]);

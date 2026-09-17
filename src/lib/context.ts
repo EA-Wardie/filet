@@ -1,7 +1,7 @@
 import { readdir } from "node:fs";
 import { homedir } from "node:os";
 import * as core from "@opentui/core";
-import { $selectedFileLinks, $selectedTiles, $trashFull } from "./store";
+import { $selectedFileLink, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
 export const homeDirectory: string = homedir();
@@ -10,8 +10,8 @@ export function makeApp(callback: () => void) {
   core
     .createCliRenderer({
       consoleOptions: {
-        position: core.ConsolePosition.BOTTOM,
-        sizePercent: 10,
+        position: core.ConsolePosition.RIGHT,
+        sizePercent: 20,
       },
     })
     .then((context: core.CliRenderer) => {
@@ -21,8 +21,7 @@ export function makeApp(callback: () => void) {
 
       ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
         if (key.name === "escape") {
-          $selectedTiles.set([]);
-          $selectedFileLinks.set([]);
+          $selectedFileLink.set(null);
         }
       });
 

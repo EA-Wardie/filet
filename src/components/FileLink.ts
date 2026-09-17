@@ -3,7 +3,7 @@ import { MouseButtons } from "@opentui/core/testing";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { isDoubleClick } from "../lib/input";
-import { $displayType, $lastClick, $selectedFileLinks } from "../lib/store";
+import { $displayType, $lastClick, $selectedFileLink } from "../lib/store";
 import { Component } from "./Component";
 
 export class FileLink extends Component<core.BoxRenderable> {
@@ -21,7 +21,7 @@ export class FileLink extends Component<core.BoxRenderable> {
     );
 
     this._label = new core.TextRenderable(ctx, {
-      content: "Button",
+      content: "",
       fg: theme.fg,
       attributes: core.TextAttributes.BOLD,
       selectable: false,
@@ -43,20 +43,20 @@ export class FileLink extends Component<core.BoxRenderable> {
 
   private registerEvents(): void {
     this.component.onMouseOver = (): void => {
-      if (!$selectedFileLinks.get().includes(this)) {
+      if ($selectedFileLink.get() !== this) {
         this.component.backgroundColor = theme.fg_light;
       }
     };
 
     this.component.onMouseOut = (): void => {
-      if (!$selectedFileLinks.get().includes(this)) {
+      if ($selectedFileLink.get() !== this) {
         this.component.backgroundColor = undefined;
       }
     };
 
     this.component.onMouseDown = (event: core.MouseEvent): void => {
       if (event.button === MouseButtons.LEFT) {
-        $selectedFileLinks.set([this]);
+        $selectedFileLink.set(this);
 
         this._clickCallback?.(event);
 
@@ -66,7 +66,7 @@ export class FileLink extends Component<core.BoxRenderable> {
           this._doubleClickCallback?.(event);
         }
       } else if (event.button === MouseButtons.RIGHT) {
-        $selectedFileLinks.set([this]);
+        $selectedFileLink.set(this);
 
         this._rightClickCallback?.(event);
       }
@@ -74,8 +74,8 @@ export class FileLink extends Component<core.BoxRenderable> {
       $lastClick.set(Date.now());
     };
 
-    $selectedFileLinks.subscribe((links: readonly FileLink[]) => {
-      if (links.includes(this)) {
+    $selectedFileLink.subscribe((link: Readonly<FileLink> | null) => {
+      if (link === this) {
         this.component.backgroundColor = theme.fg_dark;
         this._label.fg = theme.bg;
       } else {

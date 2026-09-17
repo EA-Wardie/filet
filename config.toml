@@ -1,3 +1,9 @@
+bookmarks = [
+    {label = "Projects", mount = "/home/edward/Projects"},
+    {label = "Torrents", mount = "/home/edward/Torrents"},
+    {label = "Certificates", mount = "/home/edward/Certificates"},
+]
+
 [theme]
 bg = "#0C0C0C"
 fg = "#fafafa"

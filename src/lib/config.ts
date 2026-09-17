@@ -1,7 +1,12 @@
-import config from "../../config.toml";
 import { RGBA } from "@opentui/core";
+import config from "../../config.toml";
 
-export interface Theme {
+export interface BookmarkType {
+  label: string;
+  mount: string;
+}
+
+export interface ThemeType {
   bg: RGBA;
   bg_light: RGBA;
   bg_dark: RGBA;
@@ -16,7 +21,9 @@ export interface Theme {
   danger_dark: RGBA;
 }
 
-export const theme: Theme = {
+export const bookmarks = config.bookmarks as BookmarkType[];
+
+export const theme: ThemeType = {
   bg: RGBA.fromHex(config.theme.bg),
   bg_light: RGBA.fromHex(`${config.theme.fg}40`),
   bg_dark: RGBA.fromHex(`${config.theme.fg}BF`),

@@ -26,7 +26,7 @@ export class Toolbar extends Component<core.BoxRenderable> {
         border: ["top", "bottom"],
         borderColor: theme.bg_dark,
         flexDirection: "row",
-        // paddingX: 1,
+        paddingX: 1,
       }),
     );
 

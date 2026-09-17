@@ -3,15 +3,12 @@ import { homedir } from "node:os";
 import * as nanostores from "nanostores";
 import type { FileLink } from "../components/FileLink";
 import type { SidebarLink } from "../components/SidebarLink";
-import type { Tile } from "../components/Tile";
 
 export const $currentPath = nanostores.atom<string>(homedir());
 
-export const $selectedTiles = nanostores.atom<Tile[]>([]);
-
 export const $selectedSidebarLink = nanostores.atom<SidebarLink | null>(null);
 
-export const $selectedFileLinks = nanostores.atom<FileLink[]>([]);
+export const $selectedFileLink = nanostores.atom<FileLink | null>(null);
 
 export const $lastClick = nanostores.atom<number | null>(null);
 
