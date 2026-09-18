@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon.png" alt="filet icon" width="128">
+</p>
+
 # filet
 
 A terminal file manager built on Bun and OpenTUI.
