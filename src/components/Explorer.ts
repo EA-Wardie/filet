@@ -3,7 +3,15 @@ import { stat } from "node:fs/promises";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { ctx } from "../lib/context";
-import { copy, cut, getFileIcon, paste, remove } from "../lib/filesystem";
+import {
+  copy,
+  createFile,
+  createFolder,
+  cut,
+  getFileIcon,
+  paste,
+  remove,
+} from "../lib/filesystem";
 import { getDirentPath, go } from "../lib/navigation";
 import {
   $copyDirent,
@@ -18,6 +26,7 @@ import { Divider } from "./Divider";
 import { FileLink } from "./FileLink";
 import { Menu } from "./Menu";
 import { Preview } from "./Preview";
+import { Prompt } from "./Prompt";
 import { Text } from "./Text";
 
 export class Explorer extends Component<core.ScrollBoxRenderable> {
@@ -37,13 +46,27 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
           if (event.button === MouseButtons.RIGHT) {
             Menu.make([
               Button.make()
-                .label("New File")
+                .label("\uea7f New File")
                 .variant("link")
-                .onClick((): void => {}),
+                .onClick((): void => {
+                  Prompt.make()
+                    .heading("Create a new file")
+                    .label("Filename")
+                    .onSubmit((filename: string): void => {
+                      createFile(filename);
+                    });
+                }),
               Button.make()
-                .label("New Folder")
+                .label("\uea80 New Folder")
                 .variant("link")
-                .onClick((): void => {}),
+                .onClick((): void => {
+                  Prompt.make()
+                    .heading("Create a new folder")
+                    .label("Folder Name")
+                    .onSubmit((folderName: string): void => {
+                      createFolder(folderName);
+                    });
+                }),
               Divider.make().visible(hasCopyOrCut),
               Button.make()
                 .label("Paste")
@@ -77,6 +100,8 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                   dirents: Dirent[],
                 ): void => {
                   if (error) {
+                    console.warn(error);
+
                     return;
                   }
 
@@ -88,10 +113,12 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 
                     return;
                   } else {
-                    this._emptyText = Text.make("\uf07c (Empty)").dim();
+                    this._emptyText = Text.make("\uf07c  --Empty--").dim();
                     this._emptyText.component.paddingX = 1;
 
                     this.component.add(this._emptyText.component);
+
+                    return;
                   }
                 },
               );
@@ -145,23 +172,23 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
           })
           .onRightClick((event: core.MouseEvent) => {
             Menu.make([
-              Button.make().label("Open").variant("link"),
+              Button.make().label("\udb80\udfcc Open").variant("link"),
               Divider.make(),
               Button.make()
-                .label("Copy")
+                .label("\udb80\udd47 Copy")
                 .variant("link")
                 .onClick((): void => {
                   copy(dirent);
                 }),
               Button.make()
-                .label("Cut")
+                .label("\uf0c4 Cut")
                 .variant("link")
                 .onClick((): void => {
                   cut(dirent);
                 }),
               Divider.make(),
               Button.make()
-                .label("Trash")
+                .label("\uf1f8 Trash")
                 .variant("link")
                 .onClick((): void => {
                   Confirmation.make("danger")
@@ -169,7 +196,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                     .onConfirm((): void => {});
                 }),
               Button.make()
-                .label("Delete")
+                .label("\udb81\ude91 Delete")
                 .variant("link")
                 .onClick((): void => {
                   Confirmation.make("danger")

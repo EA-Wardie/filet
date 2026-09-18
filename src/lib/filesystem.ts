@@ -1,5 +1,5 @@
 import type { Dirent } from "node:fs";
-import { cp, rm } from "node:fs/promises";
+import { cp, mkdir, rm } from "node:fs/promises";
 import { basename } from "node:path";
 import { ctx, homeDirectory } from "./context";
 import { cleanPath, getDirentPath } from "./navigation";
@@ -226,6 +226,30 @@ export async function paste(): Promise<void> {
   setTimeout((): void => {
     $tasks.set([...tasks]);
   }, 1000);
+}
+
+export function createFile(name: string): void {
+  const path: string = cleanPath(`${$currentPath.get()}/${name}`);
+
+  Bun.write(path, "")
+    .then((): void => {
+      $currentPath.notify();
+    })
+    .catch((error: Error): void => {
+      console.warn(error);
+    });
+}
+
+export function createFolder(name: string): void {
+  const path: string = cleanPath(`${$currentPath.get()}/${name}`);
+
+  mkdir(path)
+    .then((): void => {
+      $currentPath.notify();
+    })
+    .catch((error: Error): void => {
+      console.warn(error);
+    });
 }
 
 export async function remove(dirent: Dirent): Promise<void> {

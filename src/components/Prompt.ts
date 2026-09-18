@@ -66,8 +66,8 @@ export class Prompt extends Component<core.BoxRenderable> {
         .label("Cancel")
         .onClick(() => {
           this._input.blur();
-          this.component.destroyRecursively();
           this._cancelCallback?.();
+          this.component.destroyRecursively();
         }).component,
     );
 
@@ -76,14 +76,15 @@ export class Prompt extends Component<core.BoxRenderable> {
         .label("Submit")
         .onClick(() => {
           this._input.blur();
-          this.component.destroyRecursively();
           this._submitCallback?.(this._input.value);
+          this.component.destroyRecursively();
         }).component,
     );
 
     this._dialog.add(this._heading);
     this._dialog.add(this._label);
     this._dialog.add(this._input);
+    this._input.focus();
     this._dialog.add(this._dialogButtons);
     this.component.add(this._dialog);
 
