@@ -1,9 +1,31 @@
 import type { Dirent } from "node:fs";
 import { cp, rm } from "node:fs/promises";
 import { basename } from "node:path";
-import { ctx } from "./context";
+import { ctx, homeDirectory } from "./context";
 import { cleanPath, getDirentPath } from "./navigation";
 import { $copyDirent, $currentPath, $cutDirent, $tasks } from "./store";
+
+export const IMAGE_FILETYPES: Set<string> = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".avif",
+  ".ico",
+  ".svg",
+]);
+
+export const CODE_FILETYPES: Record<string, string> = {
+  ".ts": "typescript",
+  ".tsx": "typescriptreact",
+  ".js": "javascript",
+  ".jsx": "javascriptreact",
+  ".md": "markdown",
+  ".zig": "zig",
+};
+
+export const USER_CONFIG_PATH: string = `${homeDirectory}/.config/filet/config.toml`;
 
 const ICONS: Map<string, string> = new Map<string, string>([
   // JS / TS
@@ -108,9 +130,9 @@ const ICONS: Map<string, string> = new Map<string, string>([
   ["svg", "\ue698"],
 ]);
 
-const FILE_ICON = "\uf15b";
+const FILE_ICON: string = "\uf15b";
 
-export function getFileIcon(dirent: Dirent) {
+export function getFileIcon(dirent: Dirent): string {
   if (dirent.isDirectory()) {
     return "\uf07b";
   }

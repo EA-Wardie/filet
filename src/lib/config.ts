@@ -1,5 +1,6 @@
 import { RGBA } from "@opentui/core";
-import config from "../../config.toml";
+import defaultConfig from "../../config.toml";
+import { USER_CONFIG_PATH } from "./filesystem";
 
 export interface BookmarkType {
   label: string;
@@ -21,19 +22,55 @@ export interface ThemeType {
   danger_dark: RGBA;
 }
 
-export const bookmarks = config.bookmarks as BookmarkType[];
+interface ThemeConfig {
+  bg: string;
+  fg: string;
+  success: string;
+  danger: string;
+}
+
+interface ConfigFile {
+  bookmarks?: BookmarkType[];
+  theme?: Partial<ThemeConfig>;
+}
+
+async function loadUserConfig(): Promise<ConfigFile> {
+  const file = Bun.file(USER_CONFIG_PATH);
+
+  if (!(await file.exists())) {
+    return {};
+  }
+
+  try {
+    return Bun.TOML.parse(await file.text()) as ConfigFile;
+  } catch (error) {
+    console.warn(error);
+
+    return {};
+  }
+}
+
+const userConfig: ConfigFile = await loadUserConfig();
+
+const themeConfig: ThemeConfig = {
+  ...defaultConfig.theme,
+  ...userConfig.theme,
+};
+
+export const bookmarks: BookmarkType[] =
+  userConfig.bookmarks ?? defaultConfig.bookmarks ?? [];
 
 export const theme: ThemeType = {
-  bg: RGBA.fromHex(config.theme.bg),
-  bg_light: RGBA.fromHex(`${config.theme.fg}40`),
-  bg_dark: RGBA.fromHex(`${config.theme.fg}BF`),
-  fg: RGBA.fromHex(config.theme.fg),
-  fg_light: RGBA.fromHex(`${config.theme.fg}40`),
-  fg_dark: RGBA.fromHex(`${config.theme.fg}BF`),
-  success: RGBA.fromHex(config.theme.success),
-  success_light: RGBA.fromHex(`${config.theme.success}40`),
-  success_dark: RGBA.fromHex(`${config.theme.success}BF`),
-  danger: RGBA.fromHex(config.theme.danger),
-  danger_light: RGBA.fromHex(`${config.theme.danger}40`),
-  danger_dark: RGBA.fromHex(`${config.theme.danger}BF`),
+  bg: RGBA.fromHex(themeConfig.bg),
+  bg_light: RGBA.fromHex(`${themeConfig.fg}40`),
+  bg_dark: RGBA.fromHex(`${themeConfig.fg}BF`),
+  fg: RGBA.fromHex(themeConfig.fg),
+  fg_light: RGBA.fromHex(`${themeConfig.fg}40`),
+  fg_dark: RGBA.fromHex(`${themeConfig.fg}BF`),
+  success: RGBA.fromHex(themeConfig.success),
+  success_light: RGBA.fromHex(`${themeConfig.success}40`),
+  success_dark: RGBA.fromHex(`${themeConfig.success}BF`),
+  danger: RGBA.fromHex(themeConfig.danger),
+  danger_light: RGBA.fromHex(`${themeConfig.danger}40`),
+  danger_dark: RGBA.fromHex(`${themeConfig.danger}BF`),
 };

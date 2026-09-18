@@ -156,6 +156,12 @@ export class Button extends Component<core.BoxRenderable> {
     return this;
   }
 
+  public visible(visible: boolean) {
+    this.component.visible = visible;
+
+    return this;
+  }
+
   public onClick(callback: () => void): this {
     this._callback = callback;
 

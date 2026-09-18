@@ -16,4 +16,10 @@ export class Divider extends Component<core.BoxRenderable> {
   public static make(): Divider {
     return new this();
   }
+
+  public visible(visible: boolean): this {
+    this.component.visible = visible;
+
+    return this;
+  }
 }

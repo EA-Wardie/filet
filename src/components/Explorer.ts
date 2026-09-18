@@ -1,4 +1,5 @@
-import { type Dirent, readdir, readFile, type Stats, statSync } from "node:fs";
+import { type Dirent, readdir, type Stats } from "node:fs";
+import { stat } from "node:fs/promises";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { ctx } from "../lib/context";
@@ -16,9 +17,11 @@ import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
 import { FileLink } from "./FileLink";
 import { Menu } from "./Menu";
+import { Preview } from "./Preview";
 import { Text } from "./Text";
 
 export class Explorer extends Component<core.ScrollBoxRenderable> {
+  private _emptyText: Text | null = null;
   private _dirents: Dirent[] = [];
 
   constructor() {
@@ -31,11 +34,21 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
           const hasCopyOrCut: boolean =
             !!$copyDirent.get() || !!$cutDirent.get();
 
-          if (event.button === MouseButtons.RIGHT && hasCopyOrCut) {
+          if (event.button === MouseButtons.RIGHT) {
             Menu.make([
+              Button.make()
+                .label("New File")
+                .variant("link")
+                .onClick((): void => {}),
+              Button.make()
+                .label("New Folder")
+                .variant("link")
+                .onClick((): void => {}),
+              Divider.make().visible(hasCopyOrCut),
               Button.make()
                 .label("Paste")
                 .variant("link")
+                .visible(hasCopyOrCut)
                 .onClick((): void => {
                   paste();
                 }),
@@ -52,46 +65,46 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
         });
       }
 
-      const dirent: Stats = statSync(path);
+      stat(path)
+        .then((dirent: Stats): void => {
+          if (dirent.isDirectory()) {
+            try {
+              readdir(
+                path,
+                { withFileTypes: true },
+                (
+                  error: NodeJS.ErrnoException | null,
+                  dirents: Dirent[],
+                ): void => {
+                  if (error) {
+                    return;
+                  }
 
-      if (dirent.isDirectory()) {
-        try {
-          readdir(
-            path,
-            { withFileTypes: true },
-            (error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
-              if (error) {
-                return;
-              }
+                  if (dirents.length) {
+                    this._dirents = dirents;
 
-              if (!dirents.length) {
-                return;
-              }
+                    this.sortDirents();
+                    this.drawDirents();
 
-              this._dirents = dirents;
+                    return;
+                  } else {
+                    this._emptyText = Text.make("\uf07c (Empty)").dim();
+                    this._emptyText.component.paddingX = 1;
 
-              this.sortDirents();
-              this.drawDirents();
-            },
-          );
-        } catch (error) {
-          console.warn(error);
-        }
-      } else {
-        readFile(
-          path,
-          { encoding: "utf-8" },
-          (error: NodeJS.ErrnoException | null, content: string): void => {
-            if (error) {
+                    this.component.add(this._emptyText.component);
+                  }
+                },
+              );
+            } catch (error) {
               console.warn(error);
-
-              return;
             }
-
-            this.component.add(Text.make(content).component);
-          },
-        );
-      }
+          } else {
+            this.component.add(Preview.make().component);
+          }
+        })
+        .catch((error: Error): void => {
+          console.warn(error);
+        });
     });
 
     $displayType.subscribe((type: "list" | "grid"): void => {
