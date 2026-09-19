@@ -35,6 +35,7 @@ interface ThemeConfig {
 interface ConfigFile {
   bookmarks?: BookmarkType[];
   trash_path?: string;
+  double_click_timeout?: number;
   theme?: Partial<ThemeConfig>;
 }
 
@@ -61,6 +62,9 @@ export const bookmarks: BookmarkType[] =
 
 export const trashPath: string =
   userConfig.trash_path ?? `${homeDirectory}/.local/share/Trash`;
+
+export const doubleClickTimeout: number =
+  userConfig.double_click_timeout ?? defaultConfig.double_click_timeout;
 
 const themeConfig: ThemeConfig = {
   ...defaultConfig.theme,

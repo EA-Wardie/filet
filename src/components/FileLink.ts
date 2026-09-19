@@ -1,9 +1,8 @@
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { theme } from "../lib/config";
+import { doubleClickTimeout, theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { isDoubleClick } from "../lib/input";
-import { $displayType, $lastClick, $selectedFileLink } from "../lib/store";
+import { $displayType, $selectedFileLink } from "../lib/store";
 import { Component } from "./Component";
 
 export class FileLink extends Component<core.BoxRenderable> {
@@ -12,6 +11,7 @@ export class FileLink extends Component<core.BoxRenderable> {
   private _doubleClickCallback: ((event: core.MouseEvent) => void) | null =
     null;
   private _rightClickCallback: ((event: core.MouseEvent) => void) | null = null;
+  private _lastClick: number | null = null;
 
   constructor() {
     super(
@@ -60,8 +60,11 @@ export class FileLink extends Component<core.BoxRenderable> {
 
         this._clickCallback?.(event);
 
-        if (isDoubleClick()) {
-          $lastClick.set(null);
+        const lastClick: number = this._lastClick || 0;
+        const isDoubleClick: boolean = lastClick !== 0 && Date.now() - lastClick < doubleClickTimeout;
+
+        if (isDoubleClick) {
+          this._lastClick = null;
 
           this._doubleClickCallback?.(event);
         }
@@ -71,7 +74,7 @@ export class FileLink extends Component<core.BoxRenderable> {
         this._rightClickCallback?.(event);
       }
 
-      $lastClick.set(Date.now());
+      this._lastClick = Date.now();
     };
 
     $selectedFileLink.subscribe((link: Readonly<FileLink> | null) => {

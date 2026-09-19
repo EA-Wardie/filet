@@ -1,5 +1,7 @@
 bookmarks = []
 
+double_click_timeout = 250
+
 [theme]
 bg = "#0C0C0C"
 fg = "#fafafa"

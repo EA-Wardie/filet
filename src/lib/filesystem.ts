@@ -1,11 +1,10 @@
-import type { Dirent, Stats } from "node:fs";
+import type { Dirent } from "node:fs";
 import { cp, mkdir, rm } from "node:fs/promises";
 import { basename } from "node:path";
+import { trashPath } from "./config";
 import { ctx, homeDirectory } from "./context";
 import { cleanPath, getDirentPath } from "./navigation";
 import { $copyDirent, $currentPath, $cutDirent, $tasks } from "./store";
-import { trashPath } from "./config";
-import { stat } from "node:fs/promises";
 
 export const IMAGE_FILETYPES: Set<string> = new Set([
   ".png",
