@@ -8,7 +8,6 @@ export function go(path: string): void {
 
   $backHistory.set([...$backHistory.get(), $currentPath.get()]);
   $forwardHistory.set([]);
-
   $currentPath.set(path);
 }
 
@@ -22,7 +21,6 @@ export function back(): void {
 
   $backHistory.set(backStack.slice(0, -1));
   $forwardHistory.set([...$forwardHistory.get(), $currentPath.get()]);
-
   $currentPath.set(previousPath);
 }
 
@@ -36,7 +34,6 @@ export function forward(): void {
 
   $forwardHistory.set(forwardStack.slice(0, -1));
   $backHistory.set([...$backHistory.get(), $currentPath.get()]);
-
   $currentPath.set(nextPath);
 }
 
@@ -54,4 +51,21 @@ export function cleanPath(path: string): string {
 
 export function getDirentPath(dirent: Dirent): string {
   return cleanPath(`${dirent.parentPath}/${dirent.name}`);
+}
+
+export function openInDefault(dirent: Dirent): void {
+  if (dirent.isDirectory()) {
+    go(getDirentPath(dirent));
+
+    return;
+  }
+
+  try {
+    Bun.spawn(["xdg-open", getDirentPath(dirent)], {
+      stdio: ["ignore", "ignore", "ignore"],
+      detached: true,
+    }).unref();
+  } catch (error) {
+    console.warn(error);
+  }
 }

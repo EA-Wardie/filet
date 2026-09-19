@@ -15,7 +15,7 @@ import {
   remove,
   rename,
 } from "../lib/filesystem";
-import { getDirentPath, go } from "../lib/navigation";
+import { getDirentPath, go, openInDefault } from "../lib/navigation";
 import {
   $copyDirent,
   $currentPath,
@@ -184,7 +184,12 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
           })
           .onRightClick((event: core.MouseEvent) => {
             Menu.make([
-              Button.make().label("\udb80\udfcc Open").variant("link"),
+              Button.make()
+                .label("\udb80\udfcc Open")
+                .variant("link")
+                .onClick((): void => {
+                  openInDefault(dirent);
+                }),
               Divider.make(),
               Button.make()
                 .label("\udb80\udd47 Copy")
