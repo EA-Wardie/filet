@@ -2,6 +2,10 @@ import type { Dirent } from "node:fs";
 import { $backHistory, $currentPath, $forwardHistory } from "./store";
 
 export function go(path: string): void {
+  if ($currentPath.get() === path) {
+    return;
+  }
+
   $backHistory.set([...$backHistory.get(), $currentPath.get()]);
   $forwardHistory.set([]);
 
