@@ -33,7 +33,7 @@ export class Sidebar extends Component<BoxRenderable> {
     $selectedSidebarLink.set(this._homeLink);
 
     this._trashLink = SidebarLink.make()
-      .path(config.trashPath)
+      .path(`${config.trashPath}/files`)
       .label("\uf1f8 Trash");
 
     this._tasksButton = Button.make()
@@ -78,7 +78,7 @@ export class Sidebar extends Component<BoxRenderable> {
       Divider.make(),
       this._trashLink,
       Divider.make(),
-      SidebarLink.make().path("/").label("\udb85\udedf Root"),
+      SidebarLink.make().path("/").label("\udb80\udeca Root"),
       Spacer.make(),
       this._footer,
     ]);

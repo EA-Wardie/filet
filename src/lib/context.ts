@@ -1,6 +1,7 @@
 import { readdir } from "node:fs";
 import { homedir } from "node:os";
 import * as core from "@opentui/core";
+import { trashPath } from "./config";
 import { $selectedFileLink, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
@@ -30,17 +31,18 @@ export function makeApp(callback: () => void) {
 }
 
 function checkTrash(): void {
-  const trashPath: string = `${homeDirectory}/.local/share/Trash/files`;
+  readdir(
+    `${trashPath}/files`,
+    (error: NodeJS.ErrnoException | null, files: string[]) => {
+      if (error) {
+        return;
+      }
 
-  readdir(trashPath, (error: NodeJS.ErrnoException | null, files: string[]) => {
-    if (error) {
-      return;
-    }
-
-    if (files.length) {
-      $trashFull.set(true);
-    }
-  });
+      if (files.length) {
+        $trashFull.set(true);
+      }
+    },
+  );
 }
 
 export function syntaxStyles(): core.SyntaxStyle {

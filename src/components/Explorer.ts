@@ -10,6 +10,7 @@ import {
   createFolder,
   cut,
   getFileIcon,
+  moveToTrash,
   paste,
   remove,
 } from "../lib/filesystem";
@@ -186,11 +187,11 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                 .onClick((): void => {
                   cut(dirent);
                 }),
-              Divider.make(),
+              Divider.make().visible(!$currentPath.get().includes(trashPath)),
               Button.make()
                 .label("\uf1f8 Trash")
-                .visible($currentPath.get() !== trashPath)
                 .variant("link")
+                .visible(!$currentPath.get().includes(trashPath))
                 .onClick((): void => {
                   Confirmation.make()
                     .heading("Move to trash?")
@@ -198,11 +199,14 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                       `Are you sure you want to move '${dirent.name}' to trash?`,
                     )
                     .variant("danger")
-                    .onConfirm((): void => {});
+                    .onConfirm((): void => {
+                      moveToTrash(dirent);
+                    });
                 }),
               Button.make()
                 .label("\udb81\ude91 Delete")
                 .variant("link")
+                .visible(!$currentPath.get().includes(trashPath))
                 .onClick((): void => {
                   Confirmation.make()
                     .heading("Permanently delete?")

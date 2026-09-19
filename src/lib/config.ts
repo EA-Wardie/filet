@@ -60,7 +60,7 @@ export const bookmarks: BookmarkType[] =
   userConfig.bookmarks ?? defaultConfig.bookmarks;
 
 export const trashPath: string =
-  userConfig.trash_path ?? `${homeDirectory}/.local/share/Trash/files`;
+  userConfig.trash_path ?? `${homeDirectory}/.local/share/Trash`;
 
 const themeConfig: ThemeConfig = {
   ...defaultConfig.theme,
