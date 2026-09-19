@@ -4,7 +4,7 @@
 
 # filet
 
-A terminal file manager built on Bun and OpenTUI.
+Simple terminal file manager with first party mouse support. Built with OpenTUI on Bun.
 
 ## Features
 
@@ -13,6 +13,19 @@ A terminal file manager built on Bun and OpenTUI.
 - Copy, cut, paste, and delete files and directories.
 - Bookmarks and a themeable UI, configurable through a user config file.
 - First party mouse support.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="assets/screenshot_1.png" alt="filet screenshot 1" width="100%"></td>
+    <td><img src="assets/screenshot_2.png" alt="filet screenshot 2" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/screenshot_3.png" alt="filet screenshot 3" width="100%"></td>
+    <td><img src="assets/screenshot_4.png" alt="filet screenshot 4" width="100%"></td>
+  </tr>
+</table>
 
 ## Configuration
 
@@ -36,6 +49,7 @@ double_click_timeout = 250
 [theme]
 bg = "#0C0C0C"
 fg = "#fafafa"
+border = "#d4d4d4"
 success = "#16a34a"
 danger = "#dc2626"
 ```

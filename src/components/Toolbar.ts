@@ -1,6 +1,7 @@
 import * as core from "@opentui/core";
 import { theme, trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
+import { emptyTrash } from "../lib/filesystem";
 import { back, canGoBack, canGoForward, forward } from "../lib/navigation";
 import {
   $backHistory,
@@ -14,7 +15,6 @@ import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
 import { Spacer } from "./Spacer";
 import { Text } from "./Text";
-import { emptyTrash } from "../lib/filesystem";
 
 export class Toolbar extends Component<core.BoxRenderable> {
   private _backButton: Button;
