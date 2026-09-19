@@ -9,6 +9,7 @@ import { Component } from "./Component";
 export class Preview extends Component<core.BoxRenderable> {
   private _code: core.CodeRenderable;
   private _lineNumbers: core.LineNumberRenderable;
+  private _markdown: core.MarkdownRenderable;
   private _image: core.ImageRenderable;
 
   constructor() {
@@ -19,6 +20,8 @@ export class Preview extends Component<core.BoxRenderable> {
     );
 
     this._code = new core.CodeRenderable(ctx, {
+      width: "100%",
+      height: "100%",
       content: "",
       wrapMode: "word",
       syntaxStyle: syntaxStyles(),
@@ -27,6 +30,13 @@ export class Preview extends Component<core.BoxRenderable> {
 
     this._lineNumbers = new core.LineNumberRenderable(ctx, {
       target: this._code,
+    });
+
+    this._markdown = new core.MarkdownRenderable(ctx, {
+      width: "100%",
+      height: "100%",
+      content: "",
+      syntaxStyle: syntaxStyles(),
     });
 
     this._image = new core.ImageRenderable(ctx, {
@@ -60,23 +70,29 @@ export class Preview extends Component<core.BoxRenderable> {
             return;
           }
 
-          const treeSitterClient: core.TreeSitterClient =
-            core.getTreeSitterClient();
+          const fileType: string = CODE_FILETYPES[extname(path)] || "text";
 
-          treeSitterClient
-            .initialize()
-            .then((): void => {
-              const fileType: string = CODE_FILETYPES[extname(path)] || "";
+          if (fileType === "markdown") {
+            this._markdown.content = content;
 
-              this._code.content = content;
-              this._code.filetype = fileType;
-              this._code.treeSitterClient = treeSitterClient;
+            this.component.add(this._markdown);
+          } else {
+            const treeSitterClient: core.TreeSitterClient =
+              core.getTreeSitterClient();
 
-              this.component.add(this._lineNumbers);
-            })
-            .catch((error: Error) => {
-              console.warn(error);
-            });
+            treeSitterClient
+              .initialize()
+              .then((): void => {
+                this._code.content = content;
+                this._code.filetype = fileType;
+                this._code.treeSitterClient = treeSitterClient;
+
+                this.component.add(this._lineNumbers);
+              })
+              .catch((error: Error) => {
+                console.warn(error);
+              });
+          }
         },
       );
     }

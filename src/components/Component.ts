@@ -13,18 +13,10 @@ export class Component<T extends Renderable> {
     return this;
   }
 
-  public components(
-    components: Component<Renderable>[] | (() => Component<Renderable>[]),
-  ): this {
-    if (typeof components === "function") {
-      components().forEach((component: Component<Renderable>) => {
-        this.component.add(component.component);
-      });
-    } else {
-      components.forEach((component: Component<Renderable>) => {
-        this.component.add(component.component);
-      });
-    }
+  public components(components: Component<Renderable>[]): this {
+    components.forEach((component: Component<Renderable>) => {
+      this.component.add(component.component);
+    });
 
     return this;
   }

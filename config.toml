@@ -3,5 +3,6 @@ bookmarks = []
 [theme]
 bg = "#0C0C0C"
 fg = "#fafafa"
+border = "#d4d4d4"
 success = "#16a34a"
 danger = "#dc2626"

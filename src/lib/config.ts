@@ -15,6 +15,7 @@ export interface ThemeType {
   fg: RGBA;
   fg_light: RGBA;
   fg_dark: RGBA;
+  border: RGBA;
   success: RGBA;
   success_light: RGBA;
   success_dark: RGBA;
@@ -26,6 +27,7 @@ export interface ThemeType {
 interface ThemeConfig {
   bg: string;
   fg: string;
+  border: string;
   success: string;
   danger: string;
 }
@@ -72,6 +74,7 @@ export const theme: ThemeType = {
   fg: RGBA.fromHex(themeConfig.fg),
   fg_light: RGBA.fromHex(`${themeConfig.fg}40`),
   fg_dark: RGBA.fromHex(`${themeConfig.fg}BF`),
+  border: RGBA.fromHex(themeConfig.border),
   success: RGBA.fromHex(themeConfig.success),
   success_light: RGBA.fromHex(`${themeConfig.success}40`),
   success_dark: RGBA.fromHex(`${themeConfig.success}BF`),

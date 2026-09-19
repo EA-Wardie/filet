@@ -33,7 +33,7 @@ export class Confirmation extends Component<core.BoxRenderable> {
       width: 42,
       backgroundColor: theme.bg,
       border: true,
-      borderColor: theme.bg_dark,
+      borderColor: theme.border,
       paddingX: 1,
       zIndex: 101,
     });

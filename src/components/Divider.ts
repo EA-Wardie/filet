@@ -8,7 +8,7 @@ export class Divider extends Component<core.BoxRenderable> {
     super(
       new core.BoxRenderable(ctx, {
         border: ["top"],
-        borderColor: theme.bg_dark,
+        borderColor: theme.border,
       }),
     );
   }

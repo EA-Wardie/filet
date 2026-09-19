@@ -22,7 +22,11 @@ export const $menuOpen = nanostores.atom<boolean>(false);
 
 export const $displayType = nanostores.atom<"list" | "grid">("list");
 
-export const $tasks = nanostores.atom<string[]>([]);
+export const $tasks = nanostores.atom<string[]>([
+  "Copying file_1.txt to /dir/dir/file_1.txt",
+  "Copying file_2.txt to /dir/dir/file_2.txt",
+  "Moving file_3.mov to /dir/dir/file_3.mov",
+]);
 
 export const $backHistory = nanostores.atom<string[]>([]);
 

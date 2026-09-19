@@ -162,6 +162,18 @@ export class Button extends Component<core.BoxRenderable> {
     return this;
   }
 
+  public align(alignment: core.AlignString | null | undefined) {
+    this.component.alignItems = alignment;
+
+    return this;
+  }
+
+  public width(width: number | "auto" | `${number}%`) {
+    this.component.width = width;
+
+    return this;
+  }
+
   public onClick(callback: () => void): this {
     this._callback = callback;
 

@@ -10,7 +10,7 @@ export class Column extends Component<BoxRenderable> {
         width: "100%",
         height: "100%",
         border: ["right"],
-        borderColor: theme.bg_dark,
+        borderColor: theme.border,
         flexDirection: "column",
         justifyContent: "space-between",
       }),

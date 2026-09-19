@@ -8,7 +8,7 @@ export class Bar extends Component<core.BoxRenderable> {
     super(
       new core.BoxRenderable(ctx, {
         border: ["top", "bottom"],
-        borderColor: theme.bg_dark,
+        borderColor: theme.border,
         flexDirection: "row",
         justifyContent: "space-between",
         paddingX: 1,

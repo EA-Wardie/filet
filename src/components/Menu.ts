@@ -31,7 +31,7 @@ export class Menu extends Component<core.BoxRenderable> {
       minWidth: 24,
       backgroundColor: theme.bg,
       border: true,
-      borderColor: theme.bg_dark,
+      borderColor: theme.border,
       position: "absolute",
       zIndex: 101,
     });

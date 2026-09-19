@@ -1,4 +1,5 @@
 import * as core from "@opentui/core";
+import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import type { Component } from "./Component";
 
@@ -10,6 +11,7 @@ export class Layout {
       id: "app",
       width: "100%",
       height: "100%",
+      backgroundColor: theme.bg,
       flexDirection: "row",
     });
 
