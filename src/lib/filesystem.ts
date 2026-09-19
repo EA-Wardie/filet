@@ -4,7 +4,13 @@ import { basename } from "node:path";
 import { trashPath } from "./config";
 import { ctx } from "./context";
 import { cleanPath, getDirentPath } from "./navigation";
-import { $copyDirent, $currentPath, $cutDirent, $tasks } from "./store";
+import {
+  $copyDirent,
+  $currentPath,
+  $cutDirent,
+  $tasks,
+  $trashFull,
+} from "./store";
 
 export const IMAGE_FILETYPES: Set<string> = new Set([
   ".png",
@@ -28,112 +34,112 @@ export const CODE_FILETYPES: Record<string, string> = {
 
 const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
   // JS / TS
-  ["ts", "\ue8ca"],
-  ["tsx", "\ue8ca"],
-  ["js", "\ue781"],
-  ["jsx", "\ue781"],
-  ["mjs", "\ue781"],
-  ["cjs", "\ue781"],
+  ["ts", ""],
+  ["tsx", ""],
+  ["js", ""],
+  ["jsx", ""],
+  ["mjs", ""],
+  ["cjs", ""],
 
   // Data / config
-  ["json", "\udb81\ude26"],
-  ["jsonc", "\udb81\ude26"],
-  ["yaml", "\uf481"],
-  ["yml", "\uf481"],
-  ["toml", "\ue615"],
-  ["xml", "\ue619"],
-  ["env", "\uf013"],
-  ["ini", "\uf013"],
-  ["conf", "\uf013"],
-  ["sql", "\ue706"],
-  ["sqlite", "\ue706"],
-  ["graphql", "\ue662"],
-  ["gql", "\ue662"],
-  ["lock", "\uf023"],
-  ["lockb", "\uf023"],
+  ["json", "󰘦"],
+  ["jsonc", "󰘦"],
+  ["yaml", "\ue8eb"],
+  ["yml", "\ue8eb"],
+  ["toml", ""],
+  ["xml", "\udb81\uddc0"],
+  ["env", ""],
+  ["ini", ""],
+  ["conf", ""],
+  ["sql", ""],
+  ["sqlite", ""],
+  ["graphql", ""],
+  ["gql", ""],
+  ["lock", ""],
+  ["lockb", ""],
 
   // Archive
-  ["zip", "\udb81\uddc4"],
-  ["rar", "\udb81\uddc4"],
-  ["7z", "\udb81\uddc4"],
-  ["tar", "\udb81\uddc4"],
-  ["gz", "\udb81\uddc4"],
+  ["zip", "󰗄"],
+  ["rar", "󰗄"],
+  ["7z", "󰗄"],
+  ["tar", "󰗄"],
+  ["gz", "󰗄"],
 
   // Docs
-  ["md", "\ue609"],
-  ["mdx", "\ue609"],
-  ["txt", "\uf15c"],
-  ["csv", "\ue64a"],
-  ["xlsx", "\udb84\udf8f"],
-  ["docx", "\ue6a5"],
-  ["pdf", "\udb80\ude26"],
+  ["md", ""],
+  ["mdx", ""],
+  ["txt", ""],
+  ["csv", ""],
+  ["xlsx", "󱎏"],
+  ["docx", ""],
+  ["pdf", "󰈦"],
 
   // Web
-  ["html", "\ue736"],
-  ["htm", "\ue736"],
-  ["css", "\ue749"],
-  ["scss", "\ue603"],
-  ["sass", "\ue603"],
-  ["less", "\ue758"],
-  ["vue", "\ufd42"],
-  ["svelte", "\ue697"],
+  ["html", ""],
+  ["htm", ""],
+  ["css", ""],
+  ["scss", ""],
+  ["sass", ""],
+  ["less", ""],
+  ["vue", "\ued4a"],
+  ["svelte", ""],
 
   // Systems languages
-  ["rs", "\ue7a8"],
-  ["go", "\ue627"],
-  ["c", "\ue61e"],
-  ["h", "\ue61e"],
-  ["cpp", "\ue61d"],
-  ["cc", "\ue61d"],
-  ["hpp", "\ue61d"],
-  ["cs", "\uf81a"],
-  ["zig", "\ue6a9"],
+  ["rs", ""],
+  ["go", ""],
+  ["c", ""],
+  ["h", ""],
+  ["cpp", ""],
+  ["cc", ""],
+  ["hpp", ""],
+  ["cs", "\ue648"],
+  ["zig", ""],
 
   // JVM
-  ["java", "\ue738"],
-  ["kt", "\ue634"],
-  ["kts", "\ue634"],
-  ["klib", "\ue634"],
-  ["kexe", "\ue634"],
-  ["scala", "\ue737"],
-  ["clj", "\ue768"],
-  ["cljs", "\ue768"],
-  ["groovy", "\ue775"],
+  ["java", ""],
+  ["kt", ""],
+  ["kts", ""],
+  ["klib", ""],
+  ["kexe", ""],
+  ["scala", ""],
+  ["clj", ""],
+  ["cljs", ""],
+  ["groovy", ""],
 
   // Scripting / other languages
-  ["py", "\ue73c"],
-  ["rb", "\ue739"],
-  ["php", "\ue73d"],
-  ["swift", "\ue755"],
-  ["lua", "\ue620"],
-  ["pl", "\ue769"],
-  ["hs", "\ue777"],
-  ["ex", "\ue62d"],
-  ["exs", "\ue62d"],
-  ["erl", "\ue7b1"],
-  ["r", "\uf25d"],
-  ["sh", "\ue795"],
-  ["bash", "\ue795"],
-  ["zsh", "\ue795"],
-  ["fish", "\ue795"],
-  ["nix", "\udb84\udd05"],
+  ["py", ""],
+  ["rb", ""],
+  ["php", ""],
+  ["swift", ""],
+  ["lua", ""],
+  ["pl", ""],
+  ["hs", ""],
+  ["ex", ""],
+  ["exs", ""],
+  ["erl", ""],
+  ["r", ""],
+  ["sh", ""],
+  ["bash", ""],
+  ["zsh", ""],
+  ["fish", ""],
+  ["nix", "󱄅"],
 
   // Images
-  ["png", "\uf1c5"],
-  ["jpg", "\uf1c5"],
-  ["jpeg", "\uf1c5"],
-  ["gif", "\uf1c5"],
-  ["webp", "\uf1c5"],
-  ["avif", "\uf1c5"],
-  ["ico", "\ue623"],
-  ["svg", "\ue698"],
+  ["png", ""],
+  ["jpg", ""],
+  ["jpeg", ""],
+  ["gif", ""],
+  ["webp", ""],
+  ["avif", ""],
+  ["ico", ""],
+  ["svg", ""],
 ]);
 
-const FILE_ICON: string = "\uf15b";
+const FILE_ICON: string = "";
 
 export function getFileIcon(dirent: Dirent): string {
   if (dirent.isDirectory()) {
-    return "\uf07b";
+    return "";
   }
 
   const dot: number = dirent.name.lastIndexOf(".");
@@ -145,18 +151,6 @@ export function getFileIcon(dirent: Dirent): string {
   return (
     FILETYPE_ICONS.get(dirent.name.slice(dot + 1).toLowerCase()) ?? FILE_ICON
   );
-}
-
-export function copy(dirent: Dirent): void {
-  ctx.copyToClipboardOSC52(getDirentPath(dirent));
-
-  $copyDirent.set(dirent);
-}
-
-export function cut(dirent: Dirent): void {
-  ctx.copyToClipboardOSC52(getDirentPath(dirent));
-
-  $cutDirent.set(dirent);
 }
 
 async function copyEntry(dirent: Dirent, toPath: string): Promise<void> {
@@ -181,6 +175,18 @@ async function removeEntry(dirent: Dirent): Promise<void> {
   }
 
   await Bun.file(path).delete();
+}
+
+export function copy(dirent: Dirent): void {
+  ctx.copyToClipboardOSC52(getDirentPath(dirent));
+
+  $copyDirent.set(dirent);
+}
+
+export function cut(dirent: Dirent): void {
+  ctx.copyToClipboardOSC52(getDirentPath(dirent));
+
+  $cutDirent.set(dirent);
 }
 
 export async function paste(): Promise<void> {
@@ -254,9 +260,12 @@ export function createFolder(name: string): void {
     });
 }
 
-export async function remove(dirent: Dirent): Promise<void> {
+export async function rename(dirent: Dirent, name: string): Promise<void> {
+  const fromPath: string = getDirentPath(dirent);
+  const toPath: string = cleanPath(`${dirent.parentPath}/${name}`);
+
   try {
-    await removeEntry(dirent);
+    await renameEntry(fromPath, toPath);
 
     $currentPath.notify();
   } catch (error) {
@@ -264,12 +273,9 @@ export async function remove(dirent: Dirent): Promise<void> {
   }
 }
 
-export async function rename(dirent: Dirent, name: string): Promise<void> {
-  const fromPath: string = getDirentPath(dirent);
-  const toPath: string = cleanPath(`${dirent.parentPath}/${name}`);
-
+export async function remove(dirent: Dirent): Promise<void> {
   try {
-    await renameEntry(fromPath, toPath);
+    await removeEntry(dirent);
 
     $currentPath.notify();
   } catch (error) {
@@ -295,9 +301,27 @@ export async function moveToTrash(dirent: Dirent): Promise<void> {
 
   try {
     await copyEntry(dirent, `${trashPath}/files/${dirent.name}`);
-    await removeEntry(dirent);
-    await writeTrashInfo(fromPath);
+    await Promise.all([removeEntry(dirent), writeTrashInfo(fromPath)]);
 
+    $currentPath.notify();
+  } catch (error) {
+    console.warn(error);
+  }
+}
+
+export async function emptyTrash(): Promise<void> {
+  try {
+    await Promise.all([
+      rm(`${trashPath}/files`, { recursive: true, force: true }),
+      rm(`${trashPath}/info`, { recursive: true, force: true }),
+    ]);
+
+    await Promise.all([
+      mkdir(`${trashPath}/files`, { recursive: true }),
+      mkdir(`${trashPath}/info`, { recursive: true }),
+    ]);
+
+    $trashFull.set(false);
     $currentPath.notify();
   } catch (error) {
     console.warn(error);

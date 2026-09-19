@@ -31,6 +31,8 @@ bookmarks = [
 
 trash_path = "/home/<user>/.local/share/Trash"
 
+double_click_timeout = 250
+
 [theme]
 bg = "#0C0C0C"
 fg = "#fafafa"

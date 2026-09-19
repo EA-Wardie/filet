@@ -175,9 +175,9 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
   }
 
   private drawDirents() {
-    this._dirents.forEach((dirent: Dirent) => {
-      this.component.add(
-        FileLink.make()
+    this.components(
+      this._dirents.map((dirent: Dirent): FileLink => {
+        return FileLink.make()
           .label(`${getFileIcon(dirent)}  ${dirent.name}`)
           .onDoubleClick((): void => {
             go(getDirentPath(dirent));
@@ -244,8 +244,8 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                     });
                 }),
             ]).show(event.x, event.y);
-          }).component,
-      );
-    });
+          });
+      }),
+    );
   }
 }

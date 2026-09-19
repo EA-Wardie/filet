@@ -1,5 +1,5 @@
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { theme, trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
 import { back, canGoBack, canGoForward, forward } from "../lib/navigation";
 import {
@@ -10,13 +10,18 @@ import {
 } from "../lib/store";
 import { Button } from "./Button";
 import { Component } from "./Component";
+import { Confirmation } from "./Confirmation";
+import { Divider } from "./Divider";
 import { Spacer } from "./Spacer";
 import { Text } from "./Text";
+import { emptyTrash } from "../lib/filesystem";
 
 export class Toolbar extends Component<core.BoxRenderable> {
   private _backButton: Button;
   private _forwardButton: Button;
   private _currentPathText: Text;
+  private _emptyTrashDivider: Divider;
+  private _emptyTrashButton: Button;
   private _displayToggle: Button;
 
   constructor() {
@@ -25,7 +30,6 @@ export class Toolbar extends Component<core.BoxRenderable> {
         border: ["top", "bottom"],
         borderColor: theme.border,
         flexDirection: "row",
-        paddingX: 1,
       }),
     );
 
@@ -46,6 +50,25 @@ export class Toolbar extends Component<core.BoxRenderable> {
     this._currentPathText = Text.make(`\uf015  ${$currentPath.get()}`);
     this._currentPathText.component.marginLeft = 1;
 
+    this._emptyTrashDivider = Divider.make()
+      .visible($currentPath.get().includes(trashPath))
+      .vertical();
+
+    this._emptyTrashButton = Button.make()
+      .label("\udb81\udecc Empty Trash")
+      .variant("link")
+      .align("center")
+      .visible($currentPath.get().includes(trashPath))
+      .onClick((): void => {
+        Confirmation.make()
+          .heading("Empty trash?")
+          .description("Are you sure you want to empty your trash folder?")
+          .variant("danger")
+          .onConfirm((): void => {
+            emptyTrash();
+          });
+      });
+
     this._displayToggle = Button.make()
       .label($displayType.get() === "list" ? "\udb81\udf58" : "\uf03a")
       .variant("link")
@@ -58,11 +81,15 @@ export class Toolbar extends Component<core.BoxRenderable> {
       this._forwardButton,
       this._currentPathText,
       Spacer.make(),
+      this._emptyTrashButton,
+      this._emptyTrashDivider,
       this._displayToggle,
     ]);
 
     $currentPath.subscribe((path: string): void => {
       this._currentPathText.content(`\uf015  ${path}`);
+      this._emptyTrashButton.visible(path.includes(trashPath));
+      this._emptyTrashDivider.visible(path.includes(trashPath));
     });
 
     $backHistory.subscribe((): void => {
