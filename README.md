@@ -22,12 +22,14 @@ filet ships with a default config at `config.toml`. To override it, create your 
 ~/.config/filet/config.toml
 ```
 
-Values in your user config take priority over the defaults, and any values you leave out fall back to the defaults. You can set bookmarks and theme colors, for example:
+Values in your user config take priority over the defaults, and any values you leave out fall back to the defaults, for example:
 
 ```toml
 bookmarks = [
     {label = "Projects", mount = "/home/user/Projects"},
 ]
+
+trash_path = ""
 
 [theme]
 bg = "#0C0C0C"

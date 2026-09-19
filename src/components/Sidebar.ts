@@ -40,7 +40,7 @@ export class Sidebar extends Component<BoxRenderable> {
     );
 
     this._trashLink = SidebarLink.make()
-      .path(`${homeDirectory}/.local/share/Trash/files`)
+      .path(config.trashPath)
       .label("\uf1f8  Trash");
 
     this._tasksCount = Text.make("[0]");

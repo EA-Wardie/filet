@@ -1,6 +1,7 @@
 import { RGBA } from "@opentui/core";
 import defaultConfig from "../../config.toml";
 import { USER_CONFIG_PATH } from "./filesystem";
+import { homeDirectory } from "./context";
 
 export interface BookmarkType {
   label: string;
@@ -31,6 +32,7 @@ interface ThemeConfig {
 
 interface ConfigFile {
   bookmarks?: BookmarkType[];
+  trash_path?: string;
   theme?: Partial<ThemeConfig>;
 }
 
@@ -52,13 +54,16 @@ async function loadUserConfig(): Promise<ConfigFile> {
 
 const userConfig: ConfigFile = await loadUserConfig();
 
+export const bookmarks: BookmarkType[] =
+  userConfig.bookmarks ?? defaultConfig.bookmarks;
+
+export const trashPath: string =
+  userConfig.trash_path ?? `${homeDirectory}/.local/share/Trash/files`;
+
 const themeConfig: ThemeConfig = {
   ...defaultConfig.theme,
   ...userConfig.theme,
 };
-
-export const bookmarks: BookmarkType[] =
-  userConfig.bookmarks ?? defaultConfig.bookmarks ?? [];
 
 export const theme: ThemeType = {
   bg: RGBA.fromHex(themeConfig.bg),
