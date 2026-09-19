@@ -1,5 +1,5 @@
 import type { Dirent } from "node:fs";
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
 import { basename } from "node:path";
 import { trashPath } from "./config";
 import { ctx } from "./context";
@@ -257,6 +257,19 @@ export function createFolder(name: string): void {
 export async function remove(dirent: Dirent): Promise<void> {
   try {
     await removeEntry(dirent);
+
+    $currentPath.notify();
+  } catch (error) {
+    console.warn(error);
+  }
+}
+
+export async function rename(dirent: Dirent, name: string): Promise<void> {
+  const fromPath: string = getDirentPath(dirent);
+  const toPath: string = cleanPath(`${dirent.parentPath}/${name}`);
+
+  try {
+    await renameEntry(fromPath, toPath);
 
     $currentPath.notify();
   } catch (error) {

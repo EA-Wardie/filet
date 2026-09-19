@@ -57,23 +57,25 @@ export class Confirmation extends Component<core.BoxRenderable> {
     });
 
     this._cancelButton = Button.make()
-      .label("Cancel")
+      .label("\uf00d Cancel")
       .onClick(() => {
         this.component.destroyRecursively();
       });
 
     this._confirmButton = Button.make()
-      .label("Confirm")
+      .label("\uf00c Confirm")
       .onClick(() => {
-        this.component.destroyRecursively();
         this._confirmCallback?.();
+        this.component.destroyRecursively();
       });
+
+    this._dialogButtons.add(this._cancelButton.component);
+    this._dialogButtons.add(this._confirmButton.component);
 
     this._dialog.add(this._heading);
     this._dialog.add(this._description);
-    this._dialogButtons.add(this._cancelButton.component);
-    this._dialogButtons.add(this._confirmButton.component);
     this._dialog.add(this._dialogButtons);
+
     this.component.add(this._dialog);
 
     this.registerEvents();
@@ -87,6 +89,11 @@ export class Confirmation extends Component<core.BoxRenderable> {
 
   private registerEvents(): void {
     ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+      if (key.name === "return") {
+        this._confirmCallback?.();
+        this.component.destroyRecursively();
+      }
+
       if (key.name === "escape") {
         this.component.destroyRecursively();
       }

@@ -4,7 +4,6 @@ import { ctx } from "../lib/context";
 import { homeDirectory } from "../lib/home";
 import { $selectedSidebarLink, $tasks, $trashFull } from "../lib/store";
 import { Bar } from "./Bar";
-import { Button } from "./Button";
 import { Component } from "./Component";
 import { Divider } from "./Divider";
 import { SidebarLink } from "./SidebarLink";
@@ -14,7 +13,7 @@ import { Text } from "./Text";
 export class Sidebar extends Component<BoxRenderable> {
   private _homeLink: SidebarLink;
   private _trashLink: SidebarLink;
-  private _tasksButton: Button;
+  private _taskCountText: Text;
   private _footer: Bar;
 
   constructor() {
@@ -37,16 +36,12 @@ export class Sidebar extends Component<BoxRenderable> {
       .path(`${config.trashPath}/files`)
       .label("\uf1f8 Trash");
 
-    this._tasksButton = Button.make()
-      .label("\udb82\udd96 Tasks [0]")
-      .variant("link")
-      .align("center")
-      .width("100%")
-      .onClick(() => {});
+    this._taskCountText = Text.make(`[${$tasks.get().length}]`);
 
-    this._footer = Bar.make().components([this._tasksButton]);
-
-    this._footer.component.visible = false;
+    this._footer = Bar.make().components([
+      Text.make("\udb82\udd96 Tasks"),
+      this._taskCountText,
+    ]);
 
     this.components([
       Bar.make().components([Text.make("🐠 Filet").center()]),
@@ -94,7 +89,7 @@ export class Sidebar extends Component<BoxRenderable> {
 
     $tasks.subscribe((tasks: readonly string[]): void => {
       if (tasks.length) {
-        this._tasksButton.label(`\udb82\udd96 Tasks [${tasks.length}]`);
+        this._taskCountText.content(`[${tasks.length}]`);
         this._footer.component.visible = true;
       } else {
         this._footer.component.visible = false;

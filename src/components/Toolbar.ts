@@ -17,7 +17,6 @@ export class Toolbar extends Component<core.BoxRenderable> {
   private _backButton: Button;
   private _forwardButton: Button;
   private _currentPathText: Text;
-  private _spacer: Spacer;
   private _displayToggle: Button;
 
   constructor() {
@@ -47,23 +46,20 @@ export class Toolbar extends Component<core.BoxRenderable> {
     this._currentPathText = Text.make(`\uf015  ${$currentPath.get()}`);
     this._currentPathText.component.marginLeft = 1;
 
-    this._spacer = Spacer.make();
-
     this._displayToggle = Button.make()
-      .label($displayType.get() ? "\uf00a" : "\uf00b")
+      .label($displayType.get() === "list" ? "\udb81\udf58" : "\uf03a")
       .variant("link")
       .onClick((): void => {
-        const newType: "list" | "grid" =
-          $displayType.get() === "grid" ? "list" : "grid";
-
-        $displayType.set(newType);
+        $displayType.set($displayType.get() === "grid" ? "list" : "grid");
       });
 
-    this.component.add(this._backButton.component);
-    this.component.add(this._forwardButton.component);
-    this.component.add(this._currentPathText.component);
-    this.component.add(this._spacer.component);
-    this.component.add(this._displayToggle.component);
+    this.components([
+      this._backButton,
+      this._forwardButton,
+      this._currentPathText,
+      Spacer.make(),
+      this._displayToggle,
+    ]);
 
     $currentPath.subscribe((path: string): void => {
       this._currentPathText.content(`\uf015  ${path}`);
@@ -78,7 +74,7 @@ export class Toolbar extends Component<core.BoxRenderable> {
     });
 
     $displayType.subscribe((type: "list" | "grid"): void => {
-      this._displayToggle.label(type === "list" ? "\uf00a" : "\udb86\udeb6");
+      this._displayToggle.label(type === "list" ? "\udb81\udf58" : "\uf03a");
     });
   }
 

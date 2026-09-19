@@ -49,6 +49,7 @@ export class Prompt extends Component<core.BoxRenderable> {
     });
 
     this._input = new core.InputRenderable(ctx, {
+      value: "",
       backgroundColor: theme.fg_light,
       textColor: theme.fg,
       flexGrow: 1,
@@ -63,20 +64,19 @@ export class Prompt extends Component<core.BoxRenderable> {
     });
 
     this._cancelButton = Button.make()
-      .label("Cancel")
+      .label("\uf00d Cancel")
       .onClick(() => {
         this._input.blur();
         this.component.destroyRecursively();
       });
 
     this._submitButton = Button.make()
-      .label("Submit")
+      .label("\uf00c Submit")
       .onClick(() => {
         this._input.blur();
         this._submitCallback?.(this._input.value);
         this.component.destroyRecursively();
       });
-
 
     this._dialog.add(this._heading);
     this._dialog.add(this._label);
@@ -98,7 +98,14 @@ export class Prompt extends Component<core.BoxRenderable> {
 
   private registerEvents(): void {
     ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+      if (key.name === "return") {
+        this._input.blur();
+        this._submitCallback?.(this._input.value);
+        this.component.destroyRecursively();
+      }
+
       if (key.name === "escape") {
+        this._input.blur();
         this.component.destroyRecursively();
       }
     });
@@ -112,6 +119,12 @@ export class Prompt extends Component<core.BoxRenderable> {
 
   public label(label: string): this {
     this._label.content = label;
+
+    return this;
+  }
+
+  public value(value: string): this {
+    this._input.value = value;
 
     return this;
   }

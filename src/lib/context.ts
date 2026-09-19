@@ -1,5 +1,6 @@
 import { readdir } from "node:fs";
 import * as core from "@opentui/core";
+import { Confirmation } from "../components/Confirmation";
 import { trashPath } from "./config";
 import { $selectedFileLink, $trashFull } from "./store";
 
@@ -15,11 +16,21 @@ export function makeApp(callback: () => void) {
     .then((context: core.CliRenderer) => {
       ctx = context;
 
-      // ctx.console.show();
+      ctx.console.show();
 
       ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
         if (key.name === "escape") {
           $selectedFileLink.set(null);
+        }
+
+        if (key.name === "q") {
+          Confirmation.make()
+            .heading("Quit?")
+            .description("Are you sure you want to quit the application?")
+            .variant("success")
+            .onConfirm((): void => {
+              ctx.destroy();
+            });
         }
       });
 

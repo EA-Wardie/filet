@@ -13,6 +13,7 @@ import {
   moveToTrash,
   paste,
   remove,
+  rename,
 } from "../lib/filesystem";
 import { getDirentPath, go } from "../lib/navigation";
 import {
@@ -150,13 +151,23 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
   }
 
   private sortDirents(): void {
-    if (this._dirents.length > 100) {
+    if (this._dirents.length > 1000) {
       return;
     }
 
+    const rank = (dirent: Dirent): number => {
+      if (!dirent.isDirectory()) {
+        return 2;
+      }
+
+      return dirent.name.startsWith(".") ? 1 : 0;
+    };
+
     this._dirents.sort((a: Dirent, b: Dirent): number => {
-      if (a.isDirectory() !== b.isDirectory()) {
-        return a.isDirectory() ? -1 : 1;
+      const rankDifference: number = rank(a) - rank(b);
+
+      if (rankDifference !== 0) {
+        return rankDifference;
       }
 
       return a.name.localeCompare(b.name);
@@ -186,6 +197,20 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                 .variant("link")
                 .onClick((): void => {
                   cut(dirent);
+                }),
+              Divider.make(),
+              Button.make()
+                .label("\uf040 Rename")
+                .variant("link")
+                .onClick((): void => {
+                  Prompt.make()
+                    .heading("Rename file")
+                    .label("Filename")
+                    .variant("success")
+                    .value(dirent.name)
+                    .onSubmit((filename: string): void => {
+                      rename(dirent, filename);
+                    });
                 }),
               Divider.make().visible(!$currentPath.get().includes(trashPath)),
               Button.make()
