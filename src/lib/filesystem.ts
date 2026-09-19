@@ -2,7 +2,7 @@ import type { Dirent } from "node:fs";
 import { cp, mkdir, rm } from "node:fs/promises";
 import { basename } from "node:path";
 import { trashPath } from "./config";
-import { ctx, homeDirectory } from "./context";
+import { ctx } from "./context";
 import { cleanPath, getDirentPath } from "./navigation";
 import { $copyDirent, $currentPath, $cutDirent, $tasks } from "./store";
 
@@ -25,8 +25,6 @@ export const CODE_FILETYPES: Record<string, string> = {
   ".md": "markdown",
   ".zig": "zig",
 };
-
-export const USER_CONFIG_PATH: string = `${homeDirectory}/.config/filet/config.toml`;
 
 const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
   // JS / TS

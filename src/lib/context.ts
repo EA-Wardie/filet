@@ -1,11 +1,9 @@
 import { readdir } from "node:fs";
-import { homedir } from "node:os";
 import * as core from "@opentui/core";
 import { trashPath } from "./config";
 import { $selectedFileLink, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
-export const homeDirectory: string = homedir();
 
 export function makeApp(callback: () => void) {
   core

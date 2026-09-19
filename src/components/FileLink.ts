@@ -7,7 +7,6 @@ import { Component } from "./Component";
 
 export class FileLink extends Component<core.BoxRenderable> {
   private _label: core.TextRenderable;
-  private _clickCallback: ((event: core.MouseEvent) => void) | null = null;
   private _doubleClickCallback: ((event: core.MouseEvent) => void) | null =
     null;
   private _rightClickCallback: ((event: core.MouseEvent) => void) | null = null;
@@ -58,8 +57,6 @@ export class FileLink extends Component<core.BoxRenderable> {
       if (event.button === MouseButtons.LEFT) {
         $selectedFileLink.set(this);
 
-        this._clickCallback?.(event);
-
         const lastClick: number = this._lastClick || 0;
         const isDoubleClick: boolean = lastClick !== 0 && Date.now() - lastClick < doubleClickTimeout;
 
@@ -94,12 +91,6 @@ export class FileLink extends Component<core.BoxRenderable> {
 
   public label(label: string): this {
     this._label.content = label;
-
-    return this;
-  }
-
-  public onClick(callback: (event: core.MouseEvent) => void): this {
-    this._clickCallback = callback;
 
     return this;
   }

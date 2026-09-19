@@ -11,7 +11,6 @@ export class Confirmation extends Component<core.BoxRenderable> {
   private _cancelButton: Button;
   private _confirmButton: Button;
   private _dialogButtons: core.BoxRenderable;
-  private _cancelCallback: (() => void) | null = null;
   private _confirmCallback: (() => void) | null = null;
 
   constructor() {
@@ -61,7 +60,6 @@ export class Confirmation extends Component<core.BoxRenderable> {
       .label("Cancel")
       .onClick(() => {
         this.component.destroyRecursively();
-        this._cancelCallback?.();
       });
 
     this._confirmButton = Button.make()
@@ -115,12 +113,6 @@ export class Confirmation extends Component<core.BoxRenderable> {
 
   public onConfirm(callback: () => void): this {
     this._confirmCallback = callback;
-
-    return this;
-  }
-
-  public onCancel(callback: () => void): this {
-    this._cancelCallback = callback;
 
     return this;
   }

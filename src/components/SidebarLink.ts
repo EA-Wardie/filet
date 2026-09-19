@@ -9,8 +9,6 @@ import { Component } from "./Component";
 export class SidebarLink extends Component<core.BoxRenderable> {
   private _path: string | null = null;
   private _label: core.TextRenderable;
-  private _clickCallback: ((event: core.MouseEvent) => void) | null = null;
-  private _rightClickCallback: ((event: core.MouseEvent) => void) | null = null;
 
   constructor() {
     super(
@@ -67,10 +65,6 @@ export class SidebarLink extends Component<core.BoxRenderable> {
         if (this._path) {
           go(this._path);
         }
-
-        this._clickCallback?.(event);
-      } else if (event.button === MouseButtons.RIGHT) {
-        this._rightClickCallback?.(event);
       }
     };
   }
@@ -87,18 +81,6 @@ export class SidebarLink extends Component<core.BoxRenderable> {
 
   public label(label: string): this {
     this._label.content = label;
-
-    return this;
-  }
-
-  public onClick(callback: (event: core.MouseEvent) => void): this {
-    this._clickCallback = callback;
-
-    return this;
-  }
-
-  public onRightClick(callback: (event: core.MouseEvent) => void): this {
-    this._rightClickCallback = callback;
 
     return this;
   }

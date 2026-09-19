@@ -7,12 +7,6 @@ export class Component<T extends Renderable> {
     this.component = component;
   }
 
-  public id(id: string): this {
-    this.component.id = id;
-
-    return this;
-  }
-
   public components(components: Component<Renderable>[]): this {
     components.forEach((component: Component<Renderable>) => {
       this.component.add(component.component);

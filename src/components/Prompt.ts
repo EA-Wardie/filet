@@ -12,7 +12,6 @@ export class Prompt extends Component<core.BoxRenderable> {
   private _cancelButton: Button;
   private _submitButton: Button;
   private _dialogButtons: core.BoxRenderable;
-  private _cancelCallback: (() => void) | null = null;
   private _submitCallback: ((value: string) => void) | null = null;
 
   constructor() {
@@ -67,7 +66,6 @@ export class Prompt extends Component<core.BoxRenderable> {
       .label("Cancel")
       .onClick(() => {
         this._input.blur();
-        this._cancelCallback?.();
         this.component.destroyRecursively();
       });
 
@@ -126,12 +124,6 @@ export class Prompt extends Component<core.BoxRenderable> {
 
   public onSubmit(callback: (value: string) => void): this {
     this._submitCallback = callback;
-
-    return this;
-  }
-
-  public onCancel(callback: () => void): this {
-    this._cancelCallback = callback;
 
     return this;
   }

@@ -150,12 +150,6 @@ export class Button extends Component<core.BoxRenderable> {
     return this;
   }
 
-  public icon() {
-    this.component.paddingX = 0;
-
-    return this;
-  }
-
   public visible(visible: boolean) {
     this.component.visible = visible;
 

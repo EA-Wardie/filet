@@ -1,6 +1,7 @@
 import { BoxRenderable } from "@opentui/core";
 import * as config from "../lib/config";
-import { ctx, homeDirectory } from "../lib/context";
+import { ctx } from "../lib/context";
+import { homeDirectory } from "../lib/home";
 import { $selectedSidebarLink, $tasks, $trashFull } from "../lib/store";
 import { Bar } from "./Bar";
 import { Button } from "./Button";
