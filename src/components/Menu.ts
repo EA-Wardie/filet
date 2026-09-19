@@ -50,14 +50,15 @@ export class Menu extends Component<core.BoxRenderable> {
   }
 
   public show(x: number, y: number): this {
+    if ($menuOpen.get()) {
+      return this;
+    }
+
     this._menu.left = x;
     this._menu.top = y;
+    this.component.visible = true;
 
-    if (!$menuOpen.get()) {
-      this.component.visible = true;
-
-      $menuOpen.set(true);
-    }
+    $menuOpen.set(true);
 
     return this;
   }

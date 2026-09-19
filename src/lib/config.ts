@@ -1,7 +1,7 @@
 import { RGBA } from "@opentui/core";
 import defaultConfig from "../../config.toml";
-import { USER_CONFIG_PATH } from "./filesystem";
 import { homeDirectory } from "./context";
+import { USER_CONFIG_PATH } from "./filesystem";
 
 export interface BookmarkType {
   label: string;

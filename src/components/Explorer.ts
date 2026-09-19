@@ -2,6 +2,7 @@ import { type Dirent, readdir, type Stats } from "node:fs";
 import { stat } from "node:fs/promises";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
+import { trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
 import {
   copy,
@@ -40,9 +41,6 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
         height: "100%",
         viewportCulling: true,
         onMouseDown: (event: core.MouseEvent): void => {
-          const hasCopyOrCut: boolean =
-            !!$copyDirent.get() || !!$cutDirent.get();
-
           if (event.button === MouseButtons.RIGHT) {
             Menu.make([
               Button.make()
@@ -69,11 +67,11 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                       createFolder(folderName);
                     });
                 }),
-              Divider.make().visible(hasCopyOrCut),
+              Divider.make().visible(!!$copyDirent.get() || !!$cutDirent.get()),
               Button.make()
                 .label("Paste")
                 .variant("link")
-                .visible(hasCopyOrCut)
+                .visible(!!$copyDirent.get() || !!$cutDirent.get())
                 .onClick((): void => {
                   paste();
                 }),
@@ -191,6 +189,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
               Divider.make(),
               Button.make()
                 .label("\uf1f8 Trash")
+                .visible($currentPath.get() !== trashPath)
                 .variant("link")
                 .onClick((): void => {
                   Confirmation.make()

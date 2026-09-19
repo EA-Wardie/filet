@@ -19,7 +19,7 @@ export class Confirmation extends Component<core.BoxRenderable> {
       new core.BoxRenderable(ctx, {
         width: "100%",
         height: "100%",
-        backgroundColor: core.RGBA.fromHex("#ffffff0D"),
+        backgroundColor: core.RGBA.fromHex("#ffffff1A"),
         alignItems: "center",
         justifyContent: "center",
         position: "absolute",
@@ -30,7 +30,7 @@ export class Confirmation extends Component<core.BoxRenderable> {
     );
 
     this._dialog = new core.BoxRenderable(ctx, {
-      width: 44,
+      width: 42,
       backgroundColor: theme.bg,
       border: true,
       borderColor: theme.bg_dark,
@@ -40,11 +40,13 @@ export class Confirmation extends Component<core.BoxRenderable> {
 
     this._heading = new core.TextRenderable(ctx, {
       content: "Are you sure?",
+      wrapMode: "word",
       marginBottom: 1,
     });
 
     this._description = new core.TextRenderable(ctx, {
       content: "Are you sure you want to do this?",
+      wrapMode: "word",
       marginBottom: 1,
     });
 

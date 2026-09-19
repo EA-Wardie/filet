@@ -1,7 +1,5 @@
 bookmarks = []
 
-trash_path = ""
-
 [theme]
 bg = "#0C0C0C"
 fg = "#fafafa"

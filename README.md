@@ -29,7 +29,7 @@ bookmarks = [
     {label = "Projects", mount = "/home/user/Projects"},
 ]
 
-trash_path = ""
+trash_path = "/home/<user>/.local/share/Trash/files"
 
 [theme]
 bg = "#0C0C0C"
