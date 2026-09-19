@@ -52,6 +52,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                   Prompt.make()
                     .heading("Create a new file")
                     .label("Filename")
+                    .variant("success")
                     .onSubmit((filename: string): void => {
                       createFile(filename);
                     });
@@ -63,6 +64,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                   Prompt.make()
                     .heading("Create a new folder")
                     .label("Folder Name")
+                    .variant("success")
                     .onSubmit((folderName: string): void => {
                       createFolder(folderName);
                     });
@@ -191,16 +193,24 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
                 .label("\uf1f8 Trash")
                 .variant("link")
                 .onClick((): void => {
-                  Confirmation.make("danger")
-                    .heading(`Move ${dirent.name} to trash?`)
+                  Confirmation.make()
+                    .heading("Move to trash?")
+                    .description(
+                      `Are you sure you want to move '${dirent.name}' to trash?`,
+                    )
+                    .variant("danger")
                     .onConfirm((): void => {});
                 }),
               Button.make()
                 .label("\udb81\ude91 Delete")
                 .variant("link")
                 .onClick((): void => {
-                  Confirmation.make("danger")
-                    .heading(`Permanently delete ${dirent.name}?`)
+                  Confirmation.make()
+                    .heading("Permanently delete?")
+                    .description(
+                      `Are you sure you want to permanently delete '${dirent.name}'?`,
+                    )
+                    .variant("danger")
                     .onConfirm((): void => {
                       remove(dirent);
                     });

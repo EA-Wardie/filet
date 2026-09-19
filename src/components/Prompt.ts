@@ -1,7 +1,7 @@
 import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { Button } from "./Button";
+import { Button, type ButtonVaraintType } from "./Button";
 import { Component } from "./Component";
 
 export class Prompt extends Component<core.BoxRenderable> {
@@ -9,6 +9,8 @@ export class Prompt extends Component<core.BoxRenderable> {
   private _heading: core.TextRenderable;
   private _label: core.TextRenderable;
   private _input: core.InputRenderable;
+  private _cancelButton: Button;
+  private _submitButton: Button;
   private _dialogButtons: core.BoxRenderable;
   private _cancelCallback: (() => void) | null = null;
   private _submitCallback: ((value: string) => void) | null = null;
@@ -33,8 +35,7 @@ export class Prompt extends Component<core.BoxRenderable> {
       backgroundColor: theme.bg,
       border: true,
       borderColor: theme.bg_dark,
-      paddingX: 4,
-      paddingY: 2,
+      paddingX: 1,
       zIndex: 101,
     });
 
@@ -56,35 +57,35 @@ export class Prompt extends Component<core.BoxRenderable> {
     });
 
     this._dialogButtons = new core.BoxRenderable(ctx, {
+      width: "100%",
       flexDirection: "row",
-      justifyContent: "center",
-      columnGap: 2,
+      justifyContent: "flex-end",
+      columnGap: 1,
     });
 
-    this._dialogButtons.add(
-      Button.make()
-        .label("Cancel")
-        .onClick(() => {
-          this._input.blur();
-          this._cancelCallback?.();
-          this.component.destroyRecursively();
-        }).component,
-    );
+    this._cancelButton = Button.make()
+      .label("Cancel")
+      .onClick(() => {
+        this._input.blur();
+        this._cancelCallback?.();
+        this.component.destroyRecursively();
+      });
 
-    this._dialogButtons.add(
-      Button.make()
-        .label("Submit")
-        .onClick(() => {
-          this._input.blur();
-          this._submitCallback?.(this._input.value);
-          this.component.destroyRecursively();
-        }).component,
-    );
+    this._submitButton = Button.make()
+      .label("Submit")
+      .onClick(() => {
+        this._input.blur();
+        this._submitCallback?.(this._input.value);
+        this.component.destroyRecursively();
+      });
+
 
     this._dialog.add(this._heading);
     this._dialog.add(this._label);
     this._dialog.add(this._input);
     this._input.focus();
+    this._dialogButtons.add(this._cancelButton.component);
+    this._dialogButtons.add(this._submitButton.component);
     this._dialog.add(this._dialogButtons);
     this.component.add(this._dialog);
 
@@ -113,6 +114,12 @@ export class Prompt extends Component<core.BoxRenderable> {
 
   public label(label: string): this {
     this._label.content = label;
+
+    return this;
+  }
+
+  public variant(variant: ButtonVaraintType): this {
+    this._submitButton.variant(variant);
 
     return this;
   }

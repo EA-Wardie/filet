@@ -7,11 +7,14 @@ import { Component } from "./Component";
 export class Confirmation extends Component<core.BoxRenderable> {
   private _dialog: core.BoxRenderable;
   private _heading: core.TextRenderable;
+  private _description: core.TextRenderable;
+  private _cancelButton: Button;
+  private _confirmButton: Button;
   private _dialogButtons: core.BoxRenderable;
   private _cancelCallback: (() => void) | null = null;
   private _confirmCallback: (() => void) | null = null;
 
-  constructor(variant: ButtonVaraintType = "default") {
+  constructor() {
     super(
       new core.BoxRenderable(ctx, {
         width: "100%",
@@ -31,43 +34,45 @@ export class Confirmation extends Component<core.BoxRenderable> {
       backgroundColor: theme.bg,
       border: true,
       borderColor: theme.bg_dark,
-      paddingX: 4,
-      paddingY: 2,
+      paddingX: 1,
       zIndex: 101,
     });
 
     this._heading = new core.TextRenderable(ctx, {
+      content: "Are you sure?",
+      marginBottom: 1,
+    });
+
+    this._description = new core.TextRenderable(ctx, {
       content: "Are you sure you want to do this?",
-      alignSelf: "center",
       marginBottom: 1,
     });
 
     this._dialogButtons = new core.BoxRenderable(ctx, {
+      width: "100%",
       flexDirection: "row",
-      justifyContent: "center",
-      columnGap: 2,
+      justifyContent: "flex-end",
+      columnGap: 1,
     });
 
-    this._dialogButtons.add(
-      Button.make()
-        .label("Cancel")
-        .onClick(() => {
-          this.component.destroyRecursively();
-          this._cancelCallback?.();
-        }).component,
-    );
+    this._cancelButton = Button.make()
+      .label("Cancel")
+      .onClick(() => {
+        this.component.destroyRecursively();
+        this._cancelCallback?.();
+      });
 
-    this._dialogButtons.add(
-      Button.make()
-        .label("Confirm")
-        .variant(variant)
-        .onClick(() => {
-          this.component.destroyRecursively();
-          this._confirmCallback?.();
-        }).component,
-    );
+    this._confirmButton = Button.make()
+      .label("Confirm")
+      .onClick(() => {
+        this.component.destroyRecursively();
+        this._confirmCallback?.();
+      });
 
     this._dialog.add(this._heading);
+    this._dialog.add(this._description);
+    this._dialogButtons.add(this._cancelButton.component);
+    this._dialogButtons.add(this._confirmButton.component);
     this._dialog.add(this._dialogButtons);
     this.component.add(this._dialog);
 
@@ -76,8 +81,8 @@ export class Confirmation extends Component<core.BoxRenderable> {
     ctx.root.add(this.component);
   }
 
-  public static make(variant: ButtonVaraintType = "default"): Confirmation {
-    return new this(variant);
+  public static make(): Confirmation {
+    return new this();
   }
 
   private registerEvents(): void {
@@ -90,6 +95,18 @@ export class Confirmation extends Component<core.BoxRenderable> {
 
   public heading(heading: string): this {
     this._heading.content = heading;
+
+    return this;
+  }
+
+  public description(description: string): this {
+    this._description.content = description;
+
+    return this;
+  }
+
+  public variant(variant: ButtonVaraintType): this {
+    this._confirmButton.variant(variant);
 
     return this;
   }
