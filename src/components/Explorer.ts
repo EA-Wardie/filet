@@ -226,8 +226,16 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 								.variant("link")
 								.onClick((): void => {
 									Prompt.make()
-										.heading("Rename file")
-										.label("Filename")
+										.heading(
+											dirent.isDirectory()
+												? "Rename folder"
+												: "Rename file",
+										)
+										.label(
+											dirent.isDirectory()
+												? "Folder name"
+												: "Filename",
+										)
 										.variant("success")
 										.value(dirent.name)
 										.onSubmit((filename: string): void => {

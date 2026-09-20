@@ -1,9 +1,9 @@
 import { type Dirent, readdir } from "node:fs";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
+import { Prompt } from "../components/Prompt";
 import { trashPath } from "./config";
-import { copy, cut, dragOut, paste } from "./filesystem";
-import { getDirentPath } from "./navigation";
+import { copy, cut, dragOut, paste, rename } from "./filesystem";
 import { $selectedFileLink, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
@@ -46,12 +46,32 @@ export function makeApp(callback: () => void) {
 				paste();
 			}
 
+			if (key.ctrl && key.name === "r") {
+				const dirent: Dirent | null =
+					$selectedFileLink.get()?.getDirent() || null;
+
+				if (!dirent) {
+					return;
+				}
+
+				Prompt.make()
+					.heading(
+						dirent.isDirectory() ? "Rename folder" : "Rename file",
+					)
+					.label(dirent.isDirectory() ? "Folder name" : "Filename")
+					.variant("success")
+					.value(dirent.name)
+					.onSubmit((filename: string): void => {
+						rename(dirent, filename);
+					});
+			}
+
 			if (key.ctrl && key.name === "d") {
 				const dirent: Dirent | null =
 					$selectedFileLink.get()?.getDirent() || null;
 
 				if (dirent) {
-					dragOut(getDirentPath(dirent));
+					dragOut(dirent);
 				}
 			}
 

@@ -332,15 +332,18 @@ export async function emptyTrash(): Promise<void> {
 	}
 }
 
-export function dragOut(path: string): void {
+export function dragOut(dirent: Dirent): void {
 	currentRipdrag?.kill();
 
 	try {
-		const process: Subprocess = Bun.spawn(["ripdrag", "--and-exit", path], {
-			stdin: "ignore",
-			stdout: "ignore",
-			stderr: "ignore",
-		});
+		const process: Subprocess = Bun.spawn(
+			["ripdrag", "--and-exit", getDirentPath(dirent)],
+			{
+				stdin: "ignore",
+				stdout: "ignore",
+				stderr: "ignore",
+			},
+		);
 
 		currentRipdrag = process;
 

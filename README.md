@@ -6,6 +6,10 @@
 
 Simple terminal file manager with first party mouse support. Built with OpenTUI on Bun.
 
+## Disclaimer
+
+LLMs were used during development for research, prototyping, refactoring, and some code generation.
+
 ## Features
 
 - Explore directories.
@@ -18,12 +22,20 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 <table>
   <tr>
-    <td><img src="assets/screenshot_1.png" alt="filet screenshot 1" width="100%"></td>
-    <td><img src="assets/screenshot_2.png" alt="filet screenshot 2" width="100%"></td>
+    <td>
+        <img src="assets/screenshot_1.png" alt="filet screenshot 1" width="100%">
+    </td>
+    <td>
+        <img src="assets/screenshot_2.png" alt="filet screenshot 2" width="100%">
+    </td>
   </tr>
   <tr>
-    <td><img src="assets/screenshot_3.png" alt="filet screenshot 3" width="100%"></td>
-    <td><img src="assets/screenshot_4.png" alt="filet screenshot 4" width="100%"></td>
+    <td>
+        <img src="assets/screenshot_3.png" alt="filet screenshot 3" width="100%">
+    </td>
+    <td>
+        <img src="assets/screenshot_4.png" alt="filet screenshot 4" width="100%">
+    </td>
   </tr>
 </table>
 
@@ -54,6 +66,31 @@ success = "#16a34a"
 danger = "#dc2626"
 ```
 
+## Controls
+
+### Mouse
+
+| Action       | Target         | Result                                                         |
+| ------------ | -------------- | -------------------------------------------------------------- |
+| Left click   | File or folder | Select it.                                                     |
+| Double click | File or folder | Open it. Folders in explorer and files a preview id suportted. |
+| Right click  | File or folder | Open its context menu.                                         |
+| Right click  | Explorer       | Open the explorer context menu.                                |
+| Left click   | Sidebar link   | Select and navigate to it.                                     |
+
+### Keyboard
+
+| Key      | Action                                                     |
+| -------- | ---------------------------------------------------------- |
+| `Ctrl+X` | Cut the selected file or folder.                           |
+| `Ctrl+C` | Copy the selected file or folder.                          |
+| `Ctrl+V` | Paste the cut or copied file or folder.                    |
+| `Ctrl+R` | Rename the selected file or folder.                        |
+| `Ctrl+D` | Drag and drop the selected file or folder using `ripdrag`. |
+| `Escape` | Clear the selected file or folder.                         |
+
+`Ctrl+D` requires [ripdrag](https://github.com/nik012003/ripdrag) to be installed and available on your `PATH`.
+
 ## Building
 
 filet uses Bun as its runtime, package manager, and bundler.
@@ -80,4 +117,4 @@ After building, install the binary and desktop entry with:
 bun run install:app
 ```
 
-This copies the binary to `~/.local/bin/filet` and adds a desktop entry so filet can be launched like any other application. Make sure `~/.local/bin` is on your `PATH` to run `filet` directly from a terminal.
+This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/application/filet` for application launcher. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
