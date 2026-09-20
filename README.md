@@ -6,9 +6,10 @@
 
 Simple terminal file manager with first party mouse support. Built with OpenTUI on Bun.
 
-## Disclaimer
+## Disclaimers
 
-LLMs were used during development for research, prototyping, refactoring, and some code generation.
+- This is beta software and bugs should be expected. Use at your own risk.
+- LLMs were used during development for research, prototyping, refactoring, and some code generation.
 
 ## Features
 
@@ -118,3 +119,13 @@ bun run install:app
 ```
 
 This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/application/filet` for application launcher. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
+
+### From a release
+
+You can also skip building and download the latest release from the [Releases](../../releases) page on GitHub. Unzip the archive and run the included install script:
+
+```
+./install.sh
+```
+
+This installs filet the same way as `bun run install:app`.
