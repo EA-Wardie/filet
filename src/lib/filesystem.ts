@@ -11,6 +11,7 @@ import {
   $tasks,
   $trashFull,
 } from "./store";
+import type { Subprocess } from "bun";
 
 export const IMAGE_FILETYPES: Set<string> = new Set([
   ".png",
@@ -136,6 +137,8 @@ const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 ]);
 
 const FILE_ICON: string = "";
+
+let currentRipdrag: Subprocess | null = null;
 
 export function getFileIcon(dirent: Dirent): string {
   if (dirent.isDirectory()) {
@@ -323,6 +326,22 @@ export async function emptyTrash(): Promise<void> {
 
     $trashFull.set(false);
     $currentPath.notify();
+  } catch (error) {
+    console.warn(error);
+  }
+}
+
+export function dragOut(path: string): void {
+  currentRipdrag?.kill();
+
+  try {
+    currentRipdrag = Bun.spawn(["ripdrag", "--and-exit", path], {
+      stdin: "ignore",
+      stdout: "ignore",
+      stderr: "ignore",
+    });
+
+    currentRipdrag?.exited.then(() => (currentRipdrag = null));
   } catch (error) {
     console.warn(error);
   }

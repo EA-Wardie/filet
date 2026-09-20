@@ -3,7 +3,7 @@ import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { doubleClickTimeout, theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { $displayType, $selectedDirent, $selectedFileLink } from "../lib/store";
+import { $displayType, $selectedFileLink } from "../lib/store";
 import { Component } from "./Component";
 
 export class FileLink extends Component<core.BoxRenderable> {
@@ -58,7 +58,6 @@ export class FileLink extends Component<core.BoxRenderable> {
     this.component.onMouseDown = (event: core.MouseEvent): void => {
       if (event.button === MouseButtons.LEFT) {
         $selectedFileLink.set(this);
-        $selectedDirent.set(this._dirent);
 
         const lastClick: number = this._lastClick || 0;
         const isDoubleClick: boolean =
@@ -71,7 +70,6 @@ export class FileLink extends Component<core.BoxRenderable> {
         }
       } else if (event.button === MouseButtons.RIGHT) {
         $selectedFileLink.set(this);
-        $selectedDirent.set(this._dirent);
 
         this._rightClickCallback?.(event);
       }
@@ -116,5 +114,9 @@ export class FileLink extends Component<core.BoxRenderable> {
     this._rightClickCallback = callback;
 
     return this;
+  }
+
+  public getDirent(): Dirent | null {
+    return this._dirent;
   }
 }

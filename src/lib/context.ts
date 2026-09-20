@@ -2,8 +2,9 @@ import { type Dirent, readdir } from "node:fs";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
 import { trashPath } from "./config";
-import { copy, cut, paste } from "./filesystem";
-import { $selectedDirent, $selectedFileLink, $trashFull } from "./store";
+import { copy, cut, dragOut, paste } from "./filesystem";
+import { getDirentPath } from "./navigation";
+import { $selectedFileLink, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
 
@@ -18,16 +19,16 @@ export function makeApp(callback: () => void) {
     .then((context: core.CliRenderer) => {
       ctx = context;
 
-      ctx.console.show();
+      // ctx.console.show();
 
       ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
         if (key.name === "escape") {
           $selectedFileLink.set(null);
-          $selectedDirent.set(null);
         }
 
         if (key.ctrl && key.name === "x") {
-          const dirent: Dirent | null = $selectedDirent.get();
+          const dirent: Dirent | null =
+            $selectedFileLink.get()?.getDirent() || null;
 
           if (dirent) {
             cut(dirent);
@@ -35,7 +36,8 @@ export function makeApp(callback: () => void) {
         }
 
         if (key.ctrl && key.name === "c") {
-          const dirent: Dirent | null = $selectedDirent.get();
+          const dirent: Dirent | null =
+            $selectedFileLink.get()?.getDirent() || null;
 
           if (dirent) {
             copy(dirent);
@@ -44,6 +46,15 @@ export function makeApp(callback: () => void) {
 
         if (key.ctrl && key.name === "v") {
           paste();
+        }
+
+        if (key.ctrl && key.name === "d") {
+          const dirent: Dirent | null =
+            $selectedFileLink.get()?.getDirent() || null;
+
+          if (dirent) {
+            dragOut(getDirentPath(dirent));
+          }
         }
 
         if (key.name === "q") {
