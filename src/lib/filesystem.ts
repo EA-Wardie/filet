@@ -153,7 +153,7 @@ export function getFileIcon(dirent: Dirent): string {
   );
 }
 
-async function copyEntry(dirent: Dirent, toPath: string): Promise<void> {
+async function copyDirent(dirent: Dirent, toPath: string): Promise<void> {
   const fromPath: string | null = getDirentPath(dirent);
 
   if (dirent.isDirectory()) {
@@ -165,7 +165,7 @@ async function copyEntry(dirent: Dirent, toPath: string): Promise<void> {
   await Bun.write(toPath, Bun.file(fromPath));
 }
 
-async function removeEntry(dirent: Dirent): Promise<void> {
+async function removeDirent(dirent: Dirent): Promise<void> {
   const path: string | null = getDirentPath(dirent);
 
   if (dirent.isDirectory()) {
@@ -208,10 +208,10 @@ export async function paste(): Promise<void> {
   const taskIndex: number = $tasks.get().length - 1;
 
   try {
-    await copyEntry(dirent, toPath);
+    await copyDirent(dirent, toPath);
 
     if (isCutting) {
-      await removeEntry(dirent);
+      await removeDirent(dirent);
     }
   } catch (error) {
     console.warn(error);
@@ -275,7 +275,7 @@ export async function rename(dirent: Dirent, name: string): Promise<void> {
 
 export async function remove(dirent: Dirent): Promise<void> {
   try {
-    await removeEntry(dirent);
+    await removeDirent(dirent);
 
     $currentPath.notify();
   } catch (error) {
@@ -300,8 +300,8 @@ export async function moveToTrash(dirent: Dirent): Promise<void> {
   const fromPath: string = getDirentPath(dirent);
 
   try {
-    await copyEntry(dirent, `${trashPath}/files/${dirent.name}`);
-    await Promise.all([removeEntry(dirent), writeTrashInfo(fromPath)]);
+    await copyDirent(dirent, `${trashPath}/files/${dirent.name}`);
+    await Promise.all([removeDirent(dirent), writeTrashInfo(fromPath)]);
 
     $currentPath.notify();
   } catch (error) {

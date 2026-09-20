@@ -1,11 +1,13 @@
+import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { doubleClickTimeout, theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { $displayType, $selectedFileLink } from "../lib/store";
+import { $displayType, $selectedDirent, $selectedFileLink } from "../lib/store";
 import { Component } from "./Component";
 
 export class FileLink extends Component<core.BoxRenderable> {
+  private _dirent: Dirent | null = null;
   private _label: core.TextRenderable;
   private _doubleClickCallback: ((event: core.MouseEvent) => void) | null =
     null;
@@ -56,9 +58,11 @@ export class FileLink extends Component<core.BoxRenderable> {
     this.component.onMouseDown = (event: core.MouseEvent): void => {
       if (event.button === MouseButtons.LEFT) {
         $selectedFileLink.set(this);
+        $selectedDirent.set(this._dirent);
 
         const lastClick: number = this._lastClick || 0;
-        const isDoubleClick: boolean = lastClick !== 0 && Date.now() - lastClick < doubleClickTimeout;
+        const isDoubleClick: boolean =
+          lastClick !== 0 && Date.now() - lastClick < doubleClickTimeout;
 
         if (isDoubleClick) {
           this._lastClick = null;
@@ -67,6 +71,7 @@ export class FileLink extends Component<core.BoxRenderable> {
         }
       } else if (event.button === MouseButtons.RIGHT) {
         $selectedFileLink.set(this);
+        $selectedDirent.set(this._dirent);
 
         this._rightClickCallback?.(event);
       }
@@ -87,6 +92,12 @@ export class FileLink extends Component<core.BoxRenderable> {
 
   public static make(): FileLink {
     return new this();
+  }
+
+  public dirent(dirent: Dirent): this {
+    this._dirent = dirent;
+
+    return this;
   }
 
   public label(label: string): this {

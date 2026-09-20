@@ -10,6 +10,8 @@ export const $selectedSidebarLink = nanostores.atom<SidebarLink | null>(null);
 
 export const $selectedFileLink = nanostores.atom<FileLink | null>(null);
 
+export const $selectedDirent = nanostores.atom<Dirent | null>(null);
+
 export const $trashFull = nanostores.atom<boolean>(false);
 
 export const $copyDirent = nanostores.atom<Dirent | null>(null);

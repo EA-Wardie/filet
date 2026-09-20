@@ -178,6 +178,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
     this.components(
       this._dirents.map((dirent: Dirent): FileLink => {
         return FileLink.make()
+          .dirent(dirent)
           .label(`${getFileIcon(dirent)}  ${dirent.name}`)
           .onDoubleClick((): void => {
             go(getDirentPath(dirent));
