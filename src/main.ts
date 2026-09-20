@@ -7,16 +7,16 @@ import { Toolbar } from "./components/Toolbar";
 import { makeApp } from "./lib/context";
 
 function main() {
-  makeApp((): void => {
-    Layout.make().components([
-      Sidebar.make(),
-      Column.make().components([
-        Toolbar.make(),
-        Explorer.make(),
-        Footer.make(),
-      ]),
-    ]);
-  });
+	makeApp((): void => {
+		Layout.make().components([
+			Sidebar.make(),
+			Column.make().components([
+				Toolbar.make(),
+				Explorer.make(),
+				Footer.make(),
+			]),
+		]);
+	});
 }
 
 main();

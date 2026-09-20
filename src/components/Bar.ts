@@ -4,19 +4,19 @@ import { ctx } from "../lib/context";
 import { Component } from "./Component";
 
 export class Bar extends Component<core.BoxRenderable> {
-  constructor() {
-    super(
-      new core.BoxRenderable(ctx, {
-        border: ["top", "bottom"],
-        borderColor: theme.border,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingX: 1,
-      }),
-    );
-  }
+	constructor() {
+		super(
+			new core.BoxRenderable(ctx, {
+				border: ["top", "bottom"],
+				borderColor: theme.border,
+				flexDirection: "row",
+				justifyContent: "space-between",
+				paddingX: 1,
+			}),
+		);
+	}
 
-  public static make(): Bar {
-    return new this();
-  }
+	public static make(): Bar {
+		return new this();
+	}
 }

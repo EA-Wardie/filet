@@ -4,44 +4,44 @@ import { ctx } from "../lib/context";
 import { Component } from "./Component";
 
 export class Text extends Component<BoxRenderable> {
-  private _text: TextRenderable;
+	private _text: TextRenderable;
 
-  constructor(text: string) {
-    super(
-      new BoxRenderable(ctx, {
-        flexDirection: "row",
-      }),
-    );
+	constructor(text: string) {
+		super(
+			new BoxRenderable(ctx, {
+				flexDirection: "row",
+			}),
+		);
 
-    this._text = new TextRenderable(ctx, {
-      content: text,
-      fg: theme.fg,
-      selectable: false,
-    });
+		this._text = new TextRenderable(ctx, {
+			content: text,
+			fg: theme.fg,
+			selectable: false,
+		});
 
-    this.component.add(this._text);
-  }
+		this.component.add(this._text);
+	}
 
-  public static make(text: string): Text {
-    return new this(text);
-  }
+	public static make(text: string): Text {
+		return new this(text);
+	}
 
-  public content(content: string) {
-    this._text.content = content;
+	public content(content: string) {
+		this._text.content = content;
 
-    return this;
-  }
+		return this;
+	}
 
-  public center() {
-    this.component.width = "100%";
-    this.component.justifyContent = "center";
+	public center() {
+		this.component.width = "100%";
+		this.component.justifyContent = "center";
 
-    return this;
-  }
+		return this;
+	}
 
-  public dim() {
-    this._text.fg = theme.fg_dark;
+	public dim() {
+		this._text.fg = theme.fg_dark;
 
-    return this;
-  }
+		return this;
+	}
 }

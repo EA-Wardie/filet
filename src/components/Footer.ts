@@ -9,41 +9,41 @@ import { Spacer } from "./Spacer";
 import { Text } from "./Text";
 
 export class Footer extends Component<core.BoxRenderable> {
-  private _footerText: Text;
+	private _footerText: Text;
 
-  constructor() {
-    super(
-      new core.BoxRenderable(ctx, {
-        border: ["top", "bottom"],
-        borderColor: theme.border,
-        flexDirection: "row",
-        justifyContent: "center",
-        paddingX: 1,
-      }),
-    );
+	constructor() {
+		super(
+			new core.BoxRenderable(ctx, {
+				border: ["top", "bottom"],
+				borderColor: theme.border,
+				flexDirection: "row",
+				justifyContent: "center",
+				paddingX: 1,
+			}),
+		);
 
-    this._footerText = Text.make("");
+		this._footerText = Text.make("");
 
-    this.components([Spacer.make(), this._footerText]);
+		this.components([Spacer.make(), this._footerText]);
 
-    $copyDirent.subscribe((dirent: Dirent | null): void => {
-      if (dirent) {
-        this._footerText.content(`Clipboard: ${getDirentPath(dirent)}`);
-      } else {
-        this._footerText.content("");
-      }
-    });
+		$copyDirent.subscribe((dirent: Dirent | null): void => {
+			if (dirent) {
+				this._footerText.content(`Clipboard: ${getDirentPath(dirent)}`);
+			} else {
+				this._footerText.content("");
+			}
+		});
 
-    $cutDirent.subscribe((dirent: Dirent | null): void => {
-      if (dirent) {
-        this._footerText.content(`Clipboard ${getDirentPath(dirent)}`);
-      } else {
-        this._footerText.content("");
-      }
-    });
-  }
+		$cutDirent.subscribe((dirent: Dirent | null): void => {
+			if (dirent) {
+				this._footerText.content(`Clipboard ${getDirentPath(dirent)}`);
+			} else {
+				this._footerText.content("");
+			}
+		});
+	}
 
-  public static make(): Footer {
-    return new this();
-  }
+	public static make(): Footer {
+		return new this();
+	}
 }
