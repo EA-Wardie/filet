@@ -125,12 +125,12 @@ const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
   ["nix", "󱄅"],
 
   // Images
-  ["png", ""],
-  ["jpg", ""],
-  ["jpeg", ""],
-  ["gif", ""],
-  ["webp", ""],
-  ["avif", ""],
+  ["png", "\uf03e"],
+  ["jpg", "\uf03e"],
+  ["jpeg", "\uf03e"],
+  ["gif", "\uf03e"],
+  ["webp", "\uf03e"],
+  ["avif", "\uf03e"],
   ["ico", ""],
   ["svg", ""],
 ]);

@@ -8,9 +8,9 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Features
 
-- Explore directories from the terminal.
+- Explore directories.
 - Preview text based files and images.
-- Copy, cut, paste, and delete files and directories.
+- Copy, cut, rename, trash and delete files and directories.
 - Bookmarks and a themeable UI, configurable through a user config file.
 - First party mouse support.
 
@@ -39,7 +39,7 @@ Values in your user config take priority over the defaults, and any values you l
 
 ```toml
 bookmarks = [
-    {label = "Projects", mount = "/home/user/Projects"},
+    {label = "Projects", mount = "/home/<user>/Projects"},
 ]
 
 trash_path = "/home/<user>/.local/share/Trash"
