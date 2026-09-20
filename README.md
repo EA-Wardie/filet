@@ -8,8 +8,9 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Disclaimers
 
-- This is beta software and bugs should be expected. Use at your own risk.
 - LLMs were used during development for research, prototyping, refactoring, and some code generation.
+- This is beta software and bugs should be expected. Use at your own risk.
+- A Nerd Font is required for icon support.
 
 ## Features
 
