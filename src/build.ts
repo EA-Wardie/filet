@@ -1,3 +1,5 @@
+import { version } from "../package.json";
+
 Bun.build({
 	entrypoints: ["./src/main.ts"],
 	compile: {
@@ -12,7 +14,7 @@ Bun.build({
 	format: "esm",
 	define: {
 		"process.env.NODE_ENV": JSON.stringify("production"),
-		VERSION: JSON.stringify("0.0.1"),
+		VERSION: JSON.stringify(version),
 	},
 })
 	.then(async (): Promise<void> => {
