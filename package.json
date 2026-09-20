@@ -6,7 +6,8 @@
   "version": "0.0.1",
   "scripts": {
     "build": "bun run src/build.ts",
-    "install:app": "bash dist/install.sh"
+    "install:app": "bash dist/install.sh",
+    "format": "bunx biome check --write src/"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
