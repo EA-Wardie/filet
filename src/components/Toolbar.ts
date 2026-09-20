@@ -2,7 +2,7 @@ import * as core from "@opentui/core";
 import { theme, trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
 import { emptyTrash } from "../lib/filesystem";
-import { back, canGoBack, canGoForward, forward } from "../lib/navigation";
+import { back, canGoBack, canGoForward, forward, go } from "../lib/navigation";
 import {
 	$backHistory,
 	$currentPath,
@@ -13,13 +13,14 @@ import { Button } from "./Button";
 import { Component } from "./Component";
 import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
+import { Input } from "./Input";
 import { Spacer } from "./Spacer";
 import { Text } from "./Text";
 
 export class Toolbar extends Component<core.BoxRenderable> {
 	private _backButton: Button;
 	private _forwardButton: Button;
-	private _currentPathText: Text;
+	private _currentPathInput: Input;
 	private _emptyTrashDivider: Divider;
 	private _emptyTrashButton: Button;
 	private _displayToggle: Button;
@@ -47,8 +48,19 @@ export class Toolbar extends Component<core.BoxRenderable> {
 				forward();
 			});
 
-		this._currentPathText = Text.make(`\uf015  ${$currentPath.get()}`);
-		this._currentPathText.component.marginLeft = 1;
+		this._forwardButton.component.marginRight = 1;
+
+		this._currentPathInput = Input.make()
+			.value($currentPath.get())
+			.onSubmit((value: string): void => {
+				if (!value) {
+					return;
+				}
+
+				go(value);
+			});
+
+		this._currentPathInput.component.marginLeft = 1;
 
 		this._emptyTrashDivider = Divider.make()
 			.visible($currentPath.get().includes(trashPath))
@@ -83,7 +95,8 @@ export class Toolbar extends Component<core.BoxRenderable> {
 		this.components([
 			this._backButton,
 			this._forwardButton,
-			this._currentPathText,
+			Text.make("\uf015"),
+			this._currentPathInput,
 			Spacer.make(),
 			this._emptyTrashButton,
 			this._emptyTrashDivider,
@@ -91,7 +104,7 @@ export class Toolbar extends Component<core.BoxRenderable> {
 		]);
 
 		$currentPath.subscribe((path: string): void => {
-			this._currentPathText.content(`\uf015  ${path}`);
+			this._currentPathInput.value(path);
 			this._emptyTrashButton.visible(path.includes(trashPath));
 			this._emptyTrashDivider.visible(path.includes(trashPath));
 		});

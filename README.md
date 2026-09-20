@@ -72,24 +72,26 @@ danger = "#dc2626"
 
 ### Mouse
 
-| Action       | Target         | Result                                                         |
-| ------------ | -------------- | -------------------------------------------------------------- |
-| Left click   | File or folder | Select it.                                                     |
-| Double click | File or folder | Open it. Folders in explorer and files a preview id suportted. |
-| Right click  | File or folder | Open its context menu.                                         |
-| Right click  | Explorer       | Open the explorer context menu.                                |
-| Left click   | Sidebar link   | Select and navigate to it.                                     |
+| Action         | Target         | Result                                                         |
+| -------------- | -------------- | -------------------------------------------------------------- |
+| `Left click`   | File or folder | Select it.                                                     |
+| `Double click` | File or folder | Open it. Folders in explorer and files a preview if suportted. |
+| `Right click`  | File or folder | Open its context menu.                                         |
+| `Right click`  | Explorer       | Open the explorer context menu.                                |
+| `Left click`   | Sidebar link   | Select and navigate to it.                                     |
 
 ### Keyboard
 
-| Key      | Action                                                     |
-| -------- | ---------------------------------------------------------- |
-| `Ctrl+X` | Cut the selected file or folder.                           |
-| `Ctrl+C` | Copy the selected file or folder.                          |
-| `Ctrl+V` | Paste the cut or copied file or folder.                    |
-| `Ctrl+R` | Rename the selected file or folder.                        |
-| `Ctrl+D` | Drag and drop the selected file or folder using `ripdrag`. |
-| `Escape` | Clear the selected file or folder.                         |
+| Key      | Action                                                         |
+| -------- | -------------------------------------------------------------- |
+| `Ctrl+X` | Cut the selected file or folder.                               |
+| `Ctrl+C` | Copy the selected file or folder.                              |
+| `Ctrl+V` | Paste the cut or copied file or folder.                        |
+| `Ctrl+R` | Rename the selected file or folder.                            |
+| `Ctrl+D` | Drag and drop the selected file or folder using `ripdrag`.     |
+| `Return` | Clear the selected file or folder.                             |
+| `Escape` | Open it. Folders in explorer and files a preview if suportted. |
+| `Q`      | Quit the application.                                          |
 
 `Ctrl+D` requires [ripdrag](https://github.com/nik012003/ripdrag) to be installed and available on your `PATH`.
 
