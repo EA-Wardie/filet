@@ -4,6 +4,7 @@ import { Confirmation } from "../components/Confirmation";
 import { Prompt } from "../components/Prompt";
 import { trashPath } from "./config";
 import { copy, cut, dragOut, paste, rename } from "./filesystem";
+import { getDirentPath, go } from "./navigation";
 import { $selectedFileLink, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
@@ -20,26 +21,35 @@ export function makeApp(callback: () => void) {
 		// ctx.console.show();
 
 		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+			const dirent: Dirent | null =
+				$selectedFileLink.get()?.getDirent() || null;
+
+			if (key.name === "return") {
+				if (!dirent) {
+					return;
+				}
+
+				go(getDirentPath(dirent));
+			}
+
 			if (key.name === "escape") {
 				$selectedFileLink.set(null);
 			}
 
 			if (key.ctrl && key.name === "x") {
-				const dirent: Dirent | null =
-					$selectedFileLink.get()?.getDirent() || null;
-
-				if (dirent) {
-					cut(dirent);
+				if (!dirent) {
+					return;
 				}
+
+				cut(dirent);
 			}
 
 			if (key.ctrl && key.name === "c") {
-				const dirent: Dirent | null =
-					$selectedFileLink.get()?.getDirent() || null;
-
-				if (dirent) {
-					copy(dirent);
+				if (!dirent) {
+					return;
 				}
+
+				copy(dirent);
 			}
 
 			if (key.ctrl && key.name === "v") {
@@ -47,9 +57,6 @@ export function makeApp(callback: () => void) {
 			}
 
 			if (key.ctrl && key.name === "r") {
-				const dirent: Dirent | null =
-					$selectedFileLink.get()?.getDirent() || null;
-
 				if (!dirent) {
 					return;
 				}
@@ -67,12 +74,11 @@ export function makeApp(callback: () => void) {
 			}
 
 			if (key.ctrl && key.name === "d") {
-				const dirent: Dirent | null =
-					$selectedFileLink.get()?.getDirent() || null;
-
-				if (dirent) {
-					dragOut(dirent);
+				if (!dirent) {
+					return;
 				}
+
+				dragOut(dirent);
 			}
 
 			if (key.name === "q") {
