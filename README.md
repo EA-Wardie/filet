@@ -132,3 +132,13 @@ You can also skip building and download the latest release from the [Releases](.
 ```
 
 This installs filet the same way as `bun run install:app`.
+
+## Roadmap
+
+- [x] Use an input for the current directory path to allow manual editing.
+- [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
+- [ ] Simple search function for the current directory.
+- [ ] Ability to open files marked as executables instead of previewing them.
+- [ ] Hide the sidebar when the viewport reaches a small enough size.
+- [ ] Improve the grid view option for visual clarity.
+- [ ] Add default display type as a configurable value.
