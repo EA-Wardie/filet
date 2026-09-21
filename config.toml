@@ -1,5 +1,7 @@
 bookmarks = []
 
+display_type = "list"
+
 double_click_timeout = 250
 
 [theme]

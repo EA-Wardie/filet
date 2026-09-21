@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import * as nanostores from "nanostores";
 import type { FileLink } from "../components/FileLink";
 import type { SidebarLink } from "../components/SidebarLink";
+import { displayType } from "./config";
 
 export const $currentPath = nanostores.atom<string>(homedir());
 
@@ -18,7 +19,7 @@ export const $cutDirent = nanostores.atom<Dirent | null>(null);
 
 export const $menuOpen = nanostores.atom<boolean>(false);
 
-export const $displayType = nanostores.atom<"list" | "grid">("list");
+export const $displayType = nanostores.atom<"list" | "grid">(displayType);
 
 export const $tasks = nanostores.atom<string[]>([]);
 

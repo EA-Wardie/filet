@@ -1,5 +1,6 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
+import { version } from "../../package.json";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { getDirentPath } from "../lib/navigation";
@@ -16,6 +17,8 @@ export class Footer extends Component<core.BoxRenderable> {
 			new core.BoxRenderable(ctx, {
 				border: ["top", "bottom"],
 				borderColor: theme.border,
+				bottomTitle: ` v${version} `,
+				bottomTitleAlignment: "right",
 				flexDirection: "row",
 				justifyContent: "center",
 				paddingX: 1,
