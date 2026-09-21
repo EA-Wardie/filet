@@ -307,6 +307,7 @@ export async function moveToTrash(dirent: Dirent): Promise<void> {
 		await copyDirent(dirent, `${trashPath}/files/${dirent.name}`);
 		await Promise.all([removeDirent(dirent), writeTrashInfo(fromPath)]);
 
+		$trashFull.set(true);
 		$currentPath.notify();
 	} catch (error) {
 		console.warn(error);

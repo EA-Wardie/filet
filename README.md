@@ -56,6 +56,8 @@ bookmarks = [
     {label = "Projects", mount = "/home/<user>/Projects"},
 ]
 
+display_type = "list"
+
 trash_path = "/home/<user>/.local/share/Trash"
 
 double_click_timeout = 250
@@ -135,10 +137,11 @@ This installs filet the same way as `bun run install:app`.
 
 ## Roadmap
 
-- [x] Use an input for the current directory path to allow manual editing.
+- [x] Allow manually editing the current path.
 - [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
 - [ ] Simple search function for the current directory.
 - [ ] Ability to open files marked as executables instead of previewing them.
 - [ ] Hide the sidebar when the viewport reaches a small enough size.
-- [ ] Improve the grid view option for visual clarity.
-- [ ] Add default display type as a configurable value.
+- [x] Improve the grid view option for visual clarity.
+- [x] Add default display type as a configurable value.
+- [ ] Option to restore a file from trash.

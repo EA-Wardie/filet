@@ -18,6 +18,9 @@ export class FileLink extends Component<core.BoxRenderable> {
 	constructor() {
 		super(
 			new core.BoxRenderable(ctx, {
+				width: $displayType.get() === "list" ? "auto" : "16.2%",
+				border: $displayType.get() === "grid",
+				borderColor: theme.border,
 				paddingX: 1,
 			}),
 		);
@@ -35,9 +38,11 @@ export class FileLink extends Component<core.BoxRenderable> {
 
 		$displayType.subscribe((type: "list" | "grid"): void => {
 			if (type === "grid") {
+				this.component.width = "16.2%";
 				this.component.border = true;
-				this.component.borderColor = theme.bg_dark;
+				this.component.borderColor = theme.border;
 			} else {
+				this.component.width = "auto";
 				this.component.border = false;
 			}
 		});
