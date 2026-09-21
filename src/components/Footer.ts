@@ -29,7 +29,7 @@ export class Footer extends Component<core.BoxRenderable> {
 
 		this.components([Spacer.make(), this._footerText]);
 
-		$copyDirent.subscribe((dirent: Dirent | null): void => {
+		$copyDirent.listen((dirent: Dirent | null): void => {
 			if (dirent) {
 				this._footerText.content(`Clipboard: ${getDirentPath(dirent)}`);
 			} else {
@@ -37,7 +37,7 @@ export class Footer extends Component<core.BoxRenderable> {
 			}
 		});
 
-		$cutDirent.subscribe((dirent: Dirent | null): void => {
+		$cutDirent.listen((dirent: Dirent | null): void => {
 			if (dirent) {
 				this._footerText.content(`Clipboard ${getDirentPath(dirent)}`);
 			} else {

@@ -1,5 +1,4 @@
-import { type Dirent, readdir, type Stats } from "node:fs";
-import { stat } from "node:fs/promises";
+import { type Dirent, readdir, type Stats, stat } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { trashPath } from "../lib/config";
@@ -42,12 +41,20 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 			new core.ScrollBoxRenderable(ctx, {
 				width: "100%",
 				height: "100%",
+				contentOptions: {
+					flexDirection:
+						$displayType.get() === "list" ? "column" : "row",
+					flexWrap:
+						$displayType.get() === "list" ? "no-wrap" : "wrap",
+					columnGap: $displayType.get() === "list" ? 0 : 1,
+					paddingX: $displayType.get() === "list" ? 0 : 1,
+				},
 				viewportCulling: true,
 				onMouseDown: (event: core.MouseEvent): void => {
 					if (event.button === MouseButtons.RIGHT) {
 						Menu.make([
 							Button.make()
-								.label("\uea7f New File")
+								.label("\ued80 New File")
 								.variant("link")
 								.onClick((): void => {
 									Prompt.make()
@@ -59,7 +66,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 										});
 								}),
 							Button.make()
-								.label("\uea80 New Folder")
+								.label("\ueec7 New Folder")
 								.variant("link")
 								.onClick((): void => {
 									Prompt.make()
@@ -76,7 +83,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 								!!$copyDirent.get() || !!$cutDirent.get(),
 							),
 							Button.make()
-								.label("Paste")
+								.label("\uf07f Paste")
 								.variant("link")
 								.visible(
 									!!$copyDirent.get() || !!$cutDirent.get(),
@@ -101,69 +108,73 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 					});
 			}
 
-			stat(path)
-				.then((dirent: Stats): void => {
-					if (dirent.isDirectory()) {
-						try {
-							readdir(
-								path,
-								{ withFileTypes: true },
-								(
-									error: NodeJS.ErrnoException | null,
-									dirents: Dirent[],
-								): void => {
-									if (error) {
-										console.warn(error);
-
-										return;
-									}
-
-									if (dirents.length) {
-										this._dirents = dirents;
-
-										this.sortDirents();
-										this.drawDirents();
-
-										return;
-									} else {
-										this._emptyText =
-											Text.make(
-												"\uf07c  --Empty--",
-											).dim();
-										this._emptyText.component.paddingX = 1;
-
-										this.component.add(
-											this._emptyText.component,
-										);
-
-										return;
-									}
-								},
-							);
-						} catch (error) {
-							console.warn(error);
-						}
-					} else {
-						this.component.add(Preview.make().component);
-					}
-				})
-				.catch((error: Error): void => {
+			stat(path, (error: ErrnoException | null, dirent: Stats) => {
+				if (error) {
 					console.warn(error);
-				});
+
+					return;
+				}
+
+				if (dirent.isDirectory()) {
+					try {
+						readdir(
+							path,
+							{ withFileTypes: true },
+							(
+								error: NodeJS.ErrnoException | null,
+								dirents: Dirent[],
+							): void => {
+								if (error) {
+									console.warn(error);
+
+									return;
+								}
+
+								this._dirents = dirents;
+
+								if (dirents.length) {
+									this.sortDirents();
+									this.drawDirents();
+
+									return;
+								} else {
+									this._emptyText =
+										Text.make("\uf07c  --Empty--").dim();
+									this._emptyText.component.paddingX = 1;
+
+									this.component.add(
+										this._emptyText.component,
+									);
+
+									return;
+								}
+							},
+						);
+					} catch (error) {
+						console.warn(error);
+					}
+				} else {
+					this.component.add(Preview.make().component);
+				}
+			});
 		});
 
-		$displayType.subscribe((type: "list" | "grid"): void => {
-			this.component.contentOptions = {
-				flexDirection: type === "list" ? "column" : "row",
-				flexWrap: type === "list" ? "no-wrap" : "wrap",
-				columnGap: type === "list" ? 0 : 1,
-				paddingX: type === "list" ? 0 : 1,
-			};
+		$displayType.listen((type: "list" | "grid"): void => {
+			this.component.contentOptions = this.getContentOptions(type);
 		});
 	}
 
 	public static make(): Explorer {
 		return new this();
+	}
+
+	private getContentOptions(type: "list" | "grid"): core.BoxOptions {
+		return {
+			flexDirection: type === "list" ? "column" : "row",
+			flexWrap: type === "list" ? "no-wrap" : "wrap",
+			columnGap: type === "list" ? 0 : 1,
+			paddingX: type === "list" ? 0 : 1,
+		};
 	}
 
 	private sortDirents(): void {
@@ -191,9 +202,9 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 	}
 
 	private drawDirents() {
-		this.components(
-			this._dirents.map((dirent: Dirent): FileLink => {
-				return FileLink.make()
+		this._dirents.forEach((dirent): void => {
+			this.component.add(
+				FileLink.make()
 					.dirent(dirent)
 					.label(`${getFileIcon(dirent)} ${dirent.name}`)
 					.onDoubleClick((): void => {
@@ -209,7 +220,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 								}),
 							Divider.make(),
 							Button.make()
-								.label("\udb80\udd47 Copy")
+								.label("\uf0c5 Copy")
 								.variant("link")
 								.onClick((): void => {
 									copy(dirent);
@@ -280,8 +291,8 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 										});
 								}),
 						]).show(event.x, event.y);
-					});
-			}),
-		);
+					}).component,
+			);
+		});
 	}
 }

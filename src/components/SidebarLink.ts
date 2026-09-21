@@ -28,7 +28,7 @@ export class SidebarLink extends Component<core.BoxRenderable> {
 
 		this.registerEvents();
 
-		$selectedSidebarLink.subscribe((link: Readonly<SidebarLink> | null) => {
+		$selectedSidebarLink.listen((link: Readonly<SidebarLink> | null) => {
 			if (link === this) {
 				this.component.backgroundColor = theme.fg_dark;
 				this._label.fg = theme.bg;
@@ -38,7 +38,7 @@ export class SidebarLink extends Component<core.BoxRenderable> {
 			}
 		});
 
-		$currentPath.subscribe((path: string): void => {
+		$currentPath.listen((path: string): void => {
 			if (this._path === path) {
 				$selectedSidebarLink.set(this);
 			}

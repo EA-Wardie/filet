@@ -1,4 +1,5 @@
-import type { Dirent } from "node:fs";
+import { access, constants, type Dirent } from "node:fs";
+import { dirname } from "node:path";
 import { $backHistory, $currentPath, $forwardHistory } from "./store";
 
 export function go(path: string): void {
@@ -54,18 +55,36 @@ export function getDirentPath(dirent: Dirent): string {
 }
 
 export function openInDefault(dirent: Dirent): void {
+	const path: string = getDirentPath(dirent);
+
 	if (dirent.isDirectory()) {
-		go(getDirentPath(dirent));
+		go(path);
 
 		return;
 	}
 
-	try {
-		Bun.spawn(["xdg-open", getDirentPath(dirent)], {
-			stdio: ["ignore", "ignore", "ignore"],
-			detached: true,
-		}).unref();
-	} catch (error) {
-		console.warn(error);
-	}
+	access(path, constants.X_OK, (error: ErrnoException | null) => {
+		if (error) {
+			try {
+				Bun.spawn(["xdg-open", path], {
+					stdio: ["ignore", "ignore", "ignore"],
+					detached: true,
+				}).unref();
+			} catch (error) {
+				console.warn(error);
+			}
+
+			return;
+		}
+
+		try {
+			Bun.spawn([path], {
+				cwd: dirname(path),
+				stdio: ["ignore", "ignore", "ignore"],
+				detached: true,
+			}).unref();
+		} catch (error) {
+			console.warn(error);
+		}
+	});
 }

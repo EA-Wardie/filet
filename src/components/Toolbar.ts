@@ -37,6 +37,7 @@ export class Toolbar extends Component<core.BoxRenderable> {
 		this._backButton = Button.make()
 			.label("\uf060")
 			.variant("link")
+			.disabled(!canGoBack())
 			.onClick((): void => {
 				back();
 			});
@@ -44,6 +45,7 @@ export class Toolbar extends Component<core.BoxRenderable> {
 		this._forwardButton = Button.make()
 			.label("\uf061")
 			.variant("link")
+			.disabled(!canGoForward())
 			.onClick((): void => {
 				forward();
 			});
@@ -103,21 +105,21 @@ export class Toolbar extends Component<core.BoxRenderable> {
 			this._displayToggle,
 		]);
 
-		$currentPath.subscribe((path: string): void => {
+		$currentPath.listen((path: string): void => {
 			this._currentPathInput.value(path);
 			this._emptyTrashButton.visible(path.includes(trashPath));
 			this._emptyTrashDivider.visible(path.includes(trashPath));
 		});
 
-		$backHistory.subscribe((): void => {
+		$backHistory.listen((): void => {
 			this._backButton.disabled(!canGoBack());
 		});
 
-		$forwardHistory.subscribe((): void => {
+		$forwardHistory.listen((): void => {
 			this._forwardButton.disabled(!canGoForward());
 		});
 
-		$displayType.subscribe((type: "list" | "grid"): void => {
+		$displayType.listen((type: "list" | "grid"): void => {
 			this._displayToggle.label(
 				type === "list" ? "\udb81\udf58" : "\uf03a",
 			);
