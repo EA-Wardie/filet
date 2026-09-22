@@ -152,8 +152,7 @@ export function getFileIcon(dirent: Dirent): string {
 	}
 
 	return (
-		FILETYPE_ICONS.get(dirent.name.slice(dot + 1).toLowerCase()) ??
-		FILE_ICON
+		FILETYPE_ICONS.get(dirent.name.slice(dot + 1).toLowerCase()) ?? FILE_ICON
 	);
 }
 

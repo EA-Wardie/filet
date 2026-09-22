@@ -11,8 +11,7 @@ export class FileLink extends Component<core.BoxRenderable> {
 	private _label: core.TextRenderable;
 	private _doubleClickCallback: ((event: core.MouseEvent) => void) | null =
 		null;
-	private _rightClickCallback: ((event: core.MouseEvent) => void) | null =
-		null;
+	private _rightClickCallback: ((event: core.MouseEvent) => void) | null = null;
 	private _lastClick: number | null = null;
 
 	constructor() {
@@ -67,8 +66,7 @@ export class FileLink extends Component<core.BoxRenderable> {
 
 				const lastClick: number = this._lastClick || 0;
 				const isDoubleClick: boolean =
-					lastClick !== 0 &&
-					Date.now() - lastClick < doubleClickTimeout;
+					lastClick !== 0 && Date.now() - lastClick < doubleClickTimeout;
 
 				if (isDoubleClick) {
 					this._lastClick = null;

@@ -66,21 +66,15 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 										.heading("Create a new folder")
 										.label("Folder Name")
 										.variant("success")
-										.onSubmit(
-											(folderName: string): void => {
-												createFolder(folderName);
-											},
-										);
+										.onSubmit((folderName: string): void => {
+											createFolder(folderName);
+										});
 								}),
-							Divider.make().visible(
-								!!$copyDirent.get() || !!$cutDirent.get(),
-							),
+							Divider.make().visible(!!$copyDirent.get() || !!$cutDirent.get()),
 							Button.make()
 								.label("Paste")
 								.variant("link")
-								.visible(
-									!!$copyDirent.get() || !!$cutDirent.get(),
-								)
+								.visible(!!$copyDirent.get() || !!$cutDirent.get())
 								.onClick((): void => {
 									paste();
 								}),
@@ -94,11 +88,9 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 			$selectedFileLink.set(null);
 
 			if (this.component.getChildrenCount()) {
-				this.component
-					.getChildren()
-					.forEach((child: core.Renderable) => {
-						this.component.remove(child);
-					});
+				this.component.getChildren().forEach((child: core.Renderable) => {
+					this.component.remove(child);
+				});
 			}
 
 			stat(path)
@@ -126,15 +118,10 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 
 										return;
 									} else {
-										this._emptyText =
-											Text.make(
-												"\uf07c  --Empty--",
-											).dim();
+										this._emptyText = Text.make("\uf07c  --Empty--").dim();
 										this._emptyText.component.paddingX = 1;
 
-										this.component.add(
-											this._emptyText.component,
-										);
+										this.component.add(this._emptyText.component);
 
 										return;
 									}
@@ -227,30 +214,20 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 								.onClick((): void => {
 									Prompt.make()
 										.heading(
-											dirent.isDirectory()
-												? "Rename folder"
-												: "Rename file",
+											dirent.isDirectory() ? "Rename folder" : "Rename file",
 										)
-										.label(
-											dirent.isDirectory()
-												? "Folder name"
-												: "Filename",
-										)
+										.label(dirent.isDirectory() ? "Folder name" : "Filename")
 										.variant("success")
 										.value(dirent.name)
 										.onSubmit((filename: string): void => {
 											rename(dirent, filename);
 										});
 								}),
-							Divider.make().visible(
-								!$currentPath.get().includes(trashPath),
-							),
+							Divider.make().visible(!$currentPath.get().includes(trashPath)),
 							Button.make()
 								.label("\uf1f8 Trash")
 								.variant("link")
-								.visible(
-									!$currentPath.get().includes(trashPath),
-								)
+								.visible(!$currentPath.get().includes(trashPath))
 								.onClick((): void => {
 									Confirmation.make()
 										.heading("Move to trash?")
@@ -265,9 +242,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 							Button.make()
 								.label("\udb81\ude91 Delete")
 								.variant("link")
-								.visible(
-									!$currentPath.get().includes(trashPath),
-								)
+								.visible(!$currentPath.get().includes(trashPath))
 								.onClick((): void => {
 									Confirmation.make()
 										.heading("Permanently delete?")

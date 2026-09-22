@@ -55,9 +55,7 @@ export class Sidebar extends Component<BoxRenderable> {
 			SidebarLink.make()
 				.path(`${homeDirectory}/Pictures`)
 				.label("\uf03e Pictures"),
-			SidebarLink.make()
-				.path(`${homeDirectory}/Music`)
-				.label("\uf001 Music"),
+			SidebarLink.make().path(`${homeDirectory}/Music`).label("\uf001 Music"),
 			SidebarLink.make()
 				.path(`${homeDirectory}/Videos`)
 				.label("\udb83\udfce Videos"),

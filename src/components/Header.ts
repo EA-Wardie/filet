@@ -10,14 +10,14 @@ import {
 	$forwardHistory,
 } from "../lib/store";
 import { Button } from "./Button";
-import { Component } from "./Component";
 import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
 import { Input } from "./Input";
 import { Spacer } from "./Spacer";
 import { Text } from "./Text";
 
-export class Toolbar extends Component<core.BoxRenderable> {
+export class Header {
+	private _component: core.BoxRenderable;
 	private _backButton: Button;
 	private _forwardButton: Button;
 	private _currentPathInput: Input;
@@ -25,18 +25,18 @@ export class Toolbar extends Component<core.BoxRenderable> {
 	private _emptyTrashButton: Button;
 	private _displayToggle: Button;
 
-	constructor() {
-		super(
-			new core.BoxRenderable(ctx, {
-				border: ["top", "bottom"],
-				borderColor: theme.border,
-				flexDirection: "row",
-			}),
-		);
+	constructor(options: core.BoxOptions) {
+		this._component = new core.BoxRenderable(ctx, {
+			border: ["top", "bottom"],
+			borderColor: theme.border,
+			flexDirection: "row",
+			...options,
+		});
 
 		this._backButton = Button.make()
 			.label("\uf060")
 			.variant("link")
+			.disabled(!canGoBack())
 			.onClick((): void => {
 				back();
 			});
@@ -44,6 +44,7 @@ export class Toolbar extends Component<core.BoxRenderable> {
 		this._forwardButton = Button.make()
 			.label("\uf061")
 			.variant("link")
+			.disabled(!canGoForward())
 			.onClick((): void => {
 				forward();
 			});
@@ -88,37 +89,42 @@ export class Toolbar extends Component<core.BoxRenderable> {
 				$displayType.set($displayType.get() === "grid" ? "list" : "grid");
 			});
 
-		this.components([
-			this._backButton,
-			this._forwardButton,
-			Text.make("\uf015"),
-			this._currentPathInput,
-			Spacer.make(),
-			this._emptyTrashButton,
-			this._emptyTrashDivider,
-			this._displayToggle,
-		]);
+		this.addComponents();
+		this.registerStoreListeners();
+	}
 
-		$currentPath.subscribe((path: string): void => {
+	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
+		return new this(options)._component;
+	}
+
+	public addComponents(): void {
+		this._component.add(this._backButton.component);
+		this._component.add(this._forwardButton.component);
+		this._component.add(Text.make("\uf015").component);
+		this._component.add(this._currentPathInput.component);
+		this._component.add(Spacer.make().component);
+		this._component.add(this._emptyTrashButton.component);
+		this._component.add(this._emptyTrashDivider.component);
+		this._component.add(this._displayToggle.component);
+	}
+
+	public registerStoreListeners(): void {
+		$currentPath.listen((path: string): void => {
 			this._currentPathInput.value(path);
 			this._emptyTrashButton.visible(path.includes(trashPath));
 			this._emptyTrashDivider.visible(path.includes(trashPath));
 		});
 
-		$backHistory.subscribe((): void => {
+		$backHistory.listen((): void => {
 			this._backButton.disabled(!canGoBack());
 		});
 
-		$forwardHistory.subscribe((): void => {
+		$forwardHistory.listen((): void => {
 			this._forwardButton.disabled(!canGoForward());
 		});
 
-		$displayType.subscribe((type: "list" | "grid"): void => {
+		$displayType.listen((type: "list" | "grid"): void => {
 			this._displayToggle.label(type === "list" ? "\udb81\udf58" : "\uf03a");
 		});
-	}
-
-	public static make(): Toolbar {
-		return new this();
 	}
 }
