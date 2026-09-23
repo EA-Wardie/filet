@@ -19,8 +19,7 @@ export class FileLink extends Component<core.BoxRenderable> {
 			new core.BoxRenderable(ctx, {
 				width: $displayType.get() === "list" ? "auto" : "16.2%",
 				border: $displayType.get() === "grid",
-				borderColor:
-					$displayType.get() === "grid" ? theme.border : undefined,
+				borderColor: $displayType.get() === "grid" ? theme.border : undefined,
 				paddingX: 1,
 			}),
 		);

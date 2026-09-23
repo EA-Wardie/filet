@@ -42,10 +42,8 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 				width: "100%",
 				height: "100%",
 				contentOptions: {
-					flexDirection:
-						$displayType.get() === "list" ? "column" : "row",
-					flexWrap:
-						$displayType.get() === "list" ? "no-wrap" : "wrap",
+					flexDirection: $displayType.get() === "list" ? "column" : "row",
+					flexWrap: $displayType.get() === "list" ? "no-wrap" : "wrap",
 					columnGap: $displayType.get() === "list" ? 0 : 1,
 					paddingX: $displayType.get() === "list" ? 0 : 1,
 				},
@@ -130,13 +128,10 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 
 									return;
 								} else {
-									this._emptyText =
-										Text.make("\uf07c  --Empty--").dim();
+									this._emptyText = Text.make("\uf07c  --Empty--").dim();
 									this._emptyText.component.paddingX = 1;
 
-									this.component.add(
-										this._emptyText.component,
-									);
+									this.component.add(this._emptyText.component);
 
 									return;
 								}
