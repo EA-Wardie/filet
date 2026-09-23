@@ -33,7 +33,7 @@ export const CODE_FILETYPES: Record<string, string> = {
 	".zig": "zig",
 };
 
-const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
+export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	// JS / TS
 	["ts", ""],
 	["tsx", ""],

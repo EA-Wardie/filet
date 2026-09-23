@@ -2,22 +2,19 @@ import * as core from "@opentui/core";
 import { theme, trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
 import { emptyTrash } from "../lib/filesystem";
-import { go } from "../lib/navigation";
 import { $currentPath } from "../lib/store";
 import { BackButton } from "./BackButton";
 import { Button } from "./Button";
 import { Confirmation } from "./Confirmation";
+import { CurrentPathInput } from "./CurrentPathInput";
 import { DisplayTypeToggle } from "./DisplayTypeToggle";
 import { Divider } from "./Divider";
 import { ForwardButton } from "./ForwardButton";
-import { Input } from "./Input";
 import { Spacer } from "./Spacer";
-import { Text } from "./Text";
 
-export class Header {
-  private _component: core.BoxRenderable;
+export class ExplorerHeader {
   private _options: core.BoxOptions;
-  private _currentPathInput: Input;
+  private _component: core.BoxRenderable;
   private _emptyTrashDivider: Divider;
   private _emptyTrashButton: Button;
 
@@ -31,18 +28,6 @@ export class Header {
       paddingX: 1,
       ...this._options,
     });
-
-    this._currentPathInput = Input.make()
-      .value($currentPath.get())
-      .onSubmit((value: string): void => {
-        if (!value) {
-          return;
-        }
-
-        go(value);
-      });
-
-    this._currentPathInput.component.marginLeft = 1;
 
     this._emptyTrashDivider = Divider.make()
       .visible($currentPath.get().includes(trashPath))
@@ -74,8 +59,7 @@ export class Header {
   public addComponents(): void {
     this._component.add(BackButton.make());
     this._component.add(ForwardButton.make());
-    this._component.add(Text.make("\uf015").component);
-    this._component.add(this._currentPathInput.component);
+    this._component.add(CurrentPathInput.make());
     this._component.add(Spacer.make().component);
     this._component.add(this._emptyTrashButton.component);
     this._component.add(this._emptyTrashDivider.component);
@@ -84,7 +68,6 @@ export class Header {
 
   public registerStoreListeners(): void {
     $currentPath.listen((path: string): void => {
-      this._currentPathInput.value(path);
       this._emptyTrashButton.visible(path.includes(trashPath));
       this._emptyTrashDivider.visible(path.includes(trashPath));
     });
