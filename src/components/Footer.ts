@@ -6,7 +6,6 @@ import { ctx } from "../lib/context";
 import { getDirentPath } from "../lib/navigation";
 import { $copyDirent, $cutDirent } from "../lib/store";
 import { Component } from "./Component";
-import { Spacer } from "./Spacer";
 import { Text } from "./Text";
 
 export class Footer extends Component<core.BoxRenderable> {
@@ -27,7 +26,7 @@ export class Footer extends Component<core.BoxRenderable> {
 
 		this._footerText = Text.make("");
 
-		this.components([Spacer.make(), this._footerText]);
+		this.components([this._footerText]);
 
 		$copyDirent.subscribe((dirent: Dirent | null): void => {
 			if (dirent) {

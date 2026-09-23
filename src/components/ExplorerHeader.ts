@@ -34,7 +34,7 @@ export class ExplorerHeader {
 		this._component.add(BackButton.make());
 		this._component.add(ForwardButton.make());
 		this._component.add(CurrentPathInput.make());
-		this._component.add(Spacer.make().component);
+		this._component.add(Spacer.make());
 		this._component.add(EmptyTrashButton.make());
 		this._component.add(DisplayTypeToggle.make());
 	}
