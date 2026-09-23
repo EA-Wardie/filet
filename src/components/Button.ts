@@ -71,13 +71,6 @@ export class Button extends Component<core.BoxRenderable> {
 		return this;
 	}
 
-	public disabled(disabled: boolean): this {
-		this._disabled = disabled;
-		this.component.opacity = disabled ? 0.4 : 1;
-
-		return this;
-	}
-
 	public variant(variant: ButtonVaraintType): this {
 		if (variant === "success") {
 			this.component.backgroundColor = theme.success;
@@ -152,18 +145,6 @@ export class Button extends Component<core.BoxRenderable> {
 
 	public visible(visible: boolean) {
 		this.component.visible = visible;
-
-		return this;
-	}
-
-	public align(alignment: core.AlignString | null | undefined) {
-		this.component.alignItems = alignment;
-
-		return this;
-	}
-
-	public width(width: number | "auto" | `${number}%`) {
-		this.component.width = width;
 
 		return this;
 	}

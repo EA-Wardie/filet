@@ -1,36 +1,32 @@
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { theme } from "../lib/config";
+import { theme, trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
 import { go } from "../lib/navigation";
-import { $currentPath } from "../lib/store";
+import { $currentPath, $trashFull } from "../lib/store";
 
-interface Options extends core.BoxOptions {
-	path: string;
-	label: string;
-}
-
-export class SidebarLink {
-	private _options: Options;
+export class TrashSidebarLink {
+	private _options: core.BoxOptions;
 	private _component: core.BoxRenderable;
 	private _label: core.TextRenderable | null = null;
 
-	constructor(options: Options) {
+	constructor(options: core.BoxOptions) {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			backgroundColor:
-				$currentPath.get() === this._options.path ? theme.fg_dark : undefined,
+			backgroundColor: $currentPath.get().includes(trashPath)
+				? theme.fg_dark
+				: undefined,
 			paddingX: 1,
 			onMouseOver: (): void => {
-				if ($currentPath.get() === this._options.path) {
+				if ($currentPath.get().includes(trashPath)) {
 					return;
 				}
 
 				this._component.backgroundColor = theme.fg_light;
 			},
 			onMouseOut: (): void => {
-				if ($currentPath.get() === this._options.path) {
+				if ($currentPath.get().includes(trashPath)) {
 					return;
 				}
 
@@ -38,7 +34,7 @@ export class SidebarLink {
 			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.LEFT) {
-					go(this._options.path);
+					go(`${trashPath}/files`);
 				}
 			},
 			...this._options,
@@ -48,14 +44,14 @@ export class SidebarLink {
 		this.registerStoreEvents();
 	}
 
-	public static make(options: Options): core.BoxRenderable {
+	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
 		return new this(options)._component;
 	}
 
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
-			content: this._options.label,
-			fg: $currentPath.get() === this._options.path ? theme.bg : theme.fg,
+			content: $trashFull.get() ? "\uf1f8 Trash" : "\uf48e Trash",
+			fg: $currentPath.get().includes(trashPath) ? theme.bg : theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});
@@ -65,7 +61,7 @@ export class SidebarLink {
 
 	private registerStoreEvents(): void {
 		$currentPath.listen((path: string): void => {
-			if (this._options.path === path) {
+			if (path.includes(trashPath)) {
 				this._component.backgroundColor = theme.fg_dark;
 
 				if (this._label) {
@@ -76,6 +72,18 @@ export class SidebarLink {
 
 				if (this._label) {
 					this._label.fg = theme.fg;
+				}
+			}
+		});
+
+		$trashFull.listen((full: boolean): void => {
+			if (full) {
+				if (this._label) {
+					this._label.content = "\uf1f8 Trash";
+				}
+			} else {
+				if (this._label) {
+					this._label.content = "\uf48e Trash";
 				}
 			}
 		});

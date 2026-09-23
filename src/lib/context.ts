@@ -10,93 +10,91 @@ import { $selectedFileLink, $trashFull } from "./store";
 export let ctx: core.CliRenderer;
 
 export function makeApp(callback: () => void) {
-	core.createCliRenderer({
-		exitOnCtrlC: false,
-		consoleOptions: {
-			sizePercent: 20,
-		},
-	}).then((context: core.CliRenderer) => {
-		ctx = context;
+	core
+		.createCliRenderer({
+			exitOnCtrlC: false,
+			consoleOptions: {
+				sizePercent: 20,
+			},
+		})
+		.then((context: core.CliRenderer) => {
+			ctx = context;
 
-		// ctx.console.show();
+			ctx.console.show();
 
-		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			const dirent: Dirent | null =
-				$selectedFileLink.get()?.getDirent() || null;
+			ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+				const dirent: Dirent | null =
+					$selectedFileLink.get()?.getDirent() || null;
 
-			if (key.name === "return") {
-				if (!dirent) {
-					return;
+				if (key.name === "return") {
+					if (!dirent) {
+						return;
+					}
+
+					go(getDirentPath(dirent));
 				}
 
-				go(getDirentPath(dirent));
-			}
-
-			if (key.name === "escape") {
-				$selectedFileLink.set(null);
-			}
-
-			if (key.ctrl && key.name === "x") {
-				if (!dirent) {
-					return;
+				if (key.name === "escape") {
+					$selectedFileLink.set(null);
 				}
 
-				cut(dirent);
-			}
+				if (key.ctrl && key.name === "x") {
+					if (!dirent) {
+						return;
+					}
 
-			if (key.ctrl && key.name === "c") {
-				if (!dirent) {
-					return;
+					cut(dirent);
 				}
 
-				copy(dirent);
-			}
+				if (key.ctrl && key.name === "c") {
+					if (!dirent) {
+						return;
+					}
 
-			if (key.ctrl && key.name === "v") {
-				paste();
-			}
-
-			if (key.ctrl && key.name === "r") {
-				if (!dirent) {
-					return;
+					copy(dirent);
 				}
 
-				Prompt.make()
-					.heading(
-						dirent.isDirectory() ? "Rename folder" : "Rename file",
-					)
-					.label(dirent.isDirectory() ? "Folder name" : "Filename")
-					.variant("success")
-					.value(dirent.name)
-					.onSubmit((filename: string): void => {
-						rename(dirent, filename);
-					});
-			}
-
-			if (key.ctrl && key.name === "d") {
-				if (!dirent) {
-					return;
+				if (key.ctrl && key.name === "v") {
+					paste();
 				}
 
-				dragOut(dirent);
-			}
+				if (key.ctrl && key.name === "r") {
+					if (!dirent) {
+						return;
+					}
 
-			if (key.name === "q") {
-				Confirmation.make()
-					.heading("Quit?")
-					.description(
-						"Are you sure you want to quit the application?",
-					)
-					.variant("success")
-					.onConfirm((): void => {
-						ctx.destroy();
-					});
-			}
+					Prompt.make()
+						.heading(dirent.isDirectory() ? "Rename folder" : "Rename file")
+						.label(dirent.isDirectory() ? "Folder name" : "Filename")
+						.variant("success")
+						.value(dirent.name)
+						.onSubmit((filename: string): void => {
+							rename(dirent, filename);
+						});
+				}
+
+				if (key.ctrl && key.name === "d") {
+					if (!dirent) {
+						return;
+					}
+
+					dragOut(dirent);
+				}
+
+				if (key.name === "q") {
+					Confirmation.make()
+						.heading("Quit?")
+						.description("Are you sure you want to quit the application?")
+						.variant("success")
+						.onConfirm((): void => {
+							ctx.destroy();
+						});
+				}
+			});
+
+			checkTrash();
+			callback();
 		});
-
-		checkTrash();
-		callback();
-	});
 }
 
 function checkTrash(): void {

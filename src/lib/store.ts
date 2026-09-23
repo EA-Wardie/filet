@@ -2,12 +2,9 @@ import type { Dirent } from "node:fs";
 import { homedir } from "node:os";
 import * as nanostores from "nanostores";
 import type { FileLink } from "../components/FileLink";
-import type { SidebarLink } from "../components/SidebarLink";
 import { displayType } from "./config";
 
 export const $currentPath = nanostores.atom<string>(homedir());
-
-export const $selectedSidebarLink = nanostores.atom<SidebarLink | null>(null);
 
 export const $selectedFileLink = nanostores.atom<FileLink | null>(null);
 

@@ -63,18 +63,14 @@ export class Preview extends Component<core.BoxRenderable> {
 			readFile(
 				path,
 				{ encoding: "utf-8" },
-				(
-					error: NodeJS.ErrnoException | null,
-					content: string,
-				): void => {
+				(error: NodeJS.ErrnoException | null, content: string): void => {
 					if (error) {
 						console.warn(error);
 
 						return;
 					}
 
-					const fileType: string =
-						CODE_FILETYPES[extname(path)] || "text";
+					const fileType: string = CODE_FILETYPES[extname(path)] || "text";
 
 					if (fileType === "markdown") {
 						this._markdown.content = content;

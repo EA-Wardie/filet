@@ -38,14 +38,6 @@ export function forward(): void {
 	$currentPath.set(nextPath);
 }
 
-export function canGoBack(): boolean {
-	return $backHistory.get().length > 0;
-}
-
-export function canGoForward(): boolean {
-	return $forwardHistory.get().length > 0;
-}
-
 export function cleanPath(path: string): string {
 	return path.replaceAll("//", "/");
 }

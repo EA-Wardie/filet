@@ -22,10 +22,4 @@ export class Divider extends Component<core.BoxRenderable> {
 
 		return this;
 	}
-
-	public vertical(): this {
-		this.component.border = ["left"];
-
-		return this;
-	}
 }

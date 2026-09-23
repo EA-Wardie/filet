@@ -152,8 +152,7 @@ export function getFileIcon(dirent: Dirent): string {
 	}
 
 	return (
-		FILETYPE_ICONS.get(dirent.name.slice(dot + 1).toLowerCase()) ??
-		FILE_ICON
+		FILETYPE_ICONS.get(dirent.name.slice(dot + 1).toLowerCase()) ?? FILE_ICON
 	);
 }
 
@@ -304,11 +303,23 @@ export async function moveToTrash(dirent: Dirent): Promise<void> {
 	const fromPath: string = getDirentPath(dirent);
 
 	try {
+		$tasks.set([...$tasks.get(), `Moving ${fromPath} to trash.`]);
+
+		const taskIndex: number = $tasks.get().length - 1;
+
 		await copyDirent(dirent, `${trashPath}/files/${dirent.name}`);
 		await Promise.all([removeDirent(dirent), writeTrashInfo(fromPath)]);
 
 		$trashFull.set(true);
 		$currentPath.notify();
+
+		const tasks: string[] = $tasks.get();
+
+		tasks.splice(taskIndex, 1);
+
+		setTimeout((): void => {
+			$tasks.set([...tasks]);
+		}, 1000);
 	} catch (error) {
 		console.warn(error);
 	}
