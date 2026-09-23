@@ -1,8 +1,8 @@
 import { App } from "./components/App";
 import { Explorer } from "./components/Explorer";
+import { ExplorerFooter } from "./components/ExplorerFooter";
 import { ExplorerHeader } from "./components/ExplorerHeader";
 import { Flex } from "./components/Flex";
-import { Footer } from "./components/Footer";
 import { Sidebar } from "./components/Sidebar";
 import { makeApp } from "./lib/context";
 
@@ -15,7 +15,7 @@ function main() {
 					components: [
 						ExplorerHeader.make(),
 						Explorer.make().component,
-						Footer.make().component,
+						ExplorerFooter.make(),
 					],
 				}),
 			],
