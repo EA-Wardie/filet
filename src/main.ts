@@ -7,20 +7,20 @@ import { Sidebar } from "./components/Sidebar";
 import { makeApp } from "./lib/context";
 
 function main() {
-  makeApp((): void => {
-    App.make({
-      components: [
-        Sidebar.make().component,
-        Flex.make({
-          components: [
-            ExplorerHeader.make(),
-            Explorer.make().component,
-            Footer.make().component,
-          ],
-        }),
-      ],
-    });
-  });
+	makeApp((): void => {
+		App.make({
+			components: [
+				Sidebar.make().component,
+				Flex.make({
+					components: [
+						ExplorerHeader.make(),
+						Explorer.make().component,
+						Footer.make().component,
+					],
+				}),
+			],
+		});
+	});
 }
 
 main();
