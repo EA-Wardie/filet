@@ -19,7 +19,8 @@ export class FileLink extends Component<core.BoxRenderable> {
 			new core.BoxRenderable(ctx, {
 				width: $displayType.get() === "list" ? "auto" : "16.2%",
 				border: $displayType.get() === "grid",
-				borderColor: theme.border,
+				borderColor:
+					$displayType.get() === "grid" ? theme.border : undefined,
 				paddingX: 1,
 			}),
 		);
@@ -35,14 +36,14 @@ export class FileLink extends Component<core.BoxRenderable> {
 
 		this.registerEvents();
 
-		$displayType.subscribe((type: "list" | "grid"): void => {
-			if (type === "grid") {
+		$displayType.listen((type: "list" | "grid"): void => {
+			if (type === "list") {
+				this.component.width = "auto";
+				this.component.border = false;
+			} else {
 				this.component.width = "16.2%";
 				this.component.border = true;
 				this.component.borderColor = theme.border;
-			} else {
-				this.component.width = "auto";
-				this.component.border = false;
 			}
 		});
 	}
@@ -82,7 +83,7 @@ export class FileLink extends Component<core.BoxRenderable> {
 			this._lastClick = Date.now();
 		};
 
-		$selectedFileLink.subscribe((link: Readonly<FileLink> | null) => {
+		$selectedFileLink.listen((link: Readonly<FileLink> | null) => {
 			if (link === this) {
 				this.component.backgroundColor = theme.fg_dark;
 				this._label.fg = theme.bg;
