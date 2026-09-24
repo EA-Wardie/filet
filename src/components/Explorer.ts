@@ -1,7 +1,7 @@
 import { type Dirent, readdir, type Stats, stat } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { trashPath } from "../lib/config";
+import { theme, trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
 import {
 	copy,
@@ -22,18 +22,16 @@ import {
 	$displayType,
 	$selectedFileLink,
 } from "../lib/store";
-import { Button } from "./Button";
 import { Component } from "./Component";
 import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
 import { FileLink } from "./FileLink";
 import { Menu } from "./Menu";
+import { MenuButton } from "./MenuButton";
 import { Preview } from "./Preview";
 import { Prompt } from "./Prompt";
-import { Text } from "./Text";
 
 export class Explorer extends Component<core.ScrollBoxRenderable> {
-	private _emptyText: Text | null = null;
 	private _dirents: Dirent[] = [];
 
 	constructor() {
@@ -50,40 +48,49 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 				viewportCulling: true,
 				onMouseDown: (event: core.MouseEvent): void => {
 					if (event.button === MouseButtons.RIGHT) {
-						Menu.make([
-							Button.make()
-								.label("\ued80 New File")
-								.variant("link")
-								.onClick((): void => {
-									Prompt.make()
-										.heading("Create a new file")
-										.label("Filename")
-										.variant("success")
-										.onSubmit((filename: string): void => {
-											createFile(filename);
-										});
+						Menu.make({
+							x: event.x,
+							y: event.y,
+							items: [
+								MenuButton.make({
+									label: "\ued80 New File",
+									shortcut: "",
+									onClick: (): void => {
+										Prompt.make()
+											.heading("Create a new file")
+											.label("Filename")
+											.variant("success")
+											.onSubmit((filename: string): void => {
+												createFile(filename);
+											});
+									},
 								}),
-							Button.make()
-								.label("\ueec7 New Folder")
-								.variant("link")
-								.onClick((): void => {
-									Prompt.make()
-										.heading("Create a new folder")
-										.label("Folder Name")
-										.variant("success")
-										.onSubmit((folderName: string): void => {
-											createFolder(folderName);
-										});
+								MenuButton.make({
+									label: "\ueec7 New Folder",
+									shortcut: "",
+									onClick: (): void => {
+										Prompt.make()
+											.heading("Create a new folder")
+											.label("Folder Name")
+											.variant("success")
+											.onSubmit((folderName: string): void => {
+												createFolder(folderName);
+											});
+									},
 								}),
-							Divider.make().visible(!!$copyDirent.get() || !!$cutDirent.get()),
-							Button.make()
-								.label("\uf07f Paste")
-								.variant("link")
-								.visible(!!$copyDirent.get() || !!$cutDirent.get())
-								.onClick((): void => {
-									paste();
+								Divider.make({
+									visible: !!$copyDirent.get() || !!$cutDirent.get(),
 								}),
-						]).show(event.x, event.y);
+								MenuButton.make({
+									label: "\uf07f Paste",
+									shortcut: "",
+									visible: !!$copyDirent.get() || !!$cutDirent.get(),
+									onClick: (): void => {
+										paste();
+									},
+								}),
+							],
+						});
 					}
 				},
 			}),
@@ -128,10 +135,13 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 
 									return;
 								} else {
-									this._emptyText = Text.make("\uf07c  --Empty--").dim();
-									this._emptyText.component.paddingX = 1;
-
-									this.component.add(this._emptyText.component);
+									this.component.add(
+										new core.TextRenderable(ctx, {
+											content: "\uf07c --Empty--",
+											fg: theme.fg_dark,
+											marginX: 1,
+										}),
+									);
 
 									return;
 								}
@@ -141,7 +151,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 						console.warn(error);
 					}
 				} else {
-					this.component.add(Preview.make().component);
+					this.component.add(Preview.make());
 				}
 			});
 		});
@@ -198,74 +208,86 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 						go(getDirentPath(dirent));
 					})
 					.onRightClick((event: core.MouseEvent) => {
-						Menu.make([
-							Button.make()
-								.label("\udb80\udfcc Open")
-								.variant("link")
-								.onClick((): void => {
-									openInDefault(dirent);
+						Menu.make({
+							x: event.x,
+							y: event.y,
+							items: [
+								MenuButton.make({
+									label: "\udb80\udfcc Open",
+									shortcut: "",
+									onClick: (): void => {
+										openInDefault(dirent);
+									},
 								}),
-							Divider.make(),
-							Button.make()
-								.label("\uf0c5 Copy")
-								.variant("link")
-								.onClick((): void => {
-									copy(dirent);
+								Divider.make(),
+								MenuButton.make({
+									label: "\uf0c5 Copy",
+									shortcut: "",
+									onClick: (): void => {
+										copy(dirent);
+									},
 								}),
-							Button.make()
-								.label("\uf0c4 Cut")
-								.variant("link")
-								.onClick((): void => {
-									cut(dirent);
+								MenuButton.make({
+									label: "\uf0c4 Cut",
+									shortcut: "",
+									onClick: (): void => {
+										cut(dirent);
+									},
 								}),
-							Divider.make(),
-							Button.make()
-								.label("\uf040 Rename")
-								.variant("link")
-								.onClick((): void => {
-									Prompt.make()
-										.heading(
-											dirent.isDirectory() ? "Rename folder" : "Rename file",
-										)
-										.label(dirent.isDirectory() ? "Folder name" : "Filename")
-										.variant("success")
-										.value(dirent.name)
-										.onSubmit((filename: string): void => {
-											rename(dirent, filename);
-										});
+								Divider.make(),
+								MenuButton.make({
+									label: "\uf040 Rename",
+									shortcut: "",
+									onClick: (): void => {
+										Prompt.make()
+											.heading(
+												dirent.isDirectory() ? "Rename folder" : "Rename file",
+											)
+											.label(dirent.isDirectory() ? "Folder name" : "Filename")
+											.variant("success")
+											.value(dirent.name)
+											.onSubmit((filename: string): void => {
+												rename(dirent, filename);
+											});
+									},
 								}),
-							Divider.make().visible(!$currentPath.get().includes(trashPath)),
-							Button.make()
-								.label("\uf1f8 Trash")
-								.variant("link")
-								.visible(!$currentPath.get().includes(trashPath))
-								.onClick((): void => {
-									Confirmation.make()
-										.heading("Move to trash?")
-										.description(
-											`Are you sure you want to move '${dirent.name}' to trash?`,
-										)
-										.variant("danger")
-										.onConfirm((): void => {
-											moveToTrash(dirent);
-										});
+								Divider.make({
+									visible: !$currentPath.get().includes(trashPath),
 								}),
-							Button.make()
-								.label("\udb81\ude91 Delete")
-								.variant("link")
-								.visible(!$currentPath.get().includes(trashPath))
-								.onClick((): void => {
-									Confirmation.make()
-										.heading("Permanently delete?")
-										.description(
-											`Are you sure you want to permanently delete '${dirent.name}'?`,
-										)
-										.variant("danger")
-										.onConfirm((): void => {
-											remove(dirent);
-										});
+								MenuButton.make({
+									label: "\uf1f8 Trash",
+									shortcut: "",
+									visible: !$currentPath.get().includes(trashPath),
+									onClick: (): void => {
+										Confirmation.make()
+											.heading("Move to trash?")
+											.description(
+												`Are you sure you want to move '${dirent.name}' to trash?`,
+											)
+											.variant("danger")
+											.onConfirm((): void => {
+												moveToTrash(dirent);
+											});
+									},
 								}),
-						]).show(event.x, event.y);
+								MenuButton.make({
+									label: "\udb81\ude91 Delete",
+									shortcut: "",
+									visible: !$currentPath.get().includes(trashPath),
+									onClick: (): void => {
+										Confirmation.make()
+											.heading("Permanently delete?")
+											.description(
+												`Are you sure you want to permanently delete '${dirent.name}'?`,
+											)
+											.variant("danger")
+											.onConfirm((): void => {
+												remove(dirent);
+											});
+									},
+								}),
+							],
+						});
 					}).component,
 			);
 		});

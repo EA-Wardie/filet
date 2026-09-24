@@ -24,7 +24,7 @@ export function makeApp(callback: () => void) {
 
 			ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
 				const dirent: Dirent | null =
-					$selectedFileLink.get()?.getDirent() || null;
+					$selectedFileLink.get()?.getDirent() ?? null;
 
 				if (key.name === "return") {
 					if (!dirent) {

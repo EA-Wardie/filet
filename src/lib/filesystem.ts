@@ -1,10 +1,11 @@
 import type { Dirent } from "node:fs";
 import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
-import { basename } from "node:path";
+import { basename, join } from "node:path";
+import { extname } from "node:path/win32";
 import type { Subprocess } from "bun";
 import { trashPath } from "./config";
 import { ctx } from "./context";
-import { cleanPath, getDirentPath } from "./navigation";
+import { getDirentPath } from "./navigation";
 import {
 	$copyDirent,
 	$currentPath,
@@ -27,6 +28,10 @@ export const IMAGE_FILETYPES: Set<string> = new Set([
 export const CODE_FILETYPES: Record<string, string> = {
 	".ts": "typescript",
 	".tsx": "typescriptreact",
+	".vue": "typescriptreact",
+	".svelte": "typescriptreact",
+	".html": "typescriptreact",
+	".htm": "typescriptreact",
 	".js": "javascript",
 	".jsx": "javascriptreact",
 	".md": "markdown",
@@ -35,105 +40,106 @@ export const CODE_FILETYPES: Record<string, string> = {
 
 const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	// JS / TS
-	["ts", ""],
-	["tsx", ""],
-	["js", ""],
-	["jsx", ""],
-	["mjs", ""],
-	["cjs", ""],
+	[".ts", ""],
+	[".tsx", ""],
+	[".js", ""],
+	[".jsx", ""],
+	[".mjs", ""],
+	[".cjs", ""],
 
 	// Data / config
-	["json", "󰘦"],
-	["jsonc", "󰘦"],
-	["yaml", "\ue8eb"],
-	["yml", "\ue8eb"],
-	["toml", ""],
-	["xml", "\udb81\uddc0"],
-	["env", ""],
-	["ini", ""],
-	["conf", ""],
-	["sql", ""],
-	["sqlite", ""],
-	["graphql", ""],
-	["gql", ""],
-	["lock", ""],
-	["lockb", ""],
+	[".json", "󰘦"],
+	[".jsonc", "󰘦"],
+	[".yaml", "\ue8eb"],
+	[".yml", "\ue8eb"],
+	[".toml", ""],
+	[".xml", "\udb81\uddc0"],
+	[".env", ""],
+	[".ini", ""],
+	[".conf", ""],
+	[".sql", ""],
+	[".sqlite", ""],
+	[".graphql", ""],
+	[".gql", ""],
+	[".lock", ""],
+	[".lockb", ""],
 
 	// Archive
-	["zip", "󰗄"],
-	["rar", "󰗄"],
-	["7z", "󰗄"],
-	["tar", "󰗄"],
-	["gz", "󰗄"],
+	[".zip", "󰗄"],
+	[".rar", "󰗄"],
+	[".7z", "󰗄"],
+	[".tar", "󰗄"],
+	[".gz", "󰗄"],
 
 	// Docs
-	["md", ""],
-	["mdx", ""],
-	["txt", ""],
-	["csv", ""],
-	["xlsx", "󱎏"],
-	["docx", ""],
-	["pdf", "󰈦"],
+	[".md", ""],
+	[".mdx", ""],
+	[".txt", ""],
+	[".csv", ""],
+	[".xlsx", "󱎏"],
+	[".docx", ""],
+	[".pdf", "󰈦"],
 
 	// Web
-	["html", ""],
-	["htm", ""],
-	["css", ""],
-	["scss", ""],
-	["sass", ""],
-	["less", ""],
-	["vue", "\ued4a"],
-	["svelte", ""],
+	[".html", ""],
+	[".htm", ""],
+	[".css", ""],
+	[".scss", ""],
+	[".sass", ""],
+	[".less", ""],
+	[".vue", "\ued4a"],
+	[".svelte", ""],
 
 	// Systems languages
-	["rs", ""],
-	["go", ""],
-	["c", ""],
-	["h", ""],
-	["cpp", ""],
-	["cc", ""],
-	["hpp", ""],
-	["cs", "\ue648"],
-	["zig", ""],
+	[".rs", ""],
+	[".go", ""],
+	[".c", ""],
+	[".h", ""],
+	[".cpp", ""],
+	[".cc", ""],
+	[".hpp", ""],
+	[".cs", "\ue648"],
+	[".zig", ""],
 
 	// JVM
-	["java", ""],
-	["kt", ""],
-	["kts", ""],
-	["klib", ""],
-	["kexe", ""],
-	["scala", ""],
-	["clj", ""],
-	["cljs", ""],
-	["groovy", ""],
+	[".java", ""],
+	[".kt", ""],
+	[".kts", ""],
+	[".klib", ""],
+	[".kexe", ""],
+	[".scala", ""],
+	[".clj", ""],
+	[".cljs", ""],
+	[".groovy", ""],
 
 	// Scripting / other languages
-	["py", ""],
-	["rb", ""],
-	["php", ""],
-	["swift", ""],
-	["lua", ""],
-	["pl", ""],
-	["hs", ""],
-	["ex", ""],
-	["exs", ""],
-	["erl", ""],
-	["r", ""],
-	["sh", ""],
-	["bash", ""],
-	["zsh", ""],
-	["fish", ""],
-	["nix", "󱄅"],
+	[".py", ""],
+	[".rb", ""],
+	[".php", ""],
+	[".swift", ""],
+	[".lua", ""],
+	[".pl", ""],
+	[".hs", ""],
+	[".ex", ""],
+	[".exs", ""],
+	[".erl", ""],
+	[".rs", ""],
+	[".rlib", ""],
+	[".sh", ""],
+	[".bash", ""],
+	[".zsh", ""],
+	[".fish", ""],
+	[".nix", "󱄅"],
 
 	// Images
-	["png", "\uf03e"],
-	["jpg", "\uf03e"],
-	["jpeg", "\uf03e"],
-	["gif", "\uf03e"],
-	["webp", "\uf03e"],
-	["avif", "\uf03e"],
-	["ico", ""],
-	["svg", ""],
+	[".png", "\uf03e"],
+	[".jpg", "\uf03e"],
+	[".jpeg", "\uf03e"],
+	[".gif", "\uf03e"],
+	[".webp", "\uf03e"],
+	[".avif", "\uf03e"],
+	[".ico", ""],
+	[".svg", ""],
 ]);
 
 const FILE_ICON: string = "";
@@ -145,14 +151,9 @@ export function getFileIcon(dirent: Dirent): string {
 		return "";
 	}
 
-	const dot: number = dirent.name.lastIndexOf(".");
-
-	if (dot <= 0) {
-		return FILE_ICON;
-	}
-
 	return (
-		FILETYPE_ICONS.get(dirent.name.slice(dot + 1).toLowerCase()) ?? FILE_ICON
+		FILETYPE_ICONS.get(extname(getDirentPath(dirent).toLowerCase())) ??
+		FILE_ICON
 	);
 }
 
@@ -200,9 +201,7 @@ export async function paste(): Promise<void> {
 	}
 
 	const fromPath: string | null = getDirentPath(dirent);
-	const toPath: string = cleanPath(
-		`${$currentPath.get()}/${basename(fromPath)}`,
-	);
+	const toPath: string = join($currentPath.get(), basename(fromPath));
 	const isCutting: boolean = !$copyDirent.get();
 	const action: string = isCutting ? "Moving" : "Copying";
 
@@ -240,7 +239,7 @@ export async function paste(): Promise<void> {
 }
 
 export function createFile(name: string): void {
-	const path: string = cleanPath(`${$currentPath.get()}/${name}`);
+	const path: string = join($currentPath.get(), name);
 
 	Bun.write(path, "")
 		.then((): void => {
@@ -252,7 +251,7 @@ export function createFile(name: string): void {
 }
 
 export function createFolder(name: string): void {
-	const path: string = cleanPath(`${$currentPath.get()}/${name}`);
+	const path: string = join($currentPath.get(), name);
 
 	mkdir(path)
 		.then((): void => {
@@ -265,7 +264,7 @@ export function createFolder(name: string): void {
 
 export async function rename(dirent: Dirent, name: string): Promise<void> {
 	const fromPath: string = getDirentPath(dirent);
-	const toPath: string = cleanPath(`${dirent.parentPath}/${name}`);
+	const toPath: string = join(dirent.parentPath, name);
 
 	try {
 		await renameEntry(fromPath, toPath);
