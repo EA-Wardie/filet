@@ -1,143 +1,136 @@
 import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { Button, type ButtonVaraintType } from "./Button";
-import { Component } from "./Component";
+import { Button } from "./Button";
 
-export class Prompt extends Component<core.BoxRenderable> {
-	private _dialog: core.BoxRenderable;
-	private _heading: core.TextRenderable;
-	private _label: core.TextRenderable;
-	private _input: core.InputRenderable;
-	private _cancelButton: Button;
-	private _submitButton: Button;
-	private _dialogButtons: core.BoxRenderable;
-	private _submitCallback: ((value: string) => void) | null = null;
+interface Options extends core.BoxOptions {
+  heading: string;
+  label: string;
+  value?: string;
+  onSubmit: (value: string) => void;
+}
 
-	constructor() {
-		super(
-			new core.BoxRenderable(ctx, {
-				width: "100%",
-				height: "100%",
-				backgroundColor: core.RGBA.fromHex("#ffffff1A"),
-				alignItems: "center",
-				justifyContent: "center",
-				position: "absolute",
-				top: 0,
-				left: 0,
-				zIndex: 100,
-			}),
-		);
+export class Prompt {
+  private _options: Options;
+  private _component: core.BoxRenderable;
+  private _dialog: core.BoxRenderable | null = null;
+  private _header: core.TextRenderable | null = null;
+  private _input: core.InputRenderable | null = null;
+  private _footer: core.BoxRenderable | null = null;
 
-		this._dialog = new core.BoxRenderable(ctx, {
-			width: 42,
-			backgroundColor: theme.bg,
-			border: true,
-			borderColor: theme.border,
-			paddingX: 1,
-			zIndex: 101,
-		});
+  constructor(options: Options) {
+    this._options = options;
 
-		this._heading = new core.TextRenderable(ctx, {
-			content: "Enter a value to continue.",
-			marginBottom: 1,
-		});
+    this._component = new core.BoxRenderable(ctx, {
+      width: "100%",
+      height: "100%",
+      backgroundColor: core.RGBA.fromHex("#ffffff1A"),
+      alignItems: "center",
+      justifyContent: "center",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      zIndex: 100,
+    });
 
-		this._label = new core.TextRenderable(ctx, {
-			content: "Value",
-			fg: theme.fg,
-		});
+    this.addDialog();
+    this.addHeader();
+    this.addInput();
+    this.addFooter();
+    this.registerKeyboardEvents();
 
-		this._input = new core.InputRenderable(ctx, {
-			value: "",
-			backgroundColor: theme.fg_light,
-			textColor: theme.fg,
-			flexGrow: 1,
-			marginBottom: 1,
-		});
+    ctx.root.add(this._component);
+  }
 
-		this._dialogButtons = new core.BoxRenderable(ctx, {
-			width: "100%",
-			flexDirection: "row",
-			justifyContent: "flex-end",
-			columnGap: 1,
-		});
+  public static make(options: Options): core.BoxRenderable {
+    return new this(options)._component;
+  }
 
-		this._cancelButton = Button.make()
-			.label("\uf00d Cancel")
-			.onClick(() => {
-				this._input.blur();
-				this.component.destroyRecursively();
-			});
+  private addDialog(): void {
+    this._dialog = new core.BoxRenderable(ctx, {
+      width: 42,
+      backgroundColor: theme.bg,
+      border: true,
+      borderColor: theme.border,
+      paddingX: 1,
+      zIndex: 101,
+      ...this._options,
+    });
 
-		this._submitButton = Button.make()
-			.label("\uf00c Submit")
-			.onClick(() => {
-				this._input.blur();
-				this._submitCallback?.(this._input.value);
-				this.component.destroyRecursively();
-			});
+    this._component.add(this._dialog);
+  }
 
-		this._dialog.add(this._heading);
-		this._dialog.add(this._label);
-		this._dialog.add(this._input);
-		this._input.focus();
-		this._dialogButtons.add(this._cancelButton.component);
-		this._dialogButtons.add(this._submitButton.component);
-		this._dialog.add(this._dialogButtons);
-		this.component.add(this._dialog);
+  private addHeader(): void {
+    this._header = new core.TextRenderable(ctx, {
+      content: this._options.heading,
+      wrapMode: "word",
+      marginBottom: 1,
+    });
 
-		this.registerEvents();
+    this._dialog?.add(this._header);
+  }
+  private addInput(): void {
+    this._dialog?.add(
+      new core.TextRenderable(ctx, {
+        content: this._options.label,
+        wrapMode: "word",
+      }),
+    );
 
-		ctx.root.add(this.component);
-	}
+    this._input = new core.InputRenderable(ctx, {
+      value: this._options.value ?? "",
+      backgroundColor: theme.fg_light,
+      textColor: theme.fg,
+      flexGrow: 1,
+      marginBottom: 1,
+    });
 
-	public static make(): Prompt {
-		return new this();
-	}
+    this._dialog?.add(this._input);
+  }
 
-	private registerEvents(): void {
-		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "return") {
-				this._input.blur();
-				this._submitCallback?.(this._input.value);
-				this.component.destroyRecursively();
-			}
+  private addFooter(): void {
+    this._footer = new core.BoxRenderable(ctx, {
+      width: "100%",
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      columnGap: 1,
+    });
 
-			if (key.name === "escape") {
-				this._input.blur();
-				this.component.destroyRecursively();
-			}
-		});
-	}
+    this._footer?.add(
+      Button.make({
+        label: "\uf00d Cancel",
+        onClick: () => {
+          this._component.destroyRecursively();
+        },
+      }),
+    );
 
-	public heading(heading: string): this {
-		this._heading.content = heading;
+    this._footer?.add(
+      Button.make({
+        label: "\uf00c Submit",
+        variant: "success",
+        onClick: () => {
+          this._component.destroyRecursively();
+          this._options.onSubmit(this._input?.value ?? "");
+        },
+      }),
+    );
 
-		return this;
-	}
+    this._dialog?.add(this._footer);
+  }
 
-	public label(label: string): this {
-		this._label.content = label;
+  private registerKeyboardEvents(): void {
+    ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+      if (key.name === "return") {
+        this._input?.blur();
+        this._options.onSubmit(this._input?.value ?? "");
+        this._component.destroyRecursively();
+      }
 
-		return this;
-	}
-
-	public value(value: string): this {
-		this._input.value = value;
-
-		return this;
-	}
-
-	public variant(variant: ButtonVaraintType): this {
-		this._submitButton.variant(variant);
-
-		return this;
-	}
-
-	public onSubmit(callback: (value: string) => void): this {
-		this._submitCallback = callback;
-
-		return this;
-	}
+      if (key.name === "escape") {
+        this._input?.blur();
+        this._component.destroyRecursively();
+      }
+    });
+  }
 }
