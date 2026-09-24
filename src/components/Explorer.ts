@@ -43,7 +43,6 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 					flexDirection: $displayType.get() === "list" ? "column" : "row",
 					flexWrap: $displayType.get() === "list" ? "no-wrap" : "wrap",
 					columnGap: $displayType.get() === "list" ? 0 : 1,
-					paddingX: $displayType.get() === "list" ? 0 : 1,
 				},
 				viewportCulling: true,
 				onMouseDown: (event: core.MouseEvent): void => {
@@ -54,7 +53,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 							items: [
 								MenuButton.make({
 									label: "\ued80 New File",
-									shortcut: "",
+									shortcut: "Ctrl+n",
 									onClick: (): void => {
 										Prompt.make()
 											.heading("Create a new file")
@@ -137,8 +136,9 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 								} else {
 									this.component.add(
 										new core.TextRenderable(ctx, {
-											content: "\uf07c --Empty--",
-											fg: theme.fg_dark,
+											content: "\uf07c  --Empty--",
+											fg: theme.fg,
+											attributes: core.TextAttributes.DIM,
 											marginX: 1,
 										}),
 									);
@@ -170,7 +170,6 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 			flexDirection: type === "list" ? "column" : "row",
 			flexWrap: type === "list" ? "no-wrap" : "wrap",
 			columnGap: type === "list" ? 0 : 1,
-			paddingX: type === "list" ? 0 : 1,
 		};
 	}
 
@@ -214,7 +213,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 							items: [
 								MenuButton.make({
 									label: "\udb80\udfcc Open",
-									shortcut: "",
+									shortcut: "Ctrl+_",
 									onClick: (): void => {
 										openInDefault(dirent);
 									},
@@ -259,15 +258,14 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 									shortcut: "",
 									visible: !$currentPath.get().includes(trashPath),
 									onClick: (): void => {
-										Confirmation.make()
-											.heading("Move to trash?")
-											.description(
-												`Are you sure you want to move '${dirent.name}' to trash?`,
-											)
-											.variant("danger")
-											.onConfirm((): void => {
+										console.log("show confirm");
+										Confirmation.make({
+											heading: "Move to trash?",
+											description: `Are you sure you want to move '${dirent.name}' to trash?`,
+											onConfirm: (): void => {
 												moveToTrash(dirent);
-											});
+											},
+										});
 									},
 								}),
 								MenuButton.make({
@@ -275,15 +273,13 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 									shortcut: "",
 									visible: !$currentPath.get().includes(trashPath),
 									onClick: (): void => {
-										Confirmation.make()
-											.heading("Permanently delete?")
-											.description(
-												`Are you sure you want to permanently delete '${dirent.name}'?`,
-											)
-											.variant("danger")
-											.onConfirm((): void => {
+										Confirmation.make({
+											heading: "Permanently delete?",
+											description: `Are you sure you want to permanently delete '${dirent.name}'?`,
+											onConfirm: (): void => {
 												remove(dirent);
-											});
+											},
+										});
 									},
 								}),
 							],
