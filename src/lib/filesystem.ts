@@ -1,145 +1,145 @@
 import type { Dirent } from "node:fs";
 import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
-import { basename } from "node:path";
+import { basename, join } from "node:path";
 import { extname } from "node:path/win32";
 import type { Subprocess } from "bun";
 import { trashPath } from "./config";
 import { ctx } from "./context";
-import { cleanPath, getDirentPath } from "./navigation";
+import { getDirentPath } from "./navigation";
 import {
-  $copyDirent,
-  $currentPath,
-  $cutDirent,
-  $tasks,
-  $trashFull,
+	$copyDirent,
+	$currentPath,
+	$cutDirent,
+	$tasks,
+	$trashFull,
 } from "./store";
 
 export const IMAGE_FILETYPES: Set<string> = new Set([
-  ".png",
-  ".jpg",
-  ".jpeg",
-  ".gif",
-  ".webp",
-  ".avif",
-  ".ico",
-  ".svg",
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".webp",
+	".avif",
+	".ico",
+	".svg",
 ]);
 
 export const CODE_FILETYPES: Record<string, string> = {
-  ".ts": "typescript",
-  ".tsx": "typescriptreact",
-  ".vue": "typescriptreact",
-  ".svelte": "typescriptreact",
-  ".html": "typescriptreact",
-  ".htm": "typescriptreact",
-  ".js": "javascript",
-  ".jsx": "javascriptreact",
-  ".md": "markdown",
-  ".zig": "zig",
+	".ts": "typescript",
+	".tsx": "typescriptreact",
+	".vue": "typescriptreact",
+	".svelte": "typescriptreact",
+	".html": "typescriptreact",
+	".htm": "typescriptreact",
+	".js": "javascript",
+	".jsx": "javascriptreact",
+	".md": "markdown",
+	".zig": "zig",
 };
 
 const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
-  // JS / TS
-  [".ts", ""],
-  [".tsx", ""],
-  [".js", ""],
-  [".jsx", ""],
-  [".mjs", ""],
-  [".cjs", ""],
+	// JS / TS
+	[".ts", ""],
+	[".tsx", ""],
+	[".js", ""],
+	[".jsx", ""],
+	[".mjs", ""],
+	[".cjs", ""],
 
-  // Data / config
-  [".json", "󰘦"],
-  [".jsonc", "󰘦"],
-  [".yaml", "\ue8eb"],
-  [".yml", "\ue8eb"],
-  [".toml", ""],
-  [".xml", "\udb81\uddc0"],
-  [".env", ""],
-  [".ini", ""],
-  [".conf", ""],
-  [".sql", ""],
-  [".sqlite", ""],
-  [".graphql", ""],
-  [".gql", ""],
-  [".lock", ""],
-  [".lockb", ""],
+	// Data / config
+	[".json", "󰘦"],
+	[".jsonc", "󰘦"],
+	[".yaml", "\ue8eb"],
+	[".yml", "\ue8eb"],
+	[".toml", ""],
+	[".xml", "\udb81\uddc0"],
+	[".env", ""],
+	[".ini", ""],
+	[".conf", ""],
+	[".sql", ""],
+	[".sqlite", ""],
+	[".graphql", ""],
+	[".gql", ""],
+	[".lock", ""],
+	[".lockb", ""],
 
-  // Archive
-  [".zip", "󰗄"],
-  [".rar", "󰗄"],
-  [".7z", "󰗄"],
-  [".tar", "󰗄"],
-  [".gz", "󰗄"],
+	// Archive
+	[".zip", "󰗄"],
+	[".rar", "󰗄"],
+	[".7z", "󰗄"],
+	[".tar", "󰗄"],
+	[".gz", "󰗄"],
 
-  // Docs
-  [".md", ""],
-  [".mdx", ""],
-  [".txt", ""],
-  [".csv", ""],
-  [".xlsx", "󱎏"],
-  [".docx", ""],
-  [".pdf", "󰈦"],
+	// Docs
+	[".md", ""],
+	[".mdx", ""],
+	[".txt", ""],
+	[".csv", ""],
+	[".xlsx", "󱎏"],
+	[".docx", ""],
+	[".pdf", "󰈦"],
 
-  // Web
-  [".html", ""],
-  [".htm", ""],
-  [".css", ""],
-  [".scss", ""],
-  [".sass", ""],
-  [".less", ""],
-  [".vue", "\ued4a"],
-  [".svelte", ""],
+	// Web
+	[".html", ""],
+	[".htm", ""],
+	[".css", ""],
+	[".scss", ""],
+	[".sass", ""],
+	[".less", ""],
+	[".vue", "\ued4a"],
+	[".svelte", ""],
 
-  // Systems languages
-  [".rs", ""],
-  [".go", ""],
-  [".c", ""],
-  [".h", ""],
-  [".cpp", ""],
-  [".cc", ""],
-  [".hpp", ""],
-  [".cs", "\ue648"],
-  [".zig", ""],
+	// Systems languages
+	[".rs", ""],
+	[".go", ""],
+	[".c", ""],
+	[".h", ""],
+	[".cpp", ""],
+	[".cc", ""],
+	[".hpp", ""],
+	[".cs", "\ue648"],
+	[".zig", ""],
 
-  // JVM
-  [".java", ""],
-  [".kt", ""],
-  [".kts", ""],
-  [".klib", ""],
-  [".kexe", ""],
-  [".scala", ""],
-  [".clj", ""],
-  [".cljs", ""],
-  [".groovy", ""],
+	// JVM
+	[".java", ""],
+	[".kt", ""],
+	[".kts", ""],
+	[".klib", ""],
+	[".kexe", ""],
+	[".scala", ""],
+	[".clj", ""],
+	[".cljs", ""],
+	[".groovy", ""],
 
-  // Scripting / other languages
-  [".py", ""],
-  [".rb", ""],
-  [".php", ""],
-  [".swift", ""],
-  [".lua", ""],
-  [".pl", ""],
-  [".hs", ""],
-  [".ex", ""],
-  [".exs", ""],
-  [".erl", ""],
-  [".rs", ""],
-  [".rlib", ""],
-  [".sh", ""],
-  [".bash", ""],
-  [".zsh", ""],
-  [".fish", ""],
-  [".nix", "󱄅"],
+	// Scripting / other languages
+	[".py", ""],
+	[".rb", ""],
+	[".php", ""],
+	[".swift", ""],
+	[".lua", ""],
+	[".pl", ""],
+	[".hs", ""],
+	[".ex", ""],
+	[".exs", ""],
+	[".erl", ""],
+	[".rs", ""],
+	[".rlib", ""],
+	[".sh", ""],
+	[".bash", ""],
+	[".zsh", ""],
+	[".fish", ""],
+	[".nix", "󱄅"],
 
-  // Images
-  [".png", "\uf03e"],
-  [".jpg", "\uf03e"],
-  [".jpeg", "\uf03e"],
-  [".gif", "\uf03e"],
-  [".webp", "\uf03e"],
-  [".avif", "\uf03e"],
-  [".ico", ""],
-  [".svg", ""],
+	// Images
+	[".png", "\uf03e"],
+	[".jpg", "\uf03e"],
+	[".jpeg", "\uf03e"],
+	[".gif", "\uf03e"],
+	[".webp", "\uf03e"],
+	[".avif", "\uf03e"],
+	[".ico", ""],
+	[".svg", ""],
 ]);
 
 const FILE_ICON: string = "";
@@ -147,225 +147,223 @@ const FILE_ICON: string = "";
 let currentRipdrag: Subprocess | null = null;
 
 export function getFileIcon(dirent: Dirent): string {
-  if (dirent.isDirectory()) {
-    return "";
-  }
+	if (dirent.isDirectory()) {
+		return "";
+	}
 
-  return (
-    FILETYPE_ICONS.get(extname(getDirentPath(dirent).toLowerCase())) ??
-    FILE_ICON
-  );
+	return (
+		FILETYPE_ICONS.get(extname(getDirentPath(dirent).toLowerCase())) ??
+		FILE_ICON
+	);
 }
 
 async function copyDirent(dirent: Dirent, toPath: string): Promise<void> {
-  const fromPath: string | null = getDirentPath(dirent);
+	const fromPath: string | null = getDirentPath(dirent);
 
-  if (dirent.isDirectory()) {
-    await cp(fromPath, toPath, { recursive: true });
+	if (dirent.isDirectory()) {
+		await cp(fromPath, toPath, { recursive: true });
 
-    return;
-  }
+		return;
+	}
 
-  await Bun.write(toPath, Bun.file(fromPath));
+	await Bun.write(toPath, Bun.file(fromPath));
 }
 
 async function removeDirent(dirent: Dirent): Promise<void> {
-  const path: string | null = getDirentPath(dirent);
+	const path: string | null = getDirentPath(dirent);
 
-  if (dirent.isDirectory()) {
-    await rm(path, { recursive: true, force: true });
+	if (dirent.isDirectory()) {
+		await rm(path, { recursive: true, force: true });
 
-    return;
-  }
+		return;
+	}
 
-  await Bun.file(path).delete();
+	await Bun.file(path).delete();
 }
 
 export function copy(dirent: Dirent): void {
-  ctx.copyToClipboardOSC52(getDirentPath(dirent));
+	ctx.copyToClipboardOSC52(getDirentPath(dirent));
 
-  $copyDirent.set(dirent);
+	$copyDirent.set(dirent);
 }
 
 export function cut(dirent: Dirent): void {
-  ctx.copyToClipboardOSC52(getDirentPath(dirent));
+	ctx.copyToClipboardOSC52(getDirentPath(dirent));
 
-  $cutDirent.set(dirent);
+	$cutDirent.set(dirent);
 }
 
 export async function paste(): Promise<void> {
-  const dirent: Dirent | null = $copyDirent.get() ?? $cutDirent.get();
+	const dirent: Dirent | null = $copyDirent.get() ?? $cutDirent.get();
 
-  if (!dirent) {
-    return;
-  }
+	if (!dirent) {
+		return;
+	}
 
-  const fromPath: string | null = getDirentPath(dirent);
-  const toPath: string = cleanPath(
-    `${$currentPath.get()}/${basename(fromPath)}`,
-  );
-  const isCutting: boolean = !$copyDirent.get();
-  const action: string = isCutting ? "Moving" : "Copying";
+	const fromPath: string | null = getDirentPath(dirent);
+	const toPath: string = join($currentPath.get(), basename(fromPath));
+	const isCutting: boolean = !$copyDirent.get();
+	const action: string = isCutting ? "Moving" : "Copying";
 
-  $tasks.set([...$tasks.get(), `${action} ${fromPath} to ${toPath}.`]);
+	$tasks.set([...$tasks.get(), `${action} ${fromPath} to ${toPath}.`]);
 
-  const taskIndex: number = $tasks.get().length - 1;
+	const taskIndex: number = $tasks.get().length - 1;
 
-  try {
-    await copyDirent(dirent, toPath);
+	try {
+		await copyDirent(dirent, toPath);
 
-    if (isCutting) {
-      await removeDirent(dirent);
-    }
-  } catch (error) {
-    console.warn(error);
+		if (isCutting) {
+			await removeDirent(dirent);
+		}
+	} catch (error) {
+		console.warn(error);
 
-    return;
-  }
+		return;
+	}
 
-  const tasks: string[] = $tasks.get();
+	const tasks: string[] = $tasks.get();
 
-  tasks.splice(taskIndex, 1);
+	tasks.splice(taskIndex, 1);
 
-  if (isCutting) {
-    $cutDirent.set(null);
-  } else {
-    $copyDirent.set(null);
-  }
+	if (isCutting) {
+		$cutDirent.set(null);
+	} else {
+		$copyDirent.set(null);
+	}
 
-  $currentPath.notify();
+	$currentPath.notify();
 
-  setTimeout((): void => {
-    $tasks.set([...tasks]);
-  }, 1000);
+	setTimeout((): void => {
+		$tasks.set([...tasks]);
+	}, 1000);
 }
 
 export function createFile(name: string): void {
-  const path: string = cleanPath(`${$currentPath.get()}/${name}`);
+	const path: string = join($currentPath.get(), name);
 
-  Bun.write(path, "")
-    .then((): void => {
-      $currentPath.notify();
-    })
-    .catch((error: Error): void => {
-      console.warn(error);
-    });
+	Bun.write(path, "")
+		.then((): void => {
+			$currentPath.notify();
+		})
+		.catch((error: Error): void => {
+			console.warn(error);
+		});
 }
 
 export function createFolder(name: string): void {
-  const path: string = cleanPath(`${$currentPath.get()}/${name}`);
+	const path: string = join($currentPath.get(), name);
 
-  mkdir(path)
-    .then((): void => {
-      $currentPath.notify();
-    })
-    .catch((error: Error): void => {
-      console.warn(error);
-    });
+	mkdir(path)
+		.then((): void => {
+			$currentPath.notify();
+		})
+		.catch((error: Error): void => {
+			console.warn(error);
+		});
 }
 
 export async function rename(dirent: Dirent, name: string): Promise<void> {
-  const fromPath: string = getDirentPath(dirent);
-  const toPath: string = cleanPath(`${dirent.parentPath}/${name}`);
+	const fromPath: string = getDirentPath(dirent);
+	const toPath: string = join(dirent.parentPath, name);
 
-  try {
-    await renameEntry(fromPath, toPath);
+	try {
+		await renameEntry(fromPath, toPath);
 
-    $currentPath.notify();
-  } catch (error) {
-    console.warn(error);
-  }
+		$currentPath.notify();
+	} catch (error) {
+		console.warn(error);
+	}
 }
 
 export async function remove(dirent: Dirent): Promise<void> {
-  try {
-    await removeDirent(dirent);
+	try {
+		await removeDirent(dirent);
 
-    $currentPath.notify();
-  } catch (error) {
-    console.warn(error);
-  }
+		$currentPath.notify();
+	} catch (error) {
+		console.warn(error);
+	}
 }
 
 async function writeTrashInfo(path: string): Promise<void> {
-  const filename: string = `${path.slice(path.lastIndexOf("/") + 1)}.trashinfo`;
+	const filename: string = `${path.slice(path.lastIndexOf("/") + 1)}.trashinfo`;
 
-  const content: string = [
-    "[Trash Info]",
-    `Path=${encodeURI(path)}`,
-    `DeletionDate=${new Date().toISOString()}`,
-    "",
-  ].join("\n");
+	const content: string = [
+		"[Trash Info]",
+		`Path=${encodeURI(path)}`,
+		`DeletionDate=${new Date().toISOString()}`,
+		"",
+	].join("\n");
 
-  await Bun.write(`${trashPath}/info/${filename}`, content);
+	await Bun.write(`${trashPath}/info/${filename}`, content);
 }
 
 export async function moveToTrash(dirent: Dirent): Promise<void> {
-  const fromPath: string = getDirentPath(dirent);
+	const fromPath: string = getDirentPath(dirent);
 
-  try {
-    $tasks.set([...$tasks.get(), `Moving ${fromPath} to trash.`]);
+	try {
+		$tasks.set([...$tasks.get(), `Moving ${fromPath} to trash.`]);
 
-    const taskIndex: number = $tasks.get().length - 1;
+		const taskIndex: number = $tasks.get().length - 1;
 
-    await copyDirent(dirent, `${trashPath}/files/${dirent.name}`);
-    await Promise.all([removeDirent(dirent), writeTrashInfo(fromPath)]);
+		await copyDirent(dirent, `${trashPath}/files/${dirent.name}`);
+		await Promise.all([removeDirent(dirent), writeTrashInfo(fromPath)]);
 
-    $trashFull.set(true);
-    $currentPath.notify();
+		$trashFull.set(true);
+		$currentPath.notify();
 
-    const tasks: string[] = $tasks.get();
+		const tasks: string[] = $tasks.get();
 
-    tasks.splice(taskIndex, 1);
+		tasks.splice(taskIndex, 1);
 
-    setTimeout((): void => {
-      $tasks.set([...tasks]);
-    }, 1000);
-  } catch (error) {
-    console.warn(error);
-  }
+		setTimeout((): void => {
+			$tasks.set([...tasks]);
+		}, 1000);
+	} catch (error) {
+		console.warn(error);
+	}
 }
 
 export async function emptyTrash(): Promise<void> {
-  try {
-    await Promise.all([
-      rm(`${trashPath}/files`, { recursive: true, force: true }),
-      rm(`${trashPath}/info`, { recursive: true, force: true }),
-    ]);
+	try {
+		await Promise.all([
+			rm(`${trashPath}/files`, { recursive: true, force: true }),
+			rm(`${trashPath}/info`, { recursive: true, force: true }),
+		]);
 
-    await Promise.all([
-      mkdir(`${trashPath}/files`, { recursive: true }),
-      mkdir(`${trashPath}/info`, { recursive: true }),
-    ]);
+		await Promise.all([
+			mkdir(`${trashPath}/files`, { recursive: true }),
+			mkdir(`${trashPath}/info`, { recursive: true }),
+		]);
 
-    $trashFull.set(false);
-    $currentPath.notify();
-  } catch (error) {
-    console.warn(error);
-  }
+		$trashFull.set(false);
+		$currentPath.notify();
+	} catch (error) {
+		console.warn(error);
+	}
 }
 
 export function dragOut(dirent: Dirent): void {
-  currentRipdrag?.kill();
+	currentRipdrag?.kill();
 
-  try {
-    const process: Subprocess = Bun.spawn(
-      ["ripdrag", "--and-exit", getDirentPath(dirent)],
-      {
-        stdin: "ignore",
-        stdout: "ignore",
-        stderr: "ignore",
-      },
-    );
+	try {
+		const process: Subprocess = Bun.spawn(
+			["ripdrag", "--and-exit", getDirentPath(dirent)],
+			{
+				stdin: "ignore",
+				stdout: "ignore",
+				stderr: "ignore",
+			},
+		);
 
-    currentRipdrag = process;
+		currentRipdrag = process;
 
-    process.exited.then((): void => {
-      if (currentRipdrag === process) {
-        currentRipdrag = null;
-      }
-    });
-  } catch (error) {
-    console.warn(error);
-  }
+		process.exited.then((): void => {
+			if (currentRipdrag === process) {
+				currentRipdrag = null;
+			}
+		});
+	} catch (error) {
+		console.warn(error);
+	}
 }

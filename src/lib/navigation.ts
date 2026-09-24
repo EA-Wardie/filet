@@ -1,5 +1,5 @@
 import { access, constants, type Dirent } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { $backHistory, $currentPath, $forwardHistory } from "./store";
 
 export function go(path: string): void {
@@ -38,12 +38,8 @@ export function forward(): void {
 	$currentPath.set(nextPath);
 }
 
-export function cleanPath(path: string): string {
-	return path.replaceAll("//", "/");
-}
-
 export function getDirentPath(dirent: Dirent): string {
-	return cleanPath(`${dirent.parentPath}/${dirent.name}`);
+	return join(dirent.parentPath, dirent.name);
 }
 
 export function openInDefault(dirent: Dirent): void {
