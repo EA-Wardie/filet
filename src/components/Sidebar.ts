@@ -101,7 +101,7 @@ export class Sidebar extends Component<BoxRenderable> {
 	}
 
 	private addBookmarks(): void {
-		this.component.add(Divider.make().component);
+		this.component.add(Divider.make());
 
 		for (const bookmark of config.bookmarks) {
 			this.component.add(
@@ -114,12 +114,12 @@ export class Sidebar extends Component<BoxRenderable> {
 	}
 
 	private addTrash(): void {
-		this.component.add(Divider.make().component);
+		this.component.add(Divider.make());
 		this.component.add(TrashSidebarLink.make());
 	}
 
 	private addDrives(): void {
-		this.component.add(Divider.make().component);
+		this.component.add(Divider.make());
 
 		this.component.add(
 			SidebarLink.make({

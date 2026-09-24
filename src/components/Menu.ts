@@ -2,11 +2,9 @@ import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { $menuOpen } from "../lib/store";
-import type { Button } from "./Button";
-import type { Divider } from "./Divider";
 
 interface Options extends core.BoxOptions {
-	items: (Button | Divider)[];
+	items: core.BoxRenderable[];
 	x: number;
 	y: number;
 }
@@ -65,7 +63,7 @@ export class Menu {
 	private addItems(): void {
 		if (this._menu) {
 			for (const item of this._options.items) {
-				this._menu.add(item.component);
+				this._menu.add(item);
 			}
 		}
 	}
