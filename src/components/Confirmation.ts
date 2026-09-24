@@ -1,126 +1,125 @@
 import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { Button, type ButtonVaraintType } from "./Button";
-import { Component } from "./Component";
+import { Button } from "./Button";
 
-export class Confirmation extends Component<core.BoxRenderable> {
-	private _dialog: core.BoxRenderable;
-	private _heading: core.TextRenderable;
-	private _description: core.TextRenderable;
-	private _cancelButton: Button;
-	private _confirmButton: Button;
-	private _dialogButtons: core.BoxRenderable;
-	private _confirmCallback: (() => void) | null = null;
+interface Options extends core.BoxOptions {
+  heading: string;
+  description: string;
+  variant?: "default" | "success" | "danger";
+  onConfirm: () => void;
+}
 
-	constructor() {
-		super(
-			new core.BoxRenderable(ctx, {
-				width: "100%",
-				height: "100%",
-				backgroundColor: core.RGBA.fromHex("#ffffff1A"),
-				alignItems: "center",
-				justifyContent: "center",
-				position: "absolute",
-				top: 0,
-				left: 0,
-				zIndex: 100,
-			}),
-		);
+export class Confirmation {
+  private _options: Options;
+  private _component: core.BoxRenderable;
+  private _dialog: core.BoxRenderable | null = null;
+  private _header: core.TextRenderable | null = null;
+  private _description: core.TextRenderable | null = null;
+  private _footer: core.BoxRenderable | null = null;
 
-		this._dialog = new core.BoxRenderable(ctx, {
-			width: 42,
-			backgroundColor: theme.bg,
-			border: true,
-			borderColor: theme.border,
-			paddingX: 1,
-			zIndex: 101,
-		});
+  constructor(options: Options) {
+    this._options = options;
 
-		this._heading = new core.TextRenderable(ctx, {
-			content: "Are you sure?",
-			wrapMode: "word",
-			marginBottom: 1,
-		});
+    this._component = new core.BoxRenderable(ctx, {
+      width: "100%",
+      height: "100%",
+      backgroundColor: core.RGBA.fromHex("#ffffff1A"),
+      alignItems: "center",
+      justifyContent: "center",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      zIndex: 100,
+    });
 
-		this._description = new core.TextRenderable(ctx, {
-			content: "Are you sure you want to do this?",
-			wrapMode: "word",
-			marginBottom: 1,
-		});
+    this.addDialog();
+    this.addHeader();
+    this.addDescription();
+    this.addFooter();
+    this.registerKeyboardEvents();
 
-		this._dialogButtons = new core.BoxRenderable(ctx, {
-			width: "100%",
-			flexDirection: "row",
-			justifyContent: "flex-end",
-			columnGap: 1,
-		});
+    ctx.root.add(this._component);
+  }
 
-		this._cancelButton = Button.make()
-			.label("\uf00d Cancel")
-			.onClick(() => {
-				this.component.destroyRecursively();
-			});
+  public static make(options: Options): core.BoxRenderable {
+    return new this(options)._component;
+  }
 
-		this._confirmButton = Button.make()
-			.label("\uf00c Confirm")
-			.onClick(() => {
-				this._confirmCallback?.();
-				this.component.destroyRecursively();
-			});
+  private addDialog(): void {
+    this._dialog = new core.BoxRenderable(ctx, {
+      width: 42,
+      backgroundColor: theme.bg,
+      border: true,
+      borderColor: theme.border,
+      paddingX: 1,
+      zIndex: 101,
+      ...this._options,
+    });
 
-		this._dialogButtons.add(this._cancelButton.component);
-		this._dialogButtons.add(this._confirmButton.component);
+    this._component.add(this._dialog);
+  }
 
-		this._dialog.add(this._heading);
-		this._dialog.add(this._description);
-		this._dialog.add(this._dialogButtons);
+  private addHeader(): void {
+    this._header = new core.TextRenderable(ctx, {
+      content: this._options.heading,
+      wrapMode: "word",
+      marginBottom: 1,
+    });
 
-		this.component.add(this._dialog);
+    this._dialog?.add(this._header);
+  }
+  private addDescription(): void {
+    this._description = new core.TextRenderable(ctx, {
+      content: this._options.description,
+      wrapMode: "word",
+      marginBottom: 1,
+    });
 
-		this.registerEvents();
+    this._dialog?.add(this._description);
+  }
 
-		ctx.root.add(this.component);
-	}
+  private addFooter(): void {
+    this._footer = new core.BoxRenderable(ctx, {
+      width: "100%",
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      columnGap: 1,
+    });
 
-	public static make(): Confirmation {
-		return new this();
-	}
+    this._footer?.add(
+      Button.make({
+        label: "\uf00d Cancel",
+        onClick: () => {
+          this._component.destroyRecursively();
+        },
+      }),
+    );
 
-	private registerEvents(): void {
-		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "return") {
-				this._confirmCallback?.();
-				this.component.destroyRecursively();
-			}
+    this._footer?.add(
+      Button.make({
+        label: "\uf00c Confirm",
+        variant: "danger",
+        onClick: () => {
+          this._options.onConfirm();
+          this._component.destroyRecursively();
+        },
+      }),
+    );
 
-			if (key.name === "escape") {
-				this.component.destroyRecursively();
-			}
-		});
-	}
+    this._dialog?.add(this._footer);
+  }
 
-	public heading(heading: string): this {
-		this._heading.content = heading;
+  private registerKeyboardEvents(): void {
+    ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+      if (key.name === "return") {
+        this._options.onConfirm();
+        this._component.destroyRecursively();
+      }
 
-		return this;
-	}
-
-	public description(description: string): this {
-		this._description.content = description;
-
-		return this;
-	}
-
-	public variant(variant: ButtonVaraintType): this {
-		this._confirmButton.variant(variant);
-
-		return this;
-	}
-
-	public onConfirm(callback: () => void): this {
-		this._confirmCallback = callback;
-
-		return this;
-	}
+      if (key.name === "escape") {
+        this._component.destroyRecursively();
+      }
+    });
+  }
 }

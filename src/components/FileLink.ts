@@ -17,10 +17,11 @@ export class FileLink extends Component<core.BoxRenderable> {
 	constructor() {
 		super(
 			new core.BoxRenderable(ctx, {
-				width: $displayType.get() === "list" ? "auto" : "16.2%",
+				width: $displayType.get() === "list" ? "auto" : "15.6%",
 				border: $displayType.get() === "grid",
 				borderColor: $displayType.get() === "grid" ? theme.border : undefined,
 				paddingX: 1,
+				marginLeft: $displayType.get() === "list" ? 0 : 1,
 			}),
 		);
 
@@ -39,10 +40,12 @@ export class FileLink extends Component<core.BoxRenderable> {
 			if (type === "list") {
 				this.component.width = "auto";
 				this.component.border = false;
+				this.component.marginLeft = 0;
 			} else {
-				this.component.width = "16.2%";
+				this.component.width = "15.6%";
 				this.component.border = true;
 				this.component.borderColor = theme.border;
+				this.component.marginLeft = 1;
 			}
 		});
 	}

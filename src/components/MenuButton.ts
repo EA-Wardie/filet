@@ -5,7 +5,7 @@ import { ctx } from "../lib/context";
 interface Options extends core.BoxOptions {
 	label: string;
 	shortcut: string;
-	onClick: (event: core.MouseEvent) => void;
+	onClick: () => void;
 }
 
 export class MenuButton {
@@ -27,12 +27,20 @@ export class MenuButton {
 				if (this._label) {
 					this._label.fg = theme.bg;
 				}
+
+				if (this._shortcut) {
+					this._shortcut.fg = theme.bg;
+				}
 			},
 			onMouseOut: () => {
 				this._component.backgroundColor = undefined;
 
 				if (this._label) {
 					this._label.fg = theme.fg;
+				}
+
+				if (this._shortcut) {
+					this._shortcut.fg = theme.fg;
 				}
 			},
 			onMouseDown: () => {
@@ -41,15 +49,23 @@ export class MenuButton {
 				if (this._label) {
 					this._label.fg = theme.bg;
 				}
+
+				if (this._shortcut) {
+					this._shortcut.fg = theme.bg;
+				}
+
+				this._options.onClick();
 			},
-			onMouseUp: (event: core.MouseEvent) => {
+			onMouseUp: () => {
 				this._component.backgroundColor = undefined;
 
 				if (this._label) {
 					this._label.fg = theme.fg;
 				}
 
-				this._options.onClick(event);
+				if (this._shortcut) {
+					this._shortcut.fg = theme.fg;
+				}
 			},
 			...this._options,
 		});
@@ -77,6 +93,7 @@ export class MenuButton {
 		this._shortcut = new core.TextRenderable(ctx, {
 			content: this._options.shortcut,
 			fg: theme.fg,
+			attributes: core.TextAttributes.ITALIC,
 			selectable: false,
 		});
 
