@@ -14,7 +14,7 @@ export function go(path: string): void {
 
 export function back(): void {
 	const backStack: string[] = $backHistory.get();
-	const previousPath: string | null = backStack.at(-1) || null;
+	const previousPath: string | null = backStack.at(-1) ?? null;
 
 	if (previousPath === null) {
 		return;
@@ -27,7 +27,7 @@ export function back(): void {
 
 export function forward(): void {
 	const forwardStack: string[] = $forwardHistory.get();
-	const nextPath: string | null = forwardStack.at(-1) || null;
+	const nextPath: string | null = forwardStack.at(-1) ?? null;
 
 	if (nextPath === null) {
 		return;

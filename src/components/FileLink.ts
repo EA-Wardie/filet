@@ -64,7 +64,7 @@ export class FileLink extends Component<core.BoxRenderable> {
 			if (event.button === MouseButtons.LEFT) {
 				$selectedFileLink.set(this);
 
-				const lastClick: number = this._lastClick || 0;
+				const lastClick: number = this._lastClick ?? 0;
 				const isDoubleClick: boolean =
 					lastClick !== 0 && Date.now() - lastClick < doubleClickTimeout;
 

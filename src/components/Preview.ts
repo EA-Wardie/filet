@@ -58,7 +58,7 @@ export class Preview {
         }
 
         const fileType: string =
-          CODE_FILETYPES[extname($currentPath.get())] || "text";
+          CODE_FILETYPES[extname($currentPath.get())] ?? "text";
 
         if (fileType === "markdown") {
           this._markdown = new core.MarkdownRenderable(ctx, {
