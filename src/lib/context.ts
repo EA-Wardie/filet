@@ -20,7 +20,7 @@ export function makeApp(callback: () => void) {
 		.then((context: core.CliRenderer) => {
 			ctx = context;
 
-			ctx.console.show();
+			// ctx.console.show();
 
 			ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
 				const dirent: Dirent | null =
