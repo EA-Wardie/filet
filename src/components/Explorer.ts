@@ -50,40 +50,46 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 				viewportCulling: true,
 				onMouseDown: (event: core.MouseEvent): void => {
 					if (event.button === MouseButtons.RIGHT) {
-						Menu.make([
-							Button.make()
-								.label("\ued80 New File")
-								.variant("link")
-								.onClick((): void => {
-									Prompt.make()
-										.heading("Create a new file")
-										.label("Filename")
-										.variant("success")
-										.onSubmit((filename: string): void => {
-											createFile(filename);
-										});
-								}),
-							Button.make()
-								.label("\ueec7 New Folder")
-								.variant("link")
-								.onClick((): void => {
-									Prompt.make()
-										.heading("Create a new folder")
-										.label("Folder Name")
-										.variant("success")
-										.onSubmit((folderName: string): void => {
-											createFolder(folderName);
-										});
-								}),
-							Divider.make().visible(!!$copyDirent.get() || !!$cutDirent.get()),
-							Button.make()
-								.label("\uf07f Paste")
-								.variant("link")
-								.visible(!!$copyDirent.get() || !!$cutDirent.get())
-								.onClick((): void => {
-									paste();
-								}),
-						]).show(event.x, event.y);
+						Menu.make({
+							x: event.x,
+							y: event.y,
+							items: [
+								Button.make()
+									.label("\ued80 New File")
+									.variant("link")
+									.onClick((): void => {
+										Prompt.make()
+											.heading("Create a new file")
+											.label("Filename")
+											.variant("success")
+											.onSubmit((filename: string): void => {
+												createFile(filename);
+											});
+									}),
+								Button.make()
+									.label("\ueec7 New Folder")
+									.variant("link")
+									.onClick((): void => {
+										Prompt.make()
+											.heading("Create a new folder")
+											.label("Folder Name")
+											.variant("success")
+											.onSubmit((folderName: string): void => {
+												createFolder(folderName);
+											});
+									}),
+								Divider.make().visible(
+									!!$copyDirent.get() || !!$cutDirent.get(),
+								),
+								Button.make()
+									.label("\uf07f Paste")
+									.variant("link")
+									.visible(!!$copyDirent.get() || !!$cutDirent.get())
+									.onClick((): void => {
+										paste();
+									}),
+							],
+						});
 					}
 				},
 			}),
@@ -198,74 +204,78 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 						go(getDirentPath(dirent));
 					})
 					.onRightClick((event: core.MouseEvent) => {
-						Menu.make([
-							Button.make()
-								.label("\udb80\udfcc Open")
-								.variant("link")
-								.onClick((): void => {
-									openInDefault(dirent);
-								}),
-							Divider.make(),
-							Button.make()
-								.label("\uf0c5 Copy")
-								.variant("link")
-								.onClick((): void => {
-									copy(dirent);
-								}),
-							Button.make()
-								.label("\uf0c4 Cut")
-								.variant("link")
-								.onClick((): void => {
-									cut(dirent);
-								}),
-							Divider.make(),
-							Button.make()
-								.label("\uf040 Rename")
-								.variant("link")
-								.onClick((): void => {
-									Prompt.make()
-										.heading(
-											dirent.isDirectory() ? "Rename folder" : "Rename file",
-										)
-										.label(dirent.isDirectory() ? "Folder name" : "Filename")
-										.variant("success")
-										.value(dirent.name)
-										.onSubmit((filename: string): void => {
-											rename(dirent, filename);
-										});
-								}),
-							Divider.make().visible(!$currentPath.get().includes(trashPath)),
-							Button.make()
-								.label("\uf1f8 Trash")
-								.variant("link")
-								.visible(!$currentPath.get().includes(trashPath))
-								.onClick((): void => {
-									Confirmation.make()
-										.heading("Move to trash?")
-										.description(
-											`Are you sure you want to move '${dirent.name}' to trash?`,
-										)
-										.variant("danger")
-										.onConfirm((): void => {
-											moveToTrash(dirent);
-										});
-								}),
-							Button.make()
-								.label("\udb81\ude91 Delete")
-								.variant("link")
-								.visible(!$currentPath.get().includes(trashPath))
-								.onClick((): void => {
-									Confirmation.make()
-										.heading("Permanently delete?")
-										.description(
-											`Are you sure you want to permanently delete '${dirent.name}'?`,
-										)
-										.variant("danger")
-										.onConfirm((): void => {
-											remove(dirent);
-										});
-								}),
-						]).show(event.x, event.y);
+						Menu.make({
+							x: event.x,
+							y: event.y,
+							items: [
+								Button.make()
+									.label("\udb80\udfcc Open")
+									.variant("link")
+									.onClick((): void => {
+										openInDefault(dirent);
+									}),
+								Divider.make(),
+								Button.make()
+									.label("\uf0c5 Copy")
+									.variant("link")
+									.onClick((): void => {
+										copy(dirent);
+									}),
+								Button.make()
+									.label("\uf0c4 Cut")
+									.variant("link")
+									.onClick((): void => {
+										cut(dirent);
+									}),
+								Divider.make(),
+								Button.make()
+									.label("\uf040 Rename")
+									.variant("link")
+									.onClick((): void => {
+										Prompt.make()
+											.heading(
+												dirent.isDirectory() ? "Rename folder" : "Rename file",
+											)
+											.label(dirent.isDirectory() ? "Folder name" : "Filename")
+											.variant("success")
+											.value(dirent.name)
+											.onSubmit((filename: string): void => {
+												rename(dirent, filename);
+											});
+									}),
+								Divider.make().visible(!$currentPath.get().includes(trashPath)),
+								Button.make()
+									.label("\uf1f8 Trash")
+									.variant("link")
+									.visible(!$currentPath.get().includes(trashPath))
+									.onClick((): void => {
+										Confirmation.make()
+											.heading("Move to trash?")
+											.description(
+												`Are you sure you want to move '${dirent.name}' to trash?`,
+											)
+											.variant("danger")
+											.onConfirm((): void => {
+												moveToTrash(dirent);
+											});
+									}),
+								Button.make()
+									.label("\udb81\ude91 Delete")
+									.variant("link")
+									.visible(!$currentPath.get().includes(trashPath))
+									.onClick((): void => {
+										Confirmation.make()
+											.heading("Permanently delete?")
+											.description(
+												`Are you sure you want to permanently delete '${dirent.name}'?`,
+											)
+											.variant("danger")
+											.onConfirm((): void => {
+												remove(dirent);
+											});
+									}),
+							],
+						});
 					}).component,
 			);
 		});
