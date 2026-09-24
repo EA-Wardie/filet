@@ -48,7 +48,7 @@ export class Sidebar extends Component<BoxRenderable> {
 
 		this._header.add(
 			new TextRenderable(ctx, {
-				content: "🐠 Filet",
+				content: "📁 Filet",
 				fg: config.theme.fg,
 			}),
 		);
