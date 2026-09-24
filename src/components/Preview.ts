@@ -4,97 +4,94 @@ import * as core from "@opentui/core";
 import { ctx, syntaxStyles } from "../lib/context";
 import { CODE_FILETYPES, IMAGE_FILETYPES } from "../lib/filesystem";
 import { $currentPath } from "../lib/store";
-import { Component } from "./Component";
 
-export class Preview extends Component<core.BoxRenderable> {
-	private _code: core.CodeRenderable;
-	private _lineNumbers: core.LineNumberRenderable;
-	private _markdown: core.MarkdownRenderable;
-	private _image: core.ImageRenderable;
+export class Preview {
+  private _options: core.BoxOptions;
+  private _component: core.BoxRenderable;
+  private _code: core.CodeRenderable | null = null;
+  private _lineNumbers: core.LineNumberRenderable | null = null;
+  private _markdown: core.MarkdownRenderable | null = null;
+  private _image: core.ImageRenderable | null = null;
 
-	constructor() {
-		super(
-			new core.BoxRenderable(ctx, {
-				paddingX: 1,
-			}),
-		);
+  constructor(options: core.BoxOptions) {
+    this._options = options;
 
-		this._code = new core.CodeRenderable(ctx, {
-			width: "100%",
-			height: "100%",
-			content: "",
-			wrapMode: "word",
-			syntaxStyle: syntaxStyles(),
-			flexGrow: 1,
-		});
+    this._component = new core.BoxRenderable(ctx, {
+      paddingX: 1,
+      ...this._options,
+    });
 
-		this._lineNumbers = new core.LineNumberRenderable(ctx, {
-			target: this._code,
-		});
+    if (IMAGE_FILETYPES.has(extname($currentPath.get()).toLowerCase())) {
+      this.addImage();
+    } else {
+      this.addCodeOrMarkdown();
+    }
+  }
 
-		this._markdown = new core.MarkdownRenderable(ctx, {
-			width: "100%",
-			height: "100%",
-			content: "",
-			syntaxStyle: syntaxStyles(),
-		});
+  public static make(options: core.BoxOptions = {}): core.BoxRenderable {
+    return new this(options)._component;
+  }
 
-		this._image = new core.ImageRenderable(ctx, {
-			width: "100%",
-			height: "100%",
-			fit: "fit",
-		});
+  private addImage(): void {
+    this._image = new core.ImageRenderable(ctx, {
+      width: "100%",
+      height: "100%",
+      source: $currentPath.get(),
+      fit: "fit",
+    });
 
-		this.render();
-	}
+    this._component.add(this._image);
+  }
 
-	public static make(): Preview {
-		return new this();
-	}
+  private addCodeOrMarkdown(): void {
+    readFile(
+      $currentPath.get(),
+      { encoding: "utf-8" },
+      async (
+        error: NodeJS.ErrnoException | null,
+        content: string,
+      ): Promise<void> => {
+        if (error) {
+          console.warn(error);
 
-	private render(): void {
-		const path: string = $currentPath.get();
+          return;
+        }
 
-		if (IMAGE_FILETYPES.has(extname(path).toLowerCase())) {
-			this._image.source = path;
+        const fileType: string =
+          CODE_FILETYPES[extname($currentPath.get())] || "text";
 
-			this.component.add(this._image);
-		} else {
-			readFile(
-				path,
-				{ encoding: "utf-8" },
-				(error: NodeJS.ErrnoException | null, content: string): void => {
-					if (error) {
-						console.warn(error);
+        if (fileType === "markdown") {
+          this._markdown = new core.MarkdownRenderable(ctx, {
+            width: "100%",
+            height: "100%",
+            content: content,
+            syntaxStyle: syntaxStyles(),
+          });
 
-						return;
-					}
+          this._component.add(this._markdown);
+        } else {
+          const tsClient: core.TreeSitterClient = core.getTreeSitterClient();
 
-					const fileType: string = CODE_FILETYPES[extname(path)] || "text";
+          await tsClient.initialize();
 
-					if (fileType === "markdown") {
-						this._markdown.content = content;
+          this._code = new core.CodeRenderable(ctx, {
+            width: "100%",
+            height: "100%",
+            content: content,
+            wrapMode: "word",
+            syntaxStyle: syntaxStyles(),
+            flexGrow: 1,
+            filetype: fileType,
+            treeSitterClient: tsClient,
+          });
 
-						this.component.add(this._markdown);
-					} else {
-						const treeSitterClient: core.TreeSitterClient =
-							core.getTreeSitterClient();
+          this._lineNumbers = new core.LineNumberRenderable(ctx, {
+            target: this._code,
+          });
 
-						treeSitterClient
-							.initialize()
-							.then((): void => {
-								this._code.content = content;
-								this._code.filetype = fileType;
-								this._code.treeSitterClient = treeSitterClient;
-
-								this.component.add(this._lineNumbers);
-							})
-							.catch((error: Error) => {
-								console.warn(error);
-							});
-					}
-				},
-			);
-		}
-	}
+          this._component.add(this._lineNumbers);
+        }
+      },
+    );
+  }
 }

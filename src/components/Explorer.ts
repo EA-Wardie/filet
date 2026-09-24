@@ -141,7 +141,7 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 						console.warn(error);
 					}
 				} else {
-					this.component.add(Preview.make().component);
+					this.component.add(Preview.make());
 				}
 			});
 		});
