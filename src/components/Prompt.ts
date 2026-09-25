@@ -1,6 +1,7 @@
 import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
+import { $dialogOpen } from "../lib/store";
 import { Button } from "./Button";
 
 interface Options extends core.BoxOptions {
@@ -37,12 +38,18 @@ export class Prompt {
 		this.addHeader();
 		this.addInput();
 		this.addFooter();
-		this.registerKeyboardEvents();
 
+		ctx.keyInput.on("keypress", this.onKeypress);
 		ctx.root.add(this._component);
+
+		$dialogOpen.set(true);
 	}
 
-	public static make(options: Options): core.BoxRenderable {
+	public static make(options: Options): core.BoxRenderable | null {
+		if ($dialogOpen.get()) {
+			return null;
+		}
+
 		return new this(options)._component;
 	}
 
@@ -100,7 +107,7 @@ export class Prompt {
 			Button.make({
 				label: "\uf00d Cancel",
 				onClick: () => {
-					this._component.destroyRecursively();
+					this.close();
 				},
 			}),
 		);
@@ -110,8 +117,7 @@ export class Prompt {
 				label: "\uf00c Submit",
 				variant: "success",
 				onClick: () => {
-					this._component.destroyRecursively();
-					this._options.onSubmit(this._input?.value ?? "");
+					this.submit();
 				},
 			}),
 		);
@@ -119,18 +125,28 @@ export class Prompt {
 		this._dialog?.add(this._footer);
 	}
 
-	private registerKeyboardEvents(): void {
-		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "return") {
-				this._input?.blur();
-				this._options.onSubmit(this._input?.value ?? "");
-				this._component.destroyRecursively();
-			}
+	private onKeypress = (key: core.KeyEvent): void => {
+		if (key.name === "return") {
+			this.submit();
+		}
 
-			if (key.name === "escape") {
-				this._input?.blur();
-				this._component.destroyRecursively();
-			}
-		});
+		if (key.name === "escape") {
+			this.close();
+		}
+	};
+
+	private submit(): void {
+		const value: string = this._input?.value ?? "";
+
+		this.close();
+		this._options.onSubmit(value);
+	}
+
+	private close(): void {
+		this._input?.blur();
+		ctx.keyInput.off("keypress", this.onKeypress);
+		this._component.destroyRecursively();
+
+		$dialogOpen.set(false);
 	}
 }

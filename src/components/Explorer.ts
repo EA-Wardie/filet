@@ -112,27 +112,22 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 				}
 
 				if (dirent.isDirectory()) {
-					try {
-						readdir(
-							path,
-							{ withFileTypes: true },
-							(
-								error: NodeJS.ErrnoException | null,
-								dirents: Dirent[],
-							): void => {
-								if (error) {
-									console.warn(error);
+					readdir(
+						path,
+						{ withFileTypes: true },
+						(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
+							if (error) {
+								console.warn(error);
 
-									return;
-								}
+								return;
+							}
 
-								this._dirents = dirents;
+							this._dirents = dirents;
 
+							try {
 								if (dirents.length) {
 									this.sortDirents();
 									this.drawDirents();
-
-									return;
 								} else {
 									this.component.add(
 										new core.TextRenderable(ctx, {
@@ -142,14 +137,12 @@ export class Explorer extends Component<core.ScrollBoxRenderable> {
 											marginX: 1,
 										}),
 									);
-
-									return;
 								}
-							},
-						);
-					} catch (error) {
-						console.warn(error);
-					}
+							} catch (error) {
+								console.warn(error);
+							}
+						},
+					);
 				} else {
 					this.component.add(Preview.make());
 				}

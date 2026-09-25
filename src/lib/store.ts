@@ -16,6 +16,8 @@ export const $cutDirent = nanostores.atom<Dirent | null>(null);
 
 export const $menuOpen = nanostores.atom<boolean>(false);
 
+export const $dialogOpen = nanostores.atom<boolean>(false);
+
 export const $displayType = nanostores.atom<"list" | "grid">(displayType);
 
 export const $tasks = nanostores.atom<string[]>([]);

@@ -15,7 +15,7 @@ import {
 	rename,
 } from "./filesystem";
 import { getDirentPath, go, openInDefault } from "./navigation";
-import { $selectedFileLink, $trashFull } from "./store";
+import { $dialogOpen, $selectedFileLink, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
 
@@ -33,6 +33,13 @@ export function makeApp(callback: () => void) {
 			// ctx.console.show();
 
 			ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+				if (
+					$dialogOpen.get() ||
+					ctx.currentFocusedRenderable instanceof core.InputRenderable
+				) {
+					return;
+				}
+
 				const dirent: Dirent | null =
 					$selectedFileLink.get()?.getDirent() ?? null;
 
@@ -92,10 +99,6 @@ export function makeApp(callback: () => void) {
 				}
 
 				if (key.ctrl && key.name === "n") {
-					if (!dirent) {
-						return;
-					}
-
 					Prompt.make({
 						heading: "Create a new file",
 						label: "Filename",
@@ -106,10 +109,6 @@ export function makeApp(callback: () => void) {
 				}
 
 				if (key.ctrl && key.name === "f") {
-					if (!dirent) {
-						return;
-					}
-
 					Prompt.make({
 						heading: "Create a new folder",
 						label: "Folder Name",
