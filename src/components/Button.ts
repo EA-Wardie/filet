@@ -2,21 +2,32 @@ import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 
-export type ButtonVaraintType = "default" | "success" | "danger" | "link";
+type Variant = "default" | "success" | "danger";
 
 interface Options extends core.BoxOptions {
 	label: string;
-	variant?: "default" | "success" | "danger";
+	variant?: Variant;
 	onClick: (event: core.MouseEvent) => void;
 }
 
+const BACKGROUND_COLORS: Record<
+	Variant,
+	{ idle: core.RGBA; pressed: core.RGBA }
+> = {
+	default: { idle: theme.fg, pressed: theme.fg_dark },
+	success: { idle: theme.success, pressed: theme.success_dark },
+	danger: { idle: theme.danger, pressed: theme.danger_dark },
+};
+
 export class Button {
 	private _options: Options;
+	private _variant: Variant;
 	private _component: core.BoxRenderable;
 	private _label: core.TextRenderable | null = null;
 
 	constructor(options: Options) {
 		this._options = options;
+		this._variant = options.variant ?? "default";
 
 		this._component = new core.BoxRenderable(ctx, {
 			backgroundColor: this.getBackgroundColor(),
@@ -40,24 +51,16 @@ export class Button {
 		return new this(options)._component;
 	}
 
-	private getBackgroundColor(dark: boolean = false): core.RGBA {
-		if (this._options.variant === "success") {
-			return dark ? theme.success_dark : theme.success;
-		} else if (this._options.variant === "danger") {
-			return dark ? theme.danger_dark : theme.danger;
-		} else {
-			return dark ? theme.fg_dark : theme.fg;
-		}
+	private getBackgroundColor(pressed: boolean = false): core.RGBA {
+		const colors = BACKGROUND_COLORS[this._variant];
+
+		return pressed ? colors.pressed : colors.idle;
 	}
 
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
 			content: this._options.label,
-			fg:
-				this._options.variant !== "success" &&
-				this._options.variant !== "danger"
-					? theme.bg
-					: theme.fg,
+			fg: this._variant === "default" ? theme.bg : theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});

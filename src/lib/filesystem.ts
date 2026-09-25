@@ -140,6 +140,15 @@ const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".avif", "\uf03e"],
 	[".ico", ""],
 	[".svg", ""],
+
+	// Certificates
+	[".cer", "\uf0a3"],
+	[".p8", "\uf0a3"],
+	[".p12", "\uf0a3"],
+	[".mobileprovision", "\ued08"],
+	[".pepk", "\uf0a3"],
+	[".jks", "\uf0a3"],
+	[".pem", "\uf0a3"],
 ]);
 
 const FILE_ICON: string = "";

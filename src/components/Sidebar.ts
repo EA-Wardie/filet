@@ -1,28 +1,30 @@
-import { BoxRenderable, TextRenderable } from "@opentui/core";
-import * as config from "../lib/config";
+import * as core from "@opentui/core";
+import { bookmarks, theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { homeDirectory } from "../lib/home";
 import { $tasks } from "../lib/store";
-import { Component } from "./Component";
 import { Divider } from "./Divider";
 import { SidebarLink } from "./SidebarLink";
 import { Spacer } from "./Spacer";
 import { TrashSidebarLink } from "./TrashSidebarLink";
 
-export class Sidebar extends Component<BoxRenderable> {
-	private _header: BoxRenderable | null = null;
-	private _footer: BoxRenderable | null = null;
-	private _taskCount: TextRenderable | null = null;
+export class Sidebar {
+	private _options: core.BoxOptions;
+	private _component: core.BoxRenderable;
+	private _header: core.BoxRenderable | null = null;
+	private _footer: core.BoxRenderable | null = null;
+	private _taskCount: core.TextRenderable | null = null;
 
-	constructor() {
-		super(
-			new BoxRenderable(ctx, {
-				width: 34,
-				height: "100%",
-				border: ["left", "right"],
-				borderColor: config.theme.border,
-			}),
-		);
+	constructor(options: core.BoxOptions) {
+		this._options = options;
+
+		this._component = new core.BoxRenderable(ctx, {
+			width: 34,
+			height: "100%",
+			border: ["left", "right"],
+			borderColor: theme.border,
+			...this._options,
+		});
 
 		this.addHeader();
 		this.addPlaces();
@@ -33,127 +35,127 @@ export class Sidebar extends Component<BoxRenderable> {
 		this.registerStoreEvents();
 	}
 
-	public static make(): Sidebar {
-		return new this();
+	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
+		return new this(options)._component;
 	}
 
 	private addHeader(): void {
-		this._header = new BoxRenderable(ctx, {
+		this._header = new core.BoxRenderable(ctx, {
 			border: ["top", "bottom"],
-			borderColor: config.theme.border,
+			borderColor: theme.border,
 			flexDirection: "row",
 			justifyContent: "center",
 			paddingX: 1,
 		});
 
 		this._header.add(
-			new TextRenderable(ctx, {
+			new core.TextRenderable(ctx, {
 				content: "📁 Filet",
-				fg: config.theme.fg,
+				fg: theme.fg,
 			}),
 		);
 
-		this.component.add(this._header);
+		this._component.add(this._header);
 	}
 
 	private addPlaces(): void {
-		this.component.add(
+		this._component.add(
 			SidebarLink.make({
 				path: homeDirectory,
-				label: "\uf015 Home",
+				label: " Home",
 			}),
 		);
 
-		this.component.add(
+		this._component.add(
 			SidebarLink.make({
 				path: `${homeDirectory}/Downloads`,
-				label: "\uf019 Downloads",
+				label: " Downloads",
 			}),
 		);
 
-		this.component.add(
+		this._component.add(
 			SidebarLink.make({
 				path: `${homeDirectory}/Documents`,
-				label: "\udb85\udd17 Documents",
+				label: "󱔗 Documents",
 			}),
 		);
 
-		this.component.add(
+		this._component.add(
 			SidebarLink.make({
 				path: `${homeDirectory}/Pictures`,
-				label: "\uf03e Pictures",
+				label: " Pictures",
 			}),
 		);
 
-		this.component.add(
+		this._component.add(
 			SidebarLink.make({
 				path: `${homeDirectory}/Music`,
-				label: "\uf001 Music",
+				label: " Music",
 			}),
 		);
 
-		this.component.add(
+		this._component.add(
 			SidebarLink.make({
 				path: `${homeDirectory}/Videos`,
-				label: "\udb83\udfce Videos",
+				label: "󰿎 Videos",
 			}),
 		);
 	}
 
 	private addBookmarks(): void {
-		this.component.add(Divider.make());
+		this._component.add(Divider.make());
 
-		for (const bookmark of config.bookmarks) {
-			this.component.add(
+		for (const bookmark of bookmarks) {
+			this._component.add(
 				SidebarLink.make({
 					path: bookmark.mount,
-					label: `\uf02e ${bookmark.label}`,
+					label: ` ${bookmark.label}`,
 				}),
 			);
 		}
 	}
 
 	private addTrash(): void {
-		this.component.add(Divider.make());
-		this.component.add(TrashSidebarLink.make());
+		this._component.add(Divider.make());
+		this._component.add(TrashSidebarLink.make());
 	}
 
 	private addDrives(): void {
-		this.component.add(Divider.make());
+		this._component.add(Divider.make());
 
-		this.component.add(
+		this._component.add(
 			SidebarLink.make({
 				path: "/",
-				label: "\udb80\udeca Root",
+				label: "󰋊 Root",
 			}),
 		);
 	}
 
 	private addFooter(): void {
-		this.component.add(Spacer.make());
+		this._component.add(Spacer.make());
 
-		this._footer = new BoxRenderable(ctx, {
+		this._footer = new core.BoxRenderable(ctx, {
 			border: ["top", "bottom"],
-			borderColor: config.theme.border,
+			borderColor: theme.border,
 			flexDirection: "row",
 			justifyContent: "space-between",
 			paddingX: 1,
 		});
 
-		this._taskCount = new TextRenderable(ctx, {
+		this._taskCount = new core.TextRenderable(ctx, {
 			content: `[${$tasks.get().length}]`,
-			fg: config.theme.fg,
+			fg: theme.fg,
 		});
 
 		this._footer.add(
-			new TextRenderable(ctx, {
+			new core.TextRenderable(ctx, {
 				content: "Tasks",
-				fg: config.theme.fg,
+				fg: theme.fg,
 			}),
 		);
 
 		this._footer.add(this._taskCount);
-		this.component.add(this._footer);
+		this._component.add(this._footer);
 	}
 
 	private registerStoreEvents(): void {

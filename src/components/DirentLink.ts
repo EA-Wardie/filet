@@ -3,7 +3,14 @@ import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { doubleClickTimeout, theme, trashPath } from "../lib/config";
 import { ctx } from "../lib/context";
-import { copy, cut, moveToTrash, remove, rename } from "../lib/filesystem";
+import {
+	copy,
+	cut,
+	getFileIcon,
+	moveToTrash,
+	remove,
+	rename,
+} from "../lib/filesystem";
 import { getDirentPath, go, openInDefault } from "../lib/navigation";
 import { $currentPath, $selectedDirent } from "../lib/store";
 import { Confirmation } from "./Confirmation";
@@ -150,7 +157,7 @@ export class DirentLink {
 
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
-			content: this._options.dirent.name,
+			content: `${getFileIcon(this._options.dirent)} ${this._options.dirent.name}`,
 			fg: theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
