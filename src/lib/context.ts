@@ -15,7 +15,7 @@ import {
 	rename,
 } from "./filesystem";
 import { getDirentPath, go, openInDefault } from "./navigation";
-import { $dialogOpen, $selectedFileLink, $trashFull } from "./store";
+import { $dialogOpen, $selectedDirent, $trashFull } from "./store";
 
 export let ctx: core.CliRenderer;
 
@@ -40,8 +40,7 @@ export function makeApp(callback: () => void) {
 					return;
 				}
 
-				const dirent: Dirent | null =
-					$selectedFileLink.get()?.getDirent() ?? null;
+				const dirent: Dirent | null = $selectedDirent.get();
 
 				if (key.name === "return") {
 					if (!dirent) {
@@ -52,7 +51,7 @@ export function makeApp(callback: () => void) {
 				}
 
 				if (key.name === "escape") {
-					$selectedFileLink.set(null);
+					$selectedDirent.set(null);
 				}
 
 				if (key.ctrl && key.name === "space") {

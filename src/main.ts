@@ -1,8 +1,8 @@
 import { App } from "./components/App";
-import { Explorer } from "./components/Explorer";
 import { ExplorerFooter } from "./components/ExplorerFooter";
 import { ExplorerHeader } from "./components/ExplorerHeader";
 import { Flex } from "./components/Flex";
+import { ListExplorer } from "./components/ListExplorer";
 import { Sidebar } from "./components/Sidebar";
 import { makeApp } from "./lib/context";
 
@@ -14,7 +14,7 @@ function main() {
 				Flex.make({
 					components: [
 						ExplorerHeader.make(),
-						Explorer.make().component,
+						ListExplorer.make(),
 						ExplorerFooter.make(),
 					],
 				}),

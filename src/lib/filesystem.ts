@@ -348,7 +348,14 @@ export function dragOut(dirent: Dirent): void {
 
 	try {
 		const process: Subprocess = Bun.spawn(
-			["ripdrag", "--and-exit", getDirentPath(dirent)],
+			[
+				"ripdrag",
+				"--all-compact",
+				"--no-click",
+				"--basename",
+				"--and-exit",
+				getDirentPath(dirent),
+			],
 			{
 				stdin: "ignore",
 				stdout: "ignore",
