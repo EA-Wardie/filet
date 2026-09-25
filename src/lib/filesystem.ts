@@ -286,7 +286,7 @@ export async function remove(dirent: Dirent): Promise<void> {
 }
 
 async function writeTrashInfo(path: string): Promise<void> {
-	const filename: string = `${path.slice(path.lastIndexOf("/") + 1)}.trashinfo`;
+	const filename: string = `${basename(path)}.trashinfo`;
 
 	const content: string = [
 		"[Trash Info]",
