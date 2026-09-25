@@ -84,18 +84,64 @@ danger = "#dc2626"
 
 ### Keyboard
 
-| Key      | Action                                                         |
-| -------- | -------------------------------------------------------------- |
-| `Ctrl+X` | Cut the selected file or folder.                               |
-| `Ctrl+C` | Copy the selected file or folder.                              |
-| `Ctrl+V` | Paste the cut or copied file or folder.                        |
-| `Ctrl+R` | Rename the selected file or folder.                            |
-| `Ctrl+D` | Drag and drop the selected file or folder using `ripdrag`.     |
-| `Return` | Clear the selected file or folder.                             |
-| `Escape` | Open it. Folders in explorer and files a preview if suportted. |
-| `Q`      | Quit the application.                                          |
+| Key          | Action                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| `Return`     | Open the selected file or folder. Folders open in the explorer and files a preview if supported. |
+| `Escape`     | Clear the selection.                                                                             |
+| `Ctrl+Space` | Open the selected file in its default application, or run it if it is executable.                |
+| `Ctrl+X`     | Cut the selected file or folder.                                                                 |
+| `Ctrl+C`     | Copy the selected file or folder.                                                                |
+| `Ctrl+V`     | Paste the cut or copied file or folder into the current folder.                                  |
+| `Ctrl+R`     | Rename the selected file or folder.                                                              |
+| `Ctrl+N`     | Create a new file in the current folder.                                                         |
+| `Ctrl+F`     | Create a new folder in the current folder.                                                       |
+| `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`.                                       |
+| `Ctrl+T`     | Move the selected file or folder to trash, after confirmation.                                   |
+| `Ctrl+D`     | Permanently delete the selected file or folder, after confirmation.                              |
+| `Q`          | Quit the application, after confirmation.                                                        |
 
-`Ctrl+D` requires [ripdrag](https://github.com/nik012003/ripdrag) to be installed and available on your `PATH`.
+In a confirmation or prompt dialog, `Return` confirms and `Escape` cancels.
+
+`Ctrl+A` requires [ripdrag](https://github.com/nik012003/ripdrag) to be installed and available on your `PATH`.
+
+## Theming
+
+Besides the default dark theme, here are a few others to try. Copy one into your `~/.config/filet/config.toml`, replacing the existing `[theme]` section. Or create your own theme.
+
+Tip: See the [tailwind](https://tailwindcss.com/docs/colors) color pallet.
+
+### Ivory
+
+```toml
+[theme]
+bg = "#e5e5e5"
+fg = "#0a0a0a"
+border = "#262626"
+success = "#16a34a"
+danger = "#dc2626"
+```
+
+### Sky
+
+```toml
+[theme]
+bg = "#075985"
+fg = "#f0f9ff"
+border = "#d4d4d4"
+success = "#16a34a"
+danger = "#dc2626"
+```
+
+### Fuchsia
+
+```toml
+[theme]
+bg = "#701a75"
+fg = "#fdf4ff"
+border = "#d4d4d4"
+success = "#16a34a"
+danger = "#dc2626"
+```
 
 ## Building
 
@@ -127,7 +173,7 @@ This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.l
 
 ### From a release
 
-You can also skip building and download the latest release from the [Releases](../../releases) page on GitHub. Unzip the archive and run the included install script:
+You can also skip building and download the latest release from the [Releases](../../releases) page on GitHub. Extract the archive and run the included install script:
 
 ```
 ./install.sh
@@ -140,7 +186,7 @@ This installs filet the same way as `bun run install:app`.
 - [x] Allow manually editing the current path.
 - [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
 - [ ] Simple search function for the current directory.
-- [ ] Ability to open files marked as executables instead of previewing them.
+- [x] Ability to open files marked as executables instead of previewing them.
 - [ ] Hide the sidebar when the viewport reaches a small enough size.
 - [x] Improve the grid view option for visual clarity.
 - [x] Add default display type as a configurable value.

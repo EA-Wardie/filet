@@ -1,24 +1,24 @@
 {
-  "name": "filet-mk2",
-  "module": "index.ts",
-  "type": "module",
-  "private": false,
-  "version": "0.1.7",
-  "scripts": {
-    "dev": "bun run --watch src/main.ts",
-    "build": "bun run src/build.ts",
-    "install:app": "bash dist/install.sh",
-    "format": "bunx biome check --write src/"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.5.13",
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^7"
-  },
-  "dependencies": {
-    "@opentui/core": "^0.5.11",
-    "nanostores": "^1.5.3"
-  }
+	"name": "filet-mk2",
+	"module": "index.ts",
+	"type": "module",
+	"private": false,
+	"version": "0.1.8",
+	"scripts": {
+		"dev": "bun run --watch src/main.ts",
+		"build": "bun run src/build.ts",
+		"install:app": "bash dist/install.sh",
+		"format": "bunx biome check --write src/"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.13",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^7"
+	},
+	"dependencies": {
+		"@opentui/core": "^0.5.11",
+		"nanostores": "^1.5.3"
+	}
 }

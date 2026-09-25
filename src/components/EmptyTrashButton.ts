@@ -63,13 +63,14 @@ export class EmptyTrashButton {
 					this._label.fg = theme.fg;
 				}
 
-				Confirmation.make()
-					.heading("Empty trash?")
-					.description("Are you sure you want to empty your trash folder?")
-					.variant("danger")
-					.onConfirm((): void => {
+				Confirmation.make({
+					heading: "Empty trash?",
+					description: "Are you sure you want to empty your trash folder?",
+					variant: "danger",
+					onConfirm: (): void => {
 						emptyTrash();
-					});
+					},
+				});
 			},
 			...this._options,
 		});

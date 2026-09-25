@@ -140,6 +140,15 @@ const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".avif", "\uf03e"],
 	[".ico", ""],
 	[".svg", ""],
+
+	// Certificates
+	[".cer", "\uf0a3"],
+	[".p8", "\uf0a3"],
+	[".p12", "\uf0a3"],
+	[".mobileprovision", "\ued08"],
+	[".pepk", "\uf0a3"],
+	[".jks", "\uf0a3"],
+	[".pem", "\uf0a3"],
 ]);
 
 const FILE_ICON: string = "";
@@ -286,7 +295,7 @@ export async function remove(dirent: Dirent): Promise<void> {
 }
 
 async function writeTrashInfo(path: string): Promise<void> {
-	const filename: string = `${path.slice(path.lastIndexOf("/") + 1)}.trashinfo`;
+	const filename: string = `${basename(path)}.trashinfo`;
 
 	const content: string = [
 		"[Trash Info]",
@@ -348,7 +357,14 @@ export function dragOut(dirent: Dirent): void {
 
 	try {
 		const process: Subprocess = Bun.spawn(
-			["ripdrag", "--and-exit", getDirentPath(dirent)],
+			[
+				"ripdrag",
+				"--all-compact",
+				"--no-click",
+				"--basename",
+				"--and-exit",
+				getDirentPath(dirent),
+			],
 			{
 				stdin: "ignore",
 				stdout: "ignore",
