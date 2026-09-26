@@ -2,7 +2,7 @@ import * as core from "@opentui/core";
 import { bookmarks, theme } from "../lib/config";
 import { HOME_DIRECTORY } from "../lib/consts";
 import { ctx } from "../lib/context";
-import { $tasks } from "../lib/store";
+import { $tasksCount } from "../lib/store";
 import { Divider } from "./Divider";
 import { SidebarLink } from "./SidebarLink";
 import { Spacer } from "./Spacer";
@@ -104,6 +104,10 @@ export class Sidebar {
 	}
 
 	private addBookmarks(): void {
+		if (!bookmarks.length) {
+			return;
+		}
+
 		this._component.add(Divider.make());
 
 		for (const bookmark of bookmarks) {
@@ -141,10 +145,11 @@ export class Sidebar {
 			flexDirection: "row",
 			justifyContent: "space-between",
 			paddingX: 1,
+			visible: false,
 		});
 
 		this._taskCount = new core.TextRenderable(ctx, {
-			content: `[${$tasks.get().length}]`,
+			content: `[${$tasksCount.get()}]`,
 			fg: theme.fg,
 			selectable: false,
 		});
@@ -162,9 +167,13 @@ export class Sidebar {
 	}
 
 	private registerStoreEvents(): void {
-		$tasks.listen((tasks: readonly string[]): void => {
+		$tasksCount.listen((count: number): void => {
 			if (this._taskCount) {
-				this._taskCount.content = `[${tasks.length}]`;
+				this._taskCount.content = `[${count}]`;
+			}
+
+			if (this._footer) {
+				this._footer.visible = count > 0;
 			}
 		});
 	}

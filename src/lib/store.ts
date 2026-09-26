@@ -19,7 +19,7 @@ export const $dialogOpen = nanostores.atom<boolean>(false);
 
 export const $displayType = nanostores.atom<"list" | "grid">(displayType);
 
-export const $tasks = nanostores.atom<string[]>([]);
+export const $tasksCount = nanostores.atom<number>(0);
 
 export const $backHistory = nanostores.atom<string[]>([]);
 

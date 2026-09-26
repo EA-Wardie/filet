@@ -144,6 +144,8 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 
 export const FILE_ICON: string = "";
 
+export const FOLDER_ICON: string = "";
+
 export function syntaxStyles(): core.SyntaxStyle {
 	return core.SyntaxStyle.fromStyles({
 		// Basic tokens

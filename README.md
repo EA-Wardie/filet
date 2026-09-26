@@ -95,9 +95,10 @@ danger = "#dc2626"
 | `Ctrl+R`     | Rename the selected file or folder.                                                              |
 | `Ctrl+N`     | Create a new file in the current folder.                                                         |
 | `Ctrl+F`     | Create a new folder in the current folder.                                                       |
-| `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`.                                       |
 | `Ctrl+T`     | Move the selected file or folder to trash, after confirmation.                                   |
+| `Ctrl+Z`     | Restore a file or folder from trash, after confirmation.                                         |
 | `Ctrl+D`     | Permanently delete the selected file or folder, after confirmation.                              |
+| `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`.                                       |
 | `Q`          | Quit the application, after confirmation.                                                        |
 
 In a confirmation or prompt dialog, `Return` confirms and `Escape` cancels.
@@ -190,4 +191,4 @@ This installs filet the same way as `bun run install:app`.
 - [x] Hide the sidebar when the viewport reaches a small enough size.
 - [x] Improve the grid view option for visual clarity.
 - [x] Add default display type as a configurable value.
-- [ ] Option to restore a file from trash.
+- [x] Option to restore a file from trash.

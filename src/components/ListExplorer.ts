@@ -37,7 +37,7 @@ export class ListExplorer {
 						items: [
 							MenuButton.make({
 								label: "\ued80 New File",
-								shortcut: "Ctrl+n",
+								shortcut: "Ctrl+N",
 								onClick: (): void => {
 									Prompt.make({
 										heading: "Create a new file",
@@ -50,7 +50,7 @@ export class ListExplorer {
 							}),
 							MenuButton.make({
 								label: "\ueec7 New Folder",
-								shortcut: "Ctrl+f",
+								shortcut: "Ctrl+F",
 								onClick: (): void => {
 									Prompt.make({
 										heading: "Create a new folder",
@@ -66,7 +66,7 @@ export class ListExplorer {
 							}),
 							MenuButton.make({
 								label: "\uf07f Paste",
-								shortcut: "Ctrl+v",
+								shortcut: "Ctrl+V",
 								visible: !!$copyDirent.get() || !!$cutDirent.get(),
 								onClick: (): void => {
 									paste();
