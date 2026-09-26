@@ -4,6 +4,7 @@ import { MouseButtons } from "@opentui/core/testing";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { createFile, createFolder, paste } from "../lib/filesystem";
+import { logError } from "../lib/log";
 import {
 	$copyDirent,
 	$currentPath,
@@ -96,7 +97,7 @@ export class ListExplorer {
 
 			stat(path, (error: ErrnoException | null, dirent: Stats) => {
 				if (error) {
-					console.warn(error);
+					logError(error);
 
 					return;
 				}
@@ -107,31 +108,28 @@ export class ListExplorer {
 						{ withFileTypes: true },
 						(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
 							if (error) {
-								console.warn(error);
+								logError(error);
 
 								return;
 							}
 
 							this._dirents = dirents;
 
-							try {
-								if (dirents.length) {
-									this.sortDirents();
-									this.drawDirents();
-									this.selectFirstDirent();
-								} else {
-									this._component.add(
-										new core.TextRenderable(ctx, {
-											content: "\uf07c  --Empty--",
-											fg: theme.fg,
-											attributes: core.TextAttributes.DIM,
-											marginX: 1,
-											selectable: false,
-										}),
-									);
-								}
-							} catch (error) {
-								console.warn(error);
+							if (dirents.length) {
+								this.filterDirents();
+								this.sortDirents();
+								this.drawDirents();
+								this.selectFirstDirent();
+							} else {
+								this._component.add(
+									new core.TextRenderable(ctx, {
+										content: "\uf07c  --Empty--",
+										fg: theme.fg,
+										attributes: core.TextAttributes.DIM,
+										marginX: 1,
+										selectable: false,
+									}),
+								);
 							}
 						},
 					);
@@ -141,6 +139,8 @@ export class ListExplorer {
 			});
 		});
 	}
+
+	private filterDirents(): void {}
 
 	private sortDirents(): void {
 		if (this._dirents.length > 1000) {

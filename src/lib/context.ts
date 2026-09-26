@@ -1,4 +1,5 @@
 import * as core from "@opentui/core";
+import { logError } from "./log";
 
 export let ctx: core.CliRenderer;
 
@@ -13,11 +14,11 @@ export function makeApp(callback: () => void) {
 		.then((context: core.CliRenderer) => {
 			ctx = context;
 
-			// ctx.console.show();
+			ctx.console.show();
 
 			callback();
 		})
 		.catch((error: Error) => {
-			console.warn(error);
+			logError(error);
 		});
 }

@@ -1,5 +1,6 @@
 import { access, constants, type Dirent } from "node:fs";
 import { dirname, join } from "node:path";
+import { logError } from "./log";
 import { $backHistory, $currentPath, $forwardHistory } from "./store";
 
 export function go(path: string): void {
@@ -59,7 +60,7 @@ export function openInDefault(dirent: Dirent): void {
 					detached: true,
 				}).unref();
 			} catch (error) {
-				console.warn(error);
+				logError(error as NodeJS.ErrnoException);
 			}
 
 			return;
@@ -72,7 +73,7 @@ export function openInDefault(dirent: Dirent): void {
 				detached: true,
 			}).unref();
 		} catch (error) {
-			console.warn(error);
+			logError(error as NodeJS.ErrnoException);
 		}
 	});
 }

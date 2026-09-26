@@ -14,10 +14,9 @@ export class CurrentPathInput {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			height: 1,
 			flexDirection: "row",
-			flexGrow: 1,
 			columnGap: 1,
+			flexGrow: 1,
 			...this._options,
 		});
 
@@ -36,6 +35,7 @@ export class CurrentPathInput {
 			content: "\uf015",
 			fg: theme.fg,
 			flexShrink: 1,
+			marginRight: 1,
 		});
 
 		this._component.add(this._icon);
@@ -44,7 +44,14 @@ export class CurrentPathInput {
 	private addInput(): void {
 		this._input = new core.InputRenderable(ctx, {
 			value: $currentPath.get(),
+			focusedBackgroundColor: theme.bg_light,
 			flexGrow: 1,
+		});
+
+		this._input.on(core.InputRenderableEvents.ENTER, (value: string) => {
+			go(value);
+
+			this._input?.blur();
 		});
 
 		this._component.add(this._input);
@@ -60,12 +67,6 @@ export class CurrentPathInput {
 
 	private registerKeyboardEvents(): void {
 		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "return" && this._input) {
-				go(this._input.value);
-
-				this._input.blur();
-			}
-
 			if (key.name === "escape" && this._input) {
 				this._input.blur();
 			}

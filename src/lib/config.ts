@@ -1,6 +1,7 @@
 import { RGBA } from "@opentui/core";
 import defaultConfig from "../../config.toml";
 import { HOME_DIRECTORY, USER_CONFIG_PATH } from "./consts";
+import { logError } from "./log";
 
 export interface BookmarkType {
 	label: string;
@@ -49,7 +50,7 @@ async function loadUserConfig(): Promise<ConfigFile> {
 	try {
 		return Bun.TOML.parse(await file.text()) as ConfigFile;
 	} catch (error) {
-		console.warn(error);
+		logError(error as NodeJS.ErrnoException);
 
 		return {};
 	}
