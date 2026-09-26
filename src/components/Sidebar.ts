@@ -1,7 +1,7 @@
 import * as core from "@opentui/core";
 import { bookmarks, theme } from "../lib/config";
+import { HOME_DIRECTORY } from "../lib/consts";
 import { ctx } from "../lib/context";
-import { homeDirectory } from "../lib/home";
 import { $tasks } from "../lib/store";
 import { Divider } from "./Divider";
 import { SidebarLink } from "./SidebarLink";
@@ -33,6 +33,7 @@ export class Sidebar {
 		this.addDrives();
 		this.addFooter();
 		this.registerStoreEvents();
+		this.registerContextEvents();
 	}
 
 	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
@@ -61,42 +62,42 @@ export class Sidebar {
 	private addPlaces(): void {
 		this._component.add(
 			SidebarLink.make({
-				path: homeDirectory,
+				path: HOME_DIRECTORY,
 				label: " Home",
 			}),
 		);
 
 		this._component.add(
 			SidebarLink.make({
-				path: `${homeDirectory}/Downloads`,
+				path: `${HOME_DIRECTORY}/Downloads`,
 				label: " Downloads",
 			}),
 		);
 
 		this._component.add(
 			SidebarLink.make({
-				path: `${homeDirectory}/Documents`,
+				path: `${HOME_DIRECTORY}/Documents`,
 				label: "󱔗 Documents",
 			}),
 		);
 
 		this._component.add(
 			SidebarLink.make({
-				path: `${homeDirectory}/Pictures`,
+				path: `${HOME_DIRECTORY}/Pictures`,
 				label: " Pictures",
 			}),
 		);
 
 		this._component.add(
 			SidebarLink.make({
-				path: `${homeDirectory}/Music`,
+				path: `${HOME_DIRECTORY}/Music`,
 				label: " Music",
 			}),
 		);
 
 		this._component.add(
 			SidebarLink.make({
-				path: `${homeDirectory}/Videos`,
+				path: `${HOME_DIRECTORY}/Videos`,
 				label: "󰿎 Videos",
 			}),
 		);
@@ -145,12 +146,14 @@ export class Sidebar {
 		this._taskCount = new core.TextRenderable(ctx, {
 			content: `[${$tasks.get().length}]`,
 			fg: theme.fg,
+			selectable: false,
 		});
 
 		this._footer.add(
 			new core.TextRenderable(ctx, {
 				content: "Tasks",
 				fg: theme.fg,
+				selectable: false,
 			}),
 		);
 
@@ -163,6 +166,12 @@ export class Sidebar {
 			if (this._taskCount) {
 				this._taskCount.content = `[${tasks.length}]`;
 			}
+		});
+	}
+
+	private registerContextEvents(): void {
+		ctx.on("resize", (width: number): void => {
+			this._component.visible = width > 100;
 		});
 	}
 }

@@ -1,9 +1,10 @@
-import type { Dirent } from "node:fs";
+import { type Dirent, readdir } from "node:fs";
 import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { extname } from "node:path/win32";
 import type { Subprocess } from "bun";
 import { trashPath } from "./config";
+import { FILE_ICON, FILETYPE_ICONS } from "./consts";
 import { ctx } from "./context";
 import { getDirentPath } from "./navigation";
 import {
@@ -13,145 +14,6 @@ import {
 	$tasks,
 	$trashFull,
 } from "./store";
-
-export const IMAGE_FILETYPES: Set<string> = new Set([
-	".png",
-	".jpg",
-	".jpeg",
-	".gif",
-	".webp",
-	".avif",
-	".ico",
-	".svg",
-]);
-
-export const CODE_FILETYPES: Record<string, string> = {
-	".ts": "typescript",
-	".tsx": "typescriptreact",
-	".vue": "typescriptreact",
-	".svelte": "typescriptreact",
-	".html": "typescriptreact",
-	".htm": "typescriptreact",
-	".js": "javascript",
-	".jsx": "javascriptreact",
-	".md": "markdown",
-	".zig": "zig",
-};
-
-const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
-	// JS / TS
-	[".ts", ""],
-	[".tsx", ""],
-	[".js", ""],
-	[".jsx", ""],
-	[".mjs", ""],
-	[".cjs", ""],
-
-	// Data / config
-	[".json", "󰘦"],
-	[".jsonc", "󰘦"],
-	[".yaml", "\ue8eb"],
-	[".yml", "\ue8eb"],
-	[".toml", ""],
-	[".xml", "\udb81\uddc0"],
-	[".env", ""],
-	[".ini", ""],
-	[".conf", ""],
-	[".sql", ""],
-	[".sqlite", ""],
-	[".graphql", ""],
-	[".gql", ""],
-	[".lock", ""],
-	[".lockb", ""],
-
-	// Archive
-	[".zip", "󰗄"],
-	[".rar", "󰗄"],
-	[".7z", "󰗄"],
-	[".tar", "󰗄"],
-	[".gz", "󰗄"],
-
-	// Docs
-	[".md", ""],
-	[".mdx", ""],
-	[".txt", ""],
-	[".csv", ""],
-	[".xlsx", "󱎏"],
-	[".docx", ""],
-	[".pdf", "󰈦"],
-
-	// Web
-	[".html", ""],
-	[".htm", ""],
-	[".css", ""],
-	[".scss", ""],
-	[".sass", ""],
-	[".less", ""],
-	[".vue", "\ued4a"],
-	[".svelte", ""],
-
-	// Systems languages
-	[".rs", ""],
-	[".go", ""],
-	[".c", ""],
-	[".h", ""],
-	[".cpp", ""],
-	[".cc", ""],
-	[".hpp", ""],
-	[".cs", "\ue648"],
-	[".zig", ""],
-
-	// JVM
-	[".java", ""],
-	[".kt", ""],
-	[".kts", ""],
-	[".klib", ""],
-	[".kexe", ""],
-	[".scala", ""],
-	[".clj", ""],
-	[".cljs", ""],
-	[".groovy", ""],
-
-	// Scripting / other languages
-	[".py", ""],
-	[".rb", ""],
-	[".php", ""],
-	[".swift", ""],
-	[".lua", ""],
-	[".pl", ""],
-	[".hs", ""],
-	[".ex", ""],
-	[".exs", ""],
-	[".erl", ""],
-	[".rs", ""],
-	[".rlib", ""],
-	[".sh", ""],
-	[".bash", ""],
-	[".zsh", ""],
-	[".fish", ""],
-	[".nix", "󱄅"],
-
-	// Images
-	[".png", "\uf03e"],
-	[".jpg", "\uf03e"],
-	[".jpeg", "\uf03e"],
-	[".gif", "\uf03e"],
-	[".webp", "\uf03e"],
-	[".avif", "\uf03e"],
-	[".ico", ""],
-	[".svg", ""],
-
-	// Certificates
-	[".cer", "\uf0a3"],
-	[".p8", "\uf0a3"],
-	[".p12", "\uf0a3"],
-	[".mobileprovision", "\ued08"],
-	[".pepk", "\uf0a3"],
-	[".jks", "\uf0a3"],
-	[".pem", "\uf0a3"],
-]);
-
-const FILE_ICON: string = "";
 
 let currentRipdrag: Subprocess | null = null;
 
@@ -350,6 +212,21 @@ export async function emptyTrash(): Promise<void> {
 	} catch (error) {
 		console.warn(error);
 	}
+}
+
+export function checkTrash(): void {
+	readdir(
+		`${trashPath}/files`,
+		(error: NodeJS.ErrnoException | null, files: string[]) => {
+			if (error) {
+				return;
+			}
+
+			if (files.length) {
+				$trashFull.set(true);
+			}
+		},
+	);
 }
 
 export function dragOut(dirent: Dirent): void {

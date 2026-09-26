@@ -5,10 +5,12 @@ import { Flex } from "./components/Flex";
 import { ListExplorer } from "./components/ListExplorer";
 import { Sidebar } from "./components/Sidebar";
 import { makeApp } from "./lib/context";
+import { checkTrash } from "./lib/filesystem";
 import { registerKeyboardShortcuts } from "./lib/shortcuts";
 
 function main() {
 	makeApp((): void => {
+		checkTrash();
 		registerKeyboardShortcuts();
 
 		App.make({

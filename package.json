@@ -3,7 +3,7 @@
 	"module": "index.ts",
 	"type": "module",
 	"private": false,
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"scripts": {
 		"dev": "bun run --watch src/main.ts",
 		"build": "bun run src/build.ts",
@@ -15,10 +15,10 @@
 		"@types/bun": "latest"
 	},
 	"peerDependencies": {
-		"typescript": "^7"
+		"typescript": "^7.0.2"
 	},
 	"dependencies": {
-		"@opentui/core": "^0.5.11",
-		"nanostores": "^1.5.3"
+		"@opentui/core": "^0.5.12",
+		"nanostores": "^1.5.4"
 	}
 }
