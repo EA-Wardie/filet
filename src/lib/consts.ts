@@ -1,0 +1,183 @@
+import { homedir } from "node:os";
+import * as core from "@opentui/core";
+
+export const HOME_DIRECTORY: string = homedir();
+
+export const USER_CONFIG_PATH: string = `${HOME_DIRECTORY}/.config/filet/config.toml`;
+
+export const IMAGE_FILETYPES: Set<string> = new Set([
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".webp",
+	".avif",
+	".ico",
+	".svg",
+]);
+
+export const CODE_FILETYPES: Record<string, string> = {
+	".ts": "typescript",
+	".tsx": "typescriptreact",
+	".vue": "typescriptreact",
+	".svelte": "typescriptreact",
+	".html": "typescriptreact",
+	".htm": "typescriptreact",
+	".js": "javascript",
+	".jsx": "javascriptreact",
+	".md": "markdown",
+	".zig": "zig",
+};
+
+export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
+	// JS / TS
+	[".ts", ""],
+	[".tsx", ""],
+	[".js", ""],
+	[".jsx", ""],
+	[".mjs", ""],
+	[".cjs", ""],
+
+	// Data / config
+	[".json", "󰘦"],
+	[".jsonc", "󰘦"],
+	[".yaml", "\ue8eb"],
+	[".yml", "\ue8eb"],
+	[".toml", ""],
+	[".xml", "\udb81\uddc0"],
+	[".env", ""],
+	[".ini", ""],
+	[".conf", ""],
+	[".sql", ""],
+	[".sqlite", ""],
+	[".graphql", ""],
+	[".gql", ""],
+	[".lock", ""],
+	[".lockb", ""],
+
+	// Archive
+	[".zip", "󰗄"],
+	[".rar", "󰗄"],
+	[".7z", "󰗄"],
+	[".tar", "󰗄"],
+	[".gz", "󰗄"],
+
+	// Docs
+	[".md", ""],
+	[".mdx", ""],
+	[".txt", ""],
+	[".csv", ""],
+	[".xlsx", "󱎏"],
+	[".docx", ""],
+	[".pdf", "󰈦"],
+
+	// Web
+	[".html", ""],
+	[".htm", ""],
+	[".css", ""],
+	[".scss", ""],
+	[".sass", ""],
+	[".less", ""],
+	[".vue", "\ued4a"],
+	[".svelte", ""],
+
+	// Systems languages
+	[".rs", ""],
+	[".go", ""],
+	[".c", ""],
+	[".h", ""],
+	[".cpp", ""],
+	[".cc", ""],
+	[".hpp", ""],
+	[".cs", "\ue648"],
+	[".zig", ""],
+
+	// JVM
+	[".java", ""],
+	[".kt", ""],
+	[".kts", ""],
+	[".klib", ""],
+	[".kexe", ""],
+	[".scala", ""],
+	[".clj", ""],
+	[".cljs", ""],
+	[".groovy", ""],
+
+	// Scripting / other languages
+	[".py", ""],
+	[".rb", ""],
+	[".php", ""],
+	[".swift", ""],
+	[".lua", ""],
+	[".pl", ""],
+	[".hs", ""],
+	[".ex", ""],
+	[".exs", ""],
+	[".erl", ""],
+	[".rs", ""],
+	[".rlib", ""],
+	[".sh", ""],
+	[".bash", ""],
+	[".zsh", ""],
+	[".fish", ""],
+	[".nix", "󱄅"],
+
+	// Images
+	[".png", "\uf03e"],
+	[".jpg", "\uf03e"],
+	[".jpeg", "\uf03e"],
+	[".gif", "\uf03e"],
+	[".webp", "\uf03e"],
+	[".avif", "\uf03e"],
+	[".ico", ""],
+	[".svg", ""],
+
+	// Certificates
+	[".cer", "\uf0a3"],
+	[".p8", "\uf0a3"],
+	[".p12", "\uf0a3"],
+	[".mobileprovision", "\ued08"],
+	[".pepk", "\uf0a3"],
+	[".jks", "\uf0a3"],
+	[".pem", "\uf0a3"],
+]);
+
+export const FILE_ICON: string = "";
+
+export const FOLDER_ICON: string = "";
+
+export function syntaxStyles(): core.SyntaxStyle {
+	return core.SyntaxStyle.fromStyles({
+		// Basic tokens
+		keyword: { fg: core.RGBA.fromHex("#FF7B72"), bold: true },
+		"keyword.import": { fg: core.RGBA.fromHex("#FF7B72"), bold: true },
+		"keyword.operator": { fg: core.RGBA.fromHex("#FF7B72") },
+
+		string: { fg: core.RGBA.fromHex("#A5D6FF") },
+		comment: { fg: core.RGBA.fromHex("#8B949E"), italic: true },
+		number: { fg: core.RGBA.fromHex("#79C0FF") },
+		boolean: { fg: core.RGBA.fromHex("#79C0FF") },
+		constant: { fg: core.RGBA.fromHex("#79C0FF") },
+
+		// Functions and types
+		function: { fg: core.RGBA.fromHex("#D2A8FF") },
+		"function.call": { fg: core.RGBA.fromHex("#D2A8FF") },
+		"function.method.call": { fg: core.RGBA.fromHex("#D2A8FF") },
+		type: { fg: core.RGBA.fromHex("#FFA657") },
+		constructor: { fg: core.RGBA.fromHex("#FFA657") },
+
+		// Variables and properties
+		variable: { fg: core.RGBA.fromHex("#E6EDF3") },
+		"variable.member": { fg: core.RGBA.fromHex("#79C0FF") },
+		property: { fg: core.RGBA.fromHex("#79C0FF") },
+
+		// Operators and punctuation
+		operator: { fg: core.RGBA.fromHex("#FF7B72") },
+		punctuation: { fg: core.RGBA.fromHex("#F0F6FC") },
+		"punctuation.bracket": { fg: core.RGBA.fromHex("#F0F6FC") },
+		"punctuation.delimiter": { fg: core.RGBA.fromHex("#C9D1D9") },
+
+		// Default fallback
+		default: { fg: core.RGBA.fromHex("#E6EDF3") },
+	});
+}

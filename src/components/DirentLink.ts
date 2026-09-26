@@ -10,6 +10,7 @@ import {
 	moveToTrash,
 	remove,
 	rename,
+	restoreFromTrash,
 } from "../lib/filesystem";
 import { getDirentPath, go, openInDefault } from "../lib/navigation";
 import { $currentPath, $selectedDirent } from "../lib/store";
@@ -89,14 +90,14 @@ export class DirentLink {
 				Divider.make(),
 				MenuButton.make({
 					label: "\uf0c5 Copy",
-					shortcut: "Ctrl+c",
+					shortcut: "Ctrl+C",
 					onClick: (): void => {
 						copy(this._options.dirent);
 					},
 				}),
 				MenuButton.make({
 					label: "\uf0c4 Cut",
-					shortcut: "Ctrl+x",
+					shortcut: "Ctrl+X",
 					onClick: (): void => {
 						cut(this._options.dirent);
 					},
@@ -104,7 +105,7 @@ export class DirentLink {
 				Divider.make(),
 				MenuButton.make({
 					label: "\uf040 Rename",
-					shortcut: "Ctrl+r",
+					shortcut: "Ctrl+R",
 					onClick: (): void => {
 						Prompt.make({
 							heading: this._options.dirent.isDirectory()
@@ -125,7 +126,7 @@ export class DirentLink {
 				}),
 				MenuButton.make({
 					label: "\uf1f8 Trash",
-					shortcut: "Ctrl+t",
+					shortcut: "Ctrl+T",
 					visible: !$currentPath.get().includes(trashPath),
 					onClick: (): void => {
 						Confirmation.make({
@@ -139,7 +140,7 @@ export class DirentLink {
 				}),
 				MenuButton.make({
 					label: "\udb81\ude91 Delete",
-					shortcut: "Ctrl+d",
+					shortcut: "Ctrl+D",
 					visible: !$currentPath.get().includes(trashPath),
 					onClick: (): void => {
 						Confirmation.make({
@@ -147,6 +148,23 @@ export class DirentLink {
 							description: `Are you sure you want to permanently delete '${this._options.dirent.name}'?`,
 							onConfirm: (): void => {
 								remove(this._options.dirent);
+							},
+						});
+					},
+				}),
+				Divider.make({
+					visible: $currentPath.get().includes(trashPath),
+				}),
+				MenuButton.make({
+					label: "\udb82\udd9b Restore",
+					shortcut: "Ctrl+Z",
+					visible: $currentPath.get().includes(trashPath),
+					onClick: (): void => {
+						Confirmation.make({
+							heading: "Restore?",
+							description: `Are you sure you want to restore '${this._options.dirent.name}' to its original location?`,
+							onConfirm: (): void => {
+								restoreFromTrash(this._options.dirent);
 							},
 						});
 					},

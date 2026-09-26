@@ -1,8 +1,6 @@
 import { RGBA } from "@opentui/core";
 import defaultConfig from "../../config.toml";
-import { homeDirectory } from "./home";
-
-const USER_CONFIG_PATH: string = `${homeDirectory}/.config/filet/config.toml`;
+import { HOME_DIRECTORY, USER_CONFIG_PATH } from "./consts";
 
 export interface BookmarkType {
 	label: string;
@@ -66,7 +64,7 @@ export const displayType: "list" | "grid" =
 	userConfig.display_type ?? defaultConfig.display_type;
 
 export const trashPath: string =
-	userConfig.trash_path ?? `${homeDirectory}/.local/share/Trash`;
+	userConfig.trash_path ?? `${HOME_DIRECTORY}/.local/share/Trash`;
 
 export const doubleClickTimeout: number =
 	userConfig.double_click_timeout ?? defaultConfig.double_click_timeout;

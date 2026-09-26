@@ -1,8 +1,8 @@
 import { readFile } from "node:fs";
 import { extname } from "node:path";
 import * as core from "@opentui/core";
-import { ctx, syntaxStyles } from "../lib/context";
-import { CODE_FILETYPES, IMAGE_FILETYPES } from "../lib/filesystem";
+import { CODE_FILETYPES, IMAGE_FILETYPES, syntaxStyles } from "../lib/consts";
+import { ctx } from "../lib/context";
 import { $currentPath } from "../lib/store";
 
 export class Preview {

@@ -13,6 +13,7 @@ import {
 	paste,
 	remove,
 	rename,
+	restoreFromTrash,
 } from "./filesystem";
 import { getDirentPath, go, openInDefault } from "./navigation";
 import { $dialogOpen, $selectedDirent } from "./store";
@@ -75,6 +76,15 @@ const SHORTCUTS: Partial<Record<string, Shortcut>> = {
 			description: `Are you sure you want to move '${dirent.name}' to trash?`,
 			onConfirm: (): void => {
 				moveToTrash(dirent);
+			},
+		});
+	}),
+	"ctrl+z": withDirent((dirent: Dirent): void => {
+		Confirmation.make({
+			heading: "Restore?",
+			description: `Are you sure you want to restore '${dirent.name}' to its original location?`,
+			onConfirm: (): void => {
+				restoreFromTrash(dirent);
 			},
 		});
 	}),
