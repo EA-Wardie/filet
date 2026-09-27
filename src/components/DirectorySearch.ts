@@ -9,11 +9,13 @@ export class DirectorySearch {
 	private _button: core.BoxRenderable | null = null;
 	private _icon: core.TextRenderable | null = null;
 	private _input: core.InputRenderable | null = null;
+	private _active: boolean = false;
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
+			maxWidth: 50,
 			flexDirection: "row",
 			flexGrow: 0,
 			visible: !$currentPath.get().includes(trashPath),
@@ -32,8 +34,6 @@ export class DirectorySearch {
 
 	private addButton(): void {
 		this._button = new core.BoxRenderable(ctx, {
-			flexDirection: "row",
-			flexShrink: 1,
 			paddingX: 1,
 			onMouseOver: () => {
 				this._component.backgroundColor = theme.fg;
@@ -63,10 +63,10 @@ export class DirectorySearch {
 					this._icon.fg = theme.fg;
 				}
 
-				if (this._button && this._input) {
-					this._button.visible = !this._button.visible;
-					this._input.visible = !this._input.visible;
-					this._component.flexGrow = !this._button.visible ? 1 : 0;
+				if (this._active) {
+					this.hideInput();
+				} else {
+					this.showInput();
 				}
 			},
 		});
@@ -82,8 +82,34 @@ export class DirectorySearch {
 		this._component.add(this._button);
 	}
 
+	private showInput(): void {
+		this._active = true;
+
+		if (this._button && this._input) {
+			this._button.visible = false;
+			this._input.visible = true;
+			this._component.flexGrow = 1;
+
+			this._input.focus();
+		}
+	}
+
+	private hideInput(): void {
+		this._active = false;
+
+		if (this._button && this._input) {
+			this._input.value = "";
+			this._button.visible = true;
+			this._input.visible = false;
+			this._component.flexGrow = 0;
+
+			this._input.blur();
+		}
+	}
+
 	private addInput(): void {
 		this._input = new core.InputRenderable(ctx, {
+			maxWidth: 50,
 			value: $searchTerm.get(),
 			placeholder: "Search...",
 			focusedBackgroundColor: theme.bg_light,
@@ -103,13 +129,15 @@ export class DirectorySearch {
 	private registerStoreEvents(): void {
 		$currentPath.listen((path: string) => {
 			this._component.visible = !path.includes(trashPath);
+
+			this.hideInput();
 		});
 	}
 
 	private registerKeyboardEvents(): void {
 		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "escape" && this._input) {
-				this._input.blur();
+			if (key.name === "escape" && this._active) {
+				this.hideInput();
 			}
 		});
 	}

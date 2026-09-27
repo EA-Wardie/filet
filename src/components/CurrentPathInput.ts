@@ -14,6 +14,7 @@ export class CurrentPathInput {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
+			maxWidth: 50,
 			flexDirection: "row",
 			columnGap: 1,
 			flexGrow: 1,

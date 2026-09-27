@@ -5,8 +5,6 @@ import { HOME_DIRECTORY } from "./consts";
 
 export const $currentPath = nanostores.atom<string>(HOME_DIRECTORY);
 
-export const $dirents = nanostores.atom<Dirent[]>([]);
-
 export const $selectedDirent = nanostores.atom<Dirent | null>(null);
 
 export const $searchTerm = nanostores.atom<string>("");

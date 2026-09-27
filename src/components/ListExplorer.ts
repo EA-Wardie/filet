@@ -9,6 +9,7 @@ import {
 	$copyDirent,
 	$currentPath,
 	$cutDirent,
+	$searchTerm,
 	$selectedDirent,
 } from "../lib/store";
 import { DirentLink } from "./DirentLink";
@@ -81,6 +82,7 @@ export class ListExplorer {
 		});
 
 		this.registerStoreEvents();
+		this.scanAndMakeDirents($currentPath.get());
 	}
 
 	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
@@ -88,61 +90,28 @@ export class ListExplorer {
 	}
 
 	private registerStoreEvents(): void {
-		$currentPath.subscribe((path: string): void => {
-			$selectedDirent.set(null);
+		$currentPath.listen((path: string): void => {
+			this.scanAndMakeDirents(path);
+		});
 
-			for (const child of this._component.getChildren()) {
-				child.destroyRecursively();
-			}
-
-			stat(path, (error: ErrnoException | null, dirent: Stats) => {
-				if (error) {
-					logError(error);
-
-					return;
-				}
-
-				if (dirent.isDirectory()) {
-					readdir(
-						path,
-						{ withFileTypes: true },
-						(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
-							if (error) {
-								logError(error);
-
-								return;
-							}
-
-							this._dirents = dirents;
-
-							if (dirents.length) {
-								this.filterDirents();
-								this.sortDirents();
-								this.drawDirents();
-								this.selectFirstDirent();
-							} else {
-								this._component.add(
-									new core.TextRenderable(ctx, {
-										content: "\uf07c  --Empty--",
-										fg: theme.fg,
-										attributes: core.TextAttributes.DIM,
-										marginX: 1,
-										selectable: false,
-									}),
-								);
-							}
-						},
-					);
-				} else {
-					this._component.add(Preview.make());
-				}
-			});
+		$searchTerm.listen((): void => {
+			this.scanAndMakeDirents($currentPath.get(), true);
 		});
 	}
 
-	private filterDirents(): void {}
+	private filterLinks(): void {
+		if (!$searchTerm.get()) {
+			return;
+		}
 
-	private sortDirents(): void {
+		this._dirents = this._dirents.filter((dirent: Dirent) => {
+			return dirent.name
+				.toLocaleLowerCase()
+				.includes($searchTerm.get().toLocaleLowerCase());
+		});
+	}
+
+	private sortLinks(): void {
 		if (this._dirents.length > 1000) {
 			return;
 		}
@@ -166,13 +135,67 @@ export class ListExplorer {
 		});
 	}
 
-	private drawDirents() {
+	private addLinks() {
 		for (const dirent of this._dirents) {
 			this._component.add(DirentLink.make({ dirent: dirent }));
 		}
 	}
 
-	private selectFirstDirent(): void {
+	private selectFirstLink(): void {
 		$selectedDirent.set(this._dirents.at(0) ?? null);
+	}
+
+	private scanAndMakeDirents(path: string, filter: boolean = false): void {
+		$selectedDirent.set(null);
+
+		for (const child of this._component.getChildren()) {
+			child.destroyRecursively();
+		}
+
+		stat(path, (error: ErrnoException | null, dirent: Stats) => {
+			if (error) {
+				logError(error);
+
+				return;
+			}
+
+			if (dirent.isDirectory()) {
+				readdir(
+					path,
+					{ withFileTypes: true },
+					(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
+						if (error) {
+							logError(error);
+
+							return;
+						}
+
+						this._dirents = dirents;
+
+						if (dirents.length) {
+							if (filter) {
+								this.filterLinks();
+							}
+
+							this.sortLinks();
+							this.addLinks();
+							this.selectFirstLink();
+						} else {
+							this._component.add(
+								new core.TextRenderable(ctx, {
+									content: "\uf07c  --Empty--",
+									fg: theme.fg,
+									attributes: core.TextAttributes.DIM,
+									marginX: 1,
+									selectable: false,
+								}),
+							);
+						}
+					},
+				);
+			} else {
+				this._component.add(Preview.make());
+			}
+		});
 	}
 }

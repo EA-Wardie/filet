@@ -7,9 +7,12 @@ interface Options extends core.BoxOptions {
 }
 
 export class Flex {
-	private _component;
+	private _options: Options;
+	private _component: core.BoxRenderable;
 
 	constructor(options: Options) {
+		this._options = options;
+
 		this._component = new core.BoxRenderable(ctx, {
 			width: "100%",
 			height: "100%",
@@ -17,7 +20,7 @@ export class Flex {
 			borderColor: theme.border,
 			flexDirection: "column",
 			justifyContent: "space-between",
-			...options,
+			...this._options,
 		});
 
 		this.addComponents(options.components);
