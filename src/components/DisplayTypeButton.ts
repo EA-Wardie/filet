@@ -1,4 +1,5 @@
 import type * as core from "@opentui/core";
+import type { DisplayType } from "../lib/consts";
 import { $displayType } from "../lib/store";
 import { IconButton } from "./IconButton";
 
@@ -13,7 +14,7 @@ export class DisplayTypeButton {
 		this._button = new IconButton({
 			icon: this.getIcon($displayType.get()),
 			onClick: (): void => {
-				$displayType.set($displayType.get() === "grid" ? "list" : "grid");
+				$displayType.set($displayType.get() === "columns" ? "list" : "columns");
 			},
 			...this._options,
 		});
@@ -27,12 +28,12 @@ export class DisplayTypeButton {
 		return new this(options)._component;
 	}
 
-	private getIcon(type: "list" | "grid"): string {
-		return type === "list" ? "\udb81\udf58" : "\uf03a";
+	private getIcon(type: DisplayType): string {
+		return type === "list" ? "\uf0db" : "\uf03a";
 	}
 
 	private registerStoreListeners(): void {
-		$displayType.listen((type: "list" | "grid"): void => {
+		$displayType.listen((type: DisplayType): void => {
 			this._button.setIcon(this.getIcon(type));
 		});
 	}

@@ -2,6 +2,7 @@ import { type Dirent, readdir, type Stats, stat } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { theme } from "../lib/config";
+import { COLUMN_GAP } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { createFile, createFolder, paste } from "../lib/filesystem";
 import { logError } from "../lib/log";
@@ -9,6 +10,7 @@ import {
 	$copyDirent,
 	$currentPath,
 	$cutDirent,
+	$displayType,
 	$refresh,
 	$searchTerm,
 	$selectedDirent,
@@ -20,13 +22,18 @@ import { MenuButton } from "./MenuButton";
 import { Preview } from "./Preview";
 import { Prompt } from "./Prompt";
 
+interface Link {
+	dirent: Dirent;
+	name: string;
+	link: core.BoxRenderable;
+}
+
 export class ListExplorer {
 	private _options: core.BoxOptions;
-	private _component: core.BoxRenderable;
+	private _component: core.ScrollBoxRenderable;
 	private _dirents: Dirent[] = [];
 	private _direntsPath: string | null = null;
-	private _links: { dirent: Dirent; name: string; link: core.BoxRenderable }[] =
-		[];
+	private _links: Link[] = [];
 	private _noMatches: core.TextRenderable | null = null;
 	private _scan: number = 0;
 
@@ -37,6 +44,7 @@ export class ListExplorer {
 			width: "100%",
 			height: "100%",
 			viewportCulling: true,
+			scrollX: true,
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.RIGHT) {
 					Menu.make({
@@ -87,6 +95,11 @@ export class ListExplorer {
 			...this._options,
 		});
 
+		this._component.viewport.on("resize", (): void => {
+			this.updateLayout();
+		});
+
+		this.updateLayout();
 		this.registerStoreEvents();
 		this.scanAndMakeDirents($currentPath.get());
 	}
@@ -109,6 +122,33 @@ export class ListExplorer {
 				this.filterLinks();
 			}
 		});
+
+		$displayType.listen((): void => {
+			this.updateLayout();
+		});
+	}
+
+	private updateLayout(): void {
+		const columns: boolean =
+			$displayType.get() === "columns" && this._direntsPath !== null;
+		const { horizontalScrollBar, verticalScrollBar, viewport } =
+			this._component;
+
+		if (columns) {
+			horizontalScrollBar.visible = true;
+			verticalScrollBar.visible = false;
+		} else {
+			horizontalScrollBar.resetVisibilityControl();
+			verticalScrollBar.resetVisibilityControl();
+		}
+
+		this._component.contentOptions = {
+			flexWrap: columns ? "wrap" : "no-wrap",
+			columnGap: columns ? COLUMN_GAP : 0,
+			width: columns ? "auto" : "100%",
+			height: columns ? viewport.height : "auto",
+			minHeight: columns ? 0 : "100%",
+		};
 	}
 
 	private filterLinks(): void {
@@ -174,7 +214,7 @@ export class ListExplorer {
 		this._links = [];
 		this._noMatches = null;
 
-		for (const child of this._component.getChildren()) {
+		for (const child of [...this._component.getChildren()]) {
 			child.destroyRecursively();
 		}
 	}
@@ -202,15 +242,14 @@ export class ListExplorer {
 
 		try {
 			if (!this._dirents.length) {
-				this.addMessage("  --Empty--");
+				this.addMessage("\uf07c  --Empty--");
 
 				return;
 			}
 
-			this.addLinks();
-
 			this._noMatches = this.addMessage("\uf002  --No Matches--", false);
 
+			this.addLinks();
 			this.filterLinks();
 		} catch (error) {
 			logError(error);
@@ -225,6 +264,7 @@ export class ListExplorer {
 		this._dirents = [];
 		this._direntsPath = null;
 
+		this.updateLayout();
 		this.clearLinks();
 
 		stat(path, (error: ErrnoException | null, dirent: Stats) => {
@@ -256,6 +296,7 @@ export class ListExplorer {
 						this._dirents = dirents;
 						this._direntsPath = path;
 
+						this.updateLayout();
 						this.sortDirents();
 						this.makeLinks();
 					},

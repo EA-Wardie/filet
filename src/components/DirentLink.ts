@@ -182,6 +182,8 @@ export class DirentLink {
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
 			content: `${getFileIcon(this._options.dirent)} ${this._options.dirent.name}`,
+			wrapMode: "none",
+			truncate: true,
 			fg: theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,

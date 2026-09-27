@@ -189,6 +189,6 @@ This installs filet the same way as `bun run install:app`.
 - [x] Simple search function for the current directory.
 - [x] Ability to open files marked as executables instead of previewing them.
 - [x] Hide the sidebar when the viewport reaches a small enough size.
-- [x] Improve the grid view option for visual clarity.
+- [x] Improve the columns view option for visual clarity.
 - [x] Add default display type as a configurable value.
 - [x] Option to restore a file from trash.

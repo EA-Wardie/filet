@@ -1,7 +1,7 @@
 import type { Dirent } from "node:fs";
 import * as nanostores from "nanostores";
 import { displayType } from "./config";
-import { HOME_DIRECTORY } from "./consts";
+import { type DisplayType, HOME_DIRECTORY } from "./consts";
 
 export const $currentPath = nanostores.atom<string>(HOME_DIRECTORY);
 
@@ -19,7 +19,7 @@ export const $menuOpen = nanostores.atom<boolean>(false);
 
 export const $dialogOpen = nanostores.atom<boolean>(false);
 
-export const $displayType = nanostores.atom<"list" | "grid">(displayType);
+export const $displayType = nanostores.atom<DisplayType>(displayType);
 
 export const $tasksCount = nanostores.atom<number>(0);
 

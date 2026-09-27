@@ -2,15 +2,27 @@
 
 ## 0.2.1 (2026-09-27)
 
+### Added
+
+- Columns display mode: the display button switches the list into side-by-side columns that scroll horizontally.
+
 ### Changed
 
+- The `display_type` config value `"grid"` is now `"columns"`.
+- Display type button uses a columns icon.
+- Long names are truncated in the list.
+- Markdown files preview as highlighted source with line numbers.
 - Search is faster in large folders, as it hides non-matching entries instead of rebuilding the list.
 
 ### Fixed
 
 - File operations no longer reset the path bar or re-highlight the sidebar.
+- A preview that finishes loading after you navigate away no longer draws into the new view.
+- Preview file type detection ignores extension case.
 
 ### Internal
+
+- `DisplayType` type shared from `lib/consts.ts`.
 
 - File operations use a dedicated refresh signal instead of re-notifying the current path.
 - New `IconButton` component shared by the back, forward, display type, empty trash and search buttons.
