@@ -23,6 +23,8 @@ export class ListExplorer {
 	private _options: core.BoxOptions;
 	private _component: core.BoxRenderable;
 	private _dirents: Dirent[] = [];
+	private _direntsPath: string | null = null;
+	private _scan: number = 0;
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
@@ -95,20 +97,22 @@ export class ListExplorer {
 		});
 
 		$searchTerm.listen((): void => {
-			this.scanAndMakeDirents($currentPath.get(), true);
+			if (this._direntsPath === $currentPath.get()) {
+				this.makeLinks();
+			}
 		});
 	}
 
-	private filterLinks(): void {
-		if (!$searchTerm.get()) {
-			return;
+	private filterLinks(): Dirent[] {
+		const term: string = $searchTerm.get().toLocaleLowerCase();
+
+		if (!term) {
+			return this._dirents;
 		}
 
-		this._dirents = this._dirents.filter((dirent: Dirent) => {
-			return dirent.name
-				.toLocaleLowerCase()
-				.includes($searchTerm.get().toLocaleLowerCase());
-		});
+		return this._dirents.filter((dirent: Dirent): boolean =>
+			dirent.name.toLocaleLowerCase().includes(term),
+		);
 	}
 
 	private sortLinks(): void {
@@ -135,24 +139,76 @@ export class ListExplorer {
 		});
 	}
 
-	private addLinks() {
-		for (const dirent of this._dirents) {
+	private addLinks(dirents: Dirent[]): void {
+		for (const dirent of dirents) {
 			this._component.add(DirentLink.make({ dirent: dirent }));
 		}
 	}
 
-	private selectFirstLink(): void {
-		$selectedDirent.set(this._dirents.at(0) ?? null);
+	private selectFirstLink(dirents: Dirent[]): void {
+		$selectedDirent.set(dirents.at(0) ?? null);
 	}
 
-	private scanAndMakeDirents(path: string, filter: boolean = false): void {
+	private clearLinks(): void {
 		$selectedDirent.set(null);
 
 		for (const child of this._component.getChildren()) {
 			child.destroyRecursively();
 		}
+	}
+
+	private addMessage(content: string): void {
+		this._component.add(
+			new core.TextRenderable(ctx, {
+				content: content,
+				fg: theme.fg,
+				attributes: core.TextAttributes.DIM,
+				marginX: 1,
+				selectable: false,
+			}),
+		);
+	}
+
+	private makeLinks(): void {
+		this.clearLinks();
+
+		try {
+			if (!this._dirents.length) {
+				this.addMessage("  --Empty--");
+
+				return;
+			}
+
+			const dirents: Dirent[] = this.filterLinks();
+
+			if (!dirents.length) {
+				this.addMessage("\uf002  --No Matches--");
+
+				return;
+			}
+
+			this.addLinks(dirents);
+			this.selectFirstLink(dirents);
+		} catch (error) {
+			logError(error);
+		}
+	}
+
+	private scanAndMakeDirents(path: string): void {
+		this._scan += 1;
+
+		const scan: number = this._scan;
+
+		this._dirents = [];
+		this._direntsPath = null;
+
+		this.clearLinks();
 
 		stat(path, (error: ErrnoException | null, dirent: Stats) => {
+			if (scan !== this._scan) {
+				return;
+			}
+
 			if (error) {
 				logError(error);
 
@@ -164,6 +220,10 @@ export class ListExplorer {
 					path,
 					{ withFileTypes: true },
 					(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
+						if (scan !== this._scan) {
+							return;
+						}
+
 						if (error) {
 							logError(error);
 
@@ -171,26 +231,10 @@ export class ListExplorer {
 						}
 
 						this._dirents = dirents;
+						this._direntsPath = path;
 
-						if (dirents.length) {
-							if (filter) {
-								this.filterLinks();
-							}
-
-							this.sortLinks();
-							this.addLinks();
-							this.selectFirstLink();
-						} else {
-							this._component.add(
-								new core.TextRenderable(ctx, {
-									content: "\uf07c  --Empty--",
-									fg: theme.fg,
-									attributes: core.TextAttributes.DIM,
-									marginX: 1,
-									selectable: false,
-								}),
-							);
-						}
+						this.sortLinks();
+						this.makeLinks();
 					},
 				);
 			} else {

@@ -10,6 +10,7 @@ export class DirectorySearch {
 	private _icon: core.TextRenderable | null = null;
 	private _input: core.InputRenderable | null = null;
 	private _active: boolean = false;
+	private _path: string = $currentPath.get();
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
@@ -97,6 +98,8 @@ export class DirectorySearch {
 	private hideInput(): void {
 		this._active = false;
 
+		$searchTerm.set("");
+
 		if (this._button && this._input) {
 			this._input.value = "";
 			this._button.visible = true;
@@ -130,7 +133,11 @@ export class DirectorySearch {
 		$currentPath.listen((path: string) => {
 			this._component.visible = !path.includes(trashPath);
 
-			this.hideInput();
+			if (path !== this._path) {
+				this._path = path;
+
+				this.hideInput();
+			}
 		});
 	}
 

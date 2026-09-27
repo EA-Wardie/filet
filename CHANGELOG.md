@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.2.0 (2026-09-27)
+
+### Added
+
+- Directory search: filter the current folder by name from the header. The filter stays through file operations, clears when closed or on navigation, and shows "No matches" when nothing matches.
+- Errors are logged with their code, syscall and path.
+
+### Changed
+
+- Empty Trash button is icon-only.
+- Header has a divider before the search and display buttons.
+- Path bar is narrower and highlights when focused.
+
+### Fixed
+
+- Enter only navigates to the path bar's value when the path bar is focused.
+- Navigating quickly no longer shows an older folder's contents.
+
+### Internal
+
+- `DisplayTypeToggle` renamed to `DisplayTypeButton`.
+- `Divider` supports a vertical option.
+- `ListExplorer` directory loading moved into one reusable method.
+- Search filters loaded entries in memory instead of re-reading the directory.
+
 ## 0.1.9 (2026-09-26)
 
 ### Added

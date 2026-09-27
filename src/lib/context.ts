@@ -14,7 +14,7 @@ export function makeApp(callback: () => void) {
 		.then((context: core.CliRenderer) => {
 			ctx = context;
 
-			ctx.console.show();
+			// ctx.console.show();
 
 			callback();
 		})

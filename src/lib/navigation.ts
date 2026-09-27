@@ -60,7 +60,7 @@ export function openInDefault(dirent: Dirent): void {
 					detached: true,
 				}).unref();
 			} catch (error) {
-				logError(error as NodeJS.ErrnoException);
+				logError(error);
 			}
 
 			return;
@@ -73,7 +73,7 @@ export function openInDefault(dirent: Dirent): void {
 				detached: true,
 			}).unref();
 		} catch (error) {
-			logError(error as NodeJS.ErrnoException);
+			logError(error);
 		}
 	});
 }

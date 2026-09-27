@@ -50,7 +50,7 @@ async function loadUserConfig(): Promise<ConfigFile> {
 	try {
 		return Bun.TOML.parse(await file.text()) as ConfigFile;
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 
 		return {};
 	}

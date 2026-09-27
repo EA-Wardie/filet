@@ -112,7 +112,7 @@ export async function paste(): Promise<void> {
 			$copyDirent.set(null);
 		}
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 	} finally {
 		$currentPath.notify();
 
@@ -157,7 +157,7 @@ export async function rename(dirent: Dirent, name: string): Promise<void> {
 
 		$currentPath.notify();
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -173,7 +173,7 @@ export async function remove(dirent: Dirent): Promise<void> {
 
 		$currentPath.notify();
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -235,7 +235,7 @@ export async function moveToTrash(dirent: Dirent): Promise<void> {
 		$trashFull.set(true);
 		$currentPath.notify();
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -264,7 +264,7 @@ export async function restoreFromTrash(dirent: Dirent): Promise<void> {
 
 		$currentPath.notify();
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -289,7 +289,7 @@ export async function emptyTrash(): Promise<void> {
 		$trashFull.set(false);
 		$currentPath.notify();
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -327,6 +327,6 @@ export function dragOut(dirent: Dirent): void {
 			}
 		});
 	} catch (error) {
-		logError(error as NodeJS.ErrnoException);
+		logError(error);
 	}
 }
