@@ -14,7 +14,7 @@ export class Divider {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			border: !this._options.vertical ? ["top"] : ["left"],
+			border: this._options.vertical ? ["left"] : ["top"],
 			borderColor: theme.border,
 			...this._options,
 		});

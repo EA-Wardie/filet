@@ -1,7 +1,8 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { doubleClickTimeout, theme, trashPath } from "../lib/config";
+import { doubleClickTimeout, theme } from "../lib/config";
+import { TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
 import {
 	copy,
@@ -12,7 +13,12 @@ import {
 	rename,
 	restoreFromTrash,
 } from "../lib/filesystem";
-import { getDirentPath, go, openInDefault } from "../lib/navigation";
+import {
+	getDirentPath,
+	go,
+	isTrashPath,
+	openInDefault,
+} from "../lib/navigation";
 import { $currentPath, $selectedDirent } from "../lib/store";
 import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
@@ -122,12 +128,12 @@ export class DirentLink {
 					},
 				}),
 				Divider.make({
-					visible: !$currentPath.get().includes(trashPath),
+					visible: !isTrashPath($currentPath.get()),
 				}),
 				MenuButton.make({
-					label: "\uf1f8 Trash",
+					label: `${TRASH_FULL_ICON} Trash`,
 					shortcut: "Ctrl+T",
-					visible: !$currentPath.get().includes(trashPath),
+					visible: !isTrashPath($currentPath.get()),
 					onClick: (): void => {
 						Confirmation.make({
 							heading: "Move to trash?",
@@ -141,7 +147,7 @@ export class DirentLink {
 				MenuButton.make({
 					label: "\udb81\ude91 Delete",
 					shortcut: "Ctrl+D",
-					visible: !$currentPath.get().includes(trashPath),
+					visible: !isTrashPath($currentPath.get()),
 					onClick: (): void => {
 						Confirmation.make({
 							heading: "Permanently delete?",
@@ -153,12 +159,12 @@ export class DirentLink {
 					},
 				}),
 				Divider.make({
-					visible: $currentPath.get().includes(trashPath),
+					visible: isTrashPath($currentPath.get()),
 				}),
 				MenuButton.make({
 					label: "\udb82\udd9b Restore",
 					shortcut: "Ctrl+Z",
-					visible: $currentPath.get().includes(trashPath),
+					visible: isTrashPath($currentPath.get()),
 					onClick: (): void => {
 						Confirmation.make({
 							heading: "Restore?",

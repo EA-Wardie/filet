@@ -9,6 +9,7 @@ import {
 	$copyDirent,
 	$currentPath,
 	$cutDirent,
+	$refresh,
 	$searchTerm,
 	$selectedDirent,
 } from "../lib/store";
@@ -24,6 +25,9 @@ export class ListExplorer {
 	private _component: core.BoxRenderable;
 	private _dirents: Dirent[] = [];
 	private _direntsPath: string | null = null;
+	private _links: { dirent: Dirent; name: string; link: core.BoxRenderable }[] =
+		[];
+	private _noMatches: core.TextRenderable | null = null;
 	private _scan: number = 0;
 
 	constructor(options: core.BoxOptions) {
@@ -96,26 +100,37 @@ export class ListExplorer {
 			this.scanAndMakeDirents(path);
 		});
 
+		$refresh.listen((): void => {
+			this.scanAndMakeDirents($currentPath.get());
+		});
+
 		$searchTerm.listen((): void => {
 			if (this._direntsPath === $currentPath.get()) {
-				this.makeLinks();
+				this.filterLinks();
 			}
 		});
 	}
 
-	private filterLinks(): Dirent[] {
+	private filterLinks(): void {
 		const term: string = $searchTerm.get().toLocaleLowerCase();
+		let first: Dirent | null = null;
 
-		if (!term) {
-			return this._dirents;
+		for (const { dirent, name, link } of this._links) {
+			link.visible = name.includes(term);
+
+			if (link.visible && !first) {
+				first = dirent;
+			}
 		}
 
-		return this._dirents.filter((dirent: Dirent): boolean =>
-			dirent.name.toLocaleLowerCase().includes(term),
-		);
+		if (this._noMatches) {
+			this._noMatches.visible = !first;
+		}
+
+		$selectedDirent.set(first);
 	}
 
-	private sortLinks(): void {
+	private sortDirents(): void {
 		if (this._dirents.length > 1000) {
 			return;
 		}
@@ -139,34 +154,47 @@ export class ListExplorer {
 		});
 	}
 
-	private addLinks(dirents: Dirent[]): void {
-		for (const dirent of dirents) {
-			this._component.add(DirentLink.make({ dirent: dirent }));
-		}
-	}
+	private addLinks(): void {
+		for (const dirent of this._dirents) {
+			const link: core.BoxRenderable = DirentLink.make({ dirent: dirent });
 
-	private selectFirstLink(dirents: Dirent[]): void {
-		$selectedDirent.set(dirents.at(0) ?? null);
+			this._links.push({
+				dirent: dirent,
+				name: dirent.name.toLocaleLowerCase(),
+				link: link,
+			});
+
+			this._component.add(link);
+		}
 	}
 
 	private clearLinks(): void {
 		$selectedDirent.set(null);
+
+		this._links = [];
+		this._noMatches = null;
 
 		for (const child of this._component.getChildren()) {
 			child.destroyRecursively();
 		}
 	}
 
-	private addMessage(content: string): void {
-		this._component.add(
-			new core.TextRenderable(ctx, {
-				content: content,
-				fg: theme.fg,
-				attributes: core.TextAttributes.DIM,
-				marginX: 1,
-				selectable: false,
-			}),
-		);
+	private addMessage(
+		content: string,
+		visible: boolean = true,
+	): core.TextRenderable {
+		const message: core.TextRenderable = new core.TextRenderable(ctx, {
+			content: content,
+			fg: theme.fg,
+			attributes: core.TextAttributes.DIM,
+			marginX: 1,
+			selectable: false,
+			visible: visible,
+		});
+
+		this._component.add(message);
+
+		return message;
 	}
 
 	private makeLinks(): void {
@@ -179,16 +207,11 @@ export class ListExplorer {
 				return;
 			}
 
-			const dirents: Dirent[] = this.filterLinks();
+			this.addLinks();
 
-			if (!dirents.length) {
-				this.addMessage("\uf002  --No Matches--");
+			this._noMatches = this.addMessage("\uf002  --No Matches--", false);
 
-				return;
-			}
-
-			this.addLinks(dirents);
-			this.selectFirstLink(dirents);
+			this.filterLinks();
 		} catch (error) {
 			logError(error);
 		}
@@ -233,7 +256,7 @@ export class ListExplorer {
 						this._dirents = dirents;
 						this._direntsPath = path;
 
-						this.sortLinks();
+						this.sortDirents();
 						this.makeLinks();
 					},
 				);

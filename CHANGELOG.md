@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.1 (2026-09-27)
+
+### Changed
+
+- Search is faster in large folders, as it hides non-matching entries instead of rebuilding the list.
+
+### Fixed
+
+- File operations no longer reset the path bar or re-highlight the sidebar.
+
+### Internal
+
+- File operations use a dedicated refresh signal instead of re-notifying the current path.
+- New `IconButton` component shared by the back, forward, display type, empty trash and search buttons.
+- `isTrashPath()` helper and trash icon constants replace repeated checks and glyphs.
+- Path bar handles Escape only while focused.
+- `sortLinks` renamed to `sortDirents`, plus small cleanups in `DirectorySearch`, `Divider` and `log.ts`.
+
 ## 0.2.0 (2026-09-27)
 
 ### Added

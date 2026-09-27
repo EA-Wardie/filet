@@ -24,7 +24,6 @@ export class CurrentPathInput {
 		this.addIcon();
 		this.addInput();
 		this.registerStoreListeners();
-		this.registerKeyboardEvents();
 	}
 
 	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
@@ -47,6 +46,11 @@ export class CurrentPathInput {
 			value: $currentPath.get(),
 			focusedBackgroundColor: theme.bg_light,
 			flexGrow: 1,
+			onKeyDown: (key: core.KeyEvent): void => {
+				if (key.name === "escape") {
+					this._input?.blur();
+				}
+			},
 		});
 
 		this._input.on(core.InputRenderableEvents.ENTER, (value: string) => {
@@ -62,14 +66,6 @@ export class CurrentPathInput {
 		$currentPath.listen((path: string): void => {
 			if (this._input) {
 				this._input.value = path;
-			}
-		});
-	}
-
-	private registerKeyboardEvents(): void {
-		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "escape" && this._input) {
-				this._input.blur();
 			}
 		});
 	}

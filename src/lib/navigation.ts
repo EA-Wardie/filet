@@ -1,7 +1,8 @@
 import { access, constants, type Dirent } from "node:fs";
 import { dirname, join } from "node:path";
+import { trashPath } from "./config";
 import { logError } from "./log";
-import { $backHistory, $currentPath, $forwardHistory } from "./store";
+import { $backHistory, $currentPath, $forwardHistory, $refresh } from "./store";
 
 export function go(path: string): void {
 	if ($currentPath.get() === path) {
@@ -37,6 +38,14 @@ export function forward(): void {
 	$forwardHistory.set(forwardStack.slice(0, -1));
 	$backHistory.set([...$backHistory.get(), $currentPath.get()]);
 	$currentPath.set(nextPath);
+}
+
+export function refresh(): void {
+	$refresh.set($refresh.get() + 1);
+}
+
+export function isTrashPath(path: string): boolean {
+	return path.includes(trashPath);
 }
 
 export function getDirentPath(dirent: Dirent): string {
