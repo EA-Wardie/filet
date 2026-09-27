@@ -186,7 +186,7 @@ This installs filet the same way as `bun run install:app`.
 
 - [x] Allow manually editing the current path.
 - [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
-- [ ] Simple search function for the current directory.
+- [x] Simple search function for the current directory.
 - [x] Ability to open files marked as executables instead of previewing them.
 - [x] Hide the sidebar when the viewport reaches a small enough size.
 - [x] Improve the grid view option for visual clarity.
