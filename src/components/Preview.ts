@@ -3,6 +3,7 @@ import { extname } from "node:path";
 import * as core from "@opentui/core";
 import { CODE_FILETYPES, IMAGE_FILETYPES, syntaxStyles } from "../lib/consts";
 import { ctx } from "../lib/context";
+import { logError } from "../lib/log";
 import { $currentPath } from "../lib/store";
 
 export class Preview {
@@ -52,7 +53,7 @@ export class Preview {
 				content: string,
 			): Promise<void> => {
 				if (error) {
-					console.warn(error);
+					logError(error);
 
 					return;
 				}

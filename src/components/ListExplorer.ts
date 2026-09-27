@@ -4,10 +4,12 @@ import { MouseButtons } from "@opentui/core/testing";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { createFile, createFolder, paste } from "../lib/filesystem";
+import { logError } from "../lib/log";
 import {
 	$copyDirent,
 	$currentPath,
 	$cutDirent,
+	$searchTerm,
 	$selectedDirent,
 } from "../lib/store";
 import { DirentLink } from "./DirentLink";
@@ -21,6 +23,8 @@ export class ListExplorer {
 	private _options: core.BoxOptions;
 	private _component: core.BoxRenderable;
 	private _dirents: Dirent[] = [];
+	private _direntsPath: string | null = null;
+	private _scan: number = 0;
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
@@ -80,6 +84,7 @@ export class ListExplorer {
 		});
 
 		this.registerStoreEvents();
+		this.scanAndMakeDirents($currentPath.get());
 	}
 
 	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
@@ -87,62 +92,30 @@ export class ListExplorer {
 	}
 
 	private registerStoreEvents(): void {
-		$currentPath.subscribe((path: string): void => {
-			$selectedDirent.set(null);
+		$currentPath.listen((path: string): void => {
+			this.scanAndMakeDirents(path);
+		});
 
-			for (const child of this._component.getChildren()) {
-				child.destroyRecursively();
+		$searchTerm.listen((): void => {
+			if (this._direntsPath === $currentPath.get()) {
+				this.makeLinks();
 			}
-
-			stat(path, (error: ErrnoException | null, dirent: Stats) => {
-				if (error) {
-					console.warn(error);
-
-					return;
-				}
-
-				if (dirent.isDirectory()) {
-					readdir(
-						path,
-						{ withFileTypes: true },
-						(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
-							if (error) {
-								console.warn(error);
-
-								return;
-							}
-
-							this._dirents = dirents;
-
-							try {
-								if (dirents.length) {
-									this.sortDirents();
-									this.drawDirents();
-									this.selectFirstDirent();
-								} else {
-									this._component.add(
-										new core.TextRenderable(ctx, {
-											content: "\uf07c  --Empty--",
-											fg: theme.fg,
-											attributes: core.TextAttributes.DIM,
-											marginX: 1,
-											selectable: false,
-										}),
-									);
-								}
-							} catch (error) {
-								console.warn(error);
-							}
-						},
-					);
-				} else {
-					this._component.add(Preview.make());
-				}
-			});
 		});
 	}
 
-	private sortDirents(): void {
+	private filterLinks(): Dirent[] {
+		const term: string = $searchTerm.get().toLocaleLowerCase();
+
+		if (!term) {
+			return this._dirents;
+		}
+
+		return this._dirents.filter((dirent: Dirent): boolean =>
+			dirent.name.toLocaleLowerCase().includes(term),
+		);
+	}
+
+	private sortLinks(): void {
 		if (this._dirents.length > 1000) {
 			return;
 		}
@@ -166,13 +139,107 @@ export class ListExplorer {
 		});
 	}
 
-	private drawDirents() {
-		for (const dirent of this._dirents) {
+	private addLinks(dirents: Dirent[]): void {
+		for (const dirent of dirents) {
 			this._component.add(DirentLink.make({ dirent: dirent }));
 		}
 	}
 
-	private selectFirstDirent(): void {
-		$selectedDirent.set(this._dirents.at(0) ?? null);
+	private selectFirstLink(dirents: Dirent[]): void {
+		$selectedDirent.set(dirents.at(0) ?? null);
+	}
+
+	private clearLinks(): void {
+		$selectedDirent.set(null);
+
+		for (const child of this._component.getChildren()) {
+			child.destroyRecursively();
+		}
+	}
+
+	private addMessage(content: string): void {
+		this._component.add(
+			new core.TextRenderable(ctx, {
+				content: content,
+				fg: theme.fg,
+				attributes: core.TextAttributes.DIM,
+				marginX: 1,
+				selectable: false,
+			}),
+		);
+	}
+
+	private makeLinks(): void {
+		this.clearLinks();
+
+		try {
+			if (!this._dirents.length) {
+				this.addMessage("  --Empty--");
+
+				return;
+			}
+
+			const dirents: Dirent[] = this.filterLinks();
+
+			if (!dirents.length) {
+				this.addMessage("\uf002  --No Matches--");
+
+				return;
+			}
+
+			this.addLinks(dirents);
+			this.selectFirstLink(dirents);
+		} catch (error) {
+			logError(error);
+		}
+	}
+
+	private scanAndMakeDirents(path: string): void {
+		this._scan += 1;
+
+		const scan: number = this._scan;
+
+		this._dirents = [];
+		this._direntsPath = null;
+
+		this.clearLinks();
+
+		stat(path, (error: ErrnoException | null, dirent: Stats) => {
+			if (scan !== this._scan) {
+				return;
+			}
+
+			if (error) {
+				logError(error);
+
+				return;
+			}
+
+			if (dirent.isDirectory()) {
+				readdir(
+					path,
+					{ withFileTypes: true },
+					(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
+						if (scan !== this._scan) {
+							return;
+						}
+
+						if (error) {
+							logError(error);
+
+							return;
+						}
+
+						this._dirents = dirents;
+						this._direntsPath = path;
+
+						this.sortLinks();
+						this.makeLinks();
+					},
+				);
+			} else {
+				this._component.add(Preview.make());
+			}
+		});
 	}
 }

@@ -3,7 +3,7 @@ import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { $displayType } from "../lib/store";
 
-export class DisplayTypeToggle {
+export class DisplayTypeButton {
 	private _options: core.BoxOptions;
 	private _component: core.BoxRenderable;
 	private _icon: core.TextRenderable | null = null;

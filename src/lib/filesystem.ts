@@ -6,6 +6,7 @@ import type { Subprocess } from "bun";
 import { trashPath } from "./config";
 import { FILE_ICON, FILETYPE_ICONS, FOLDER_ICON } from "./consts";
 import { ctx } from "./context";
+import { logError } from "./log";
 import { getDirentPath } from "./navigation";
 import {
 	$copyDirent,
@@ -111,7 +112,7 @@ export async function paste(): Promise<void> {
 			$copyDirent.set(null);
 		}
 	} catch (error) {
-		console.warn(error);
+		logError(error);
 	} finally {
 		$currentPath.notify();
 
@@ -129,7 +130,7 @@ export function createFile(name: string): void {
 			$currentPath.notify();
 		})
 		.catch((error: Error): void => {
-			console.warn(error);
+			logError(error);
 		});
 }
 
@@ -141,7 +142,7 @@ export function createFolder(name: string): void {
 			$currentPath.notify();
 		})
 		.catch((error: Error): void => {
-			console.warn(error);
+			logError(error);
 		});
 }
 
@@ -156,7 +157,7 @@ export async function rename(dirent: Dirent, name: string): Promise<void> {
 
 		$currentPath.notify();
 	} catch (error) {
-		console.warn(error);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -172,7 +173,7 @@ export async function remove(dirent: Dirent): Promise<void> {
 
 		$currentPath.notify();
 	} catch (error) {
-		console.warn(error);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -234,7 +235,7 @@ export async function moveToTrash(dirent: Dirent): Promise<void> {
 		$trashFull.set(true);
 		$currentPath.notify();
 	} catch (error) {
-		console.warn(error);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -263,7 +264,7 @@ export async function restoreFromTrash(dirent: Dirent): Promise<void> {
 
 		$currentPath.notify();
 	} catch (error) {
-		console.warn(error);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -288,7 +289,7 @@ export async function emptyTrash(): Promise<void> {
 		$trashFull.set(false);
 		$currentPath.notify();
 	} catch (error) {
-		console.warn(error);
+		logError(error);
 	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -326,6 +327,6 @@ export function dragOut(dirent: Dirent): void {
 			}
 		});
 	} catch (error) {
-		console.warn(error);
+		logError(error);
 	}
 }

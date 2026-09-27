@@ -8,7 +8,7 @@ import { Confirmation } from "./Confirmation";
 export class EmptyTrashButton {
 	private _options: core.BoxOptions;
 	private _component: core.BoxRenderable;
-	private _label: core.TextRenderable | null = null;
+	private _icon: core.TextRenderable | null = null;
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
@@ -26,8 +26,8 @@ export class EmptyTrashButton {
 
 				this._component.backgroundColor = theme.fg;
 
-				if (this._label) {
-					this._label.fg = theme.bg;
+				if (this._icon) {
+					this._icon.fg = theme.bg;
 				}
 			},
 			onMouseOut: () => {
@@ -37,8 +37,8 @@ export class EmptyTrashButton {
 
 				this._component.backgroundColor = undefined;
 
-				if (this._label) {
-					this._label.fg = theme.fg;
+				if (this._icon) {
+					this._icon.fg = theme.fg;
 				}
 			},
 			onMouseDown: () => {
@@ -48,8 +48,8 @@ export class EmptyTrashButton {
 
 				this._component.backgroundColor = theme.fg_dark;
 
-				if (this._label) {
-					this._label.fg = theme.bg;
+				if (this._icon) {
+					this._icon.fg = theme.bg;
 				}
 			},
 			onMouseUp: () => {
@@ -59,8 +59,8 @@ export class EmptyTrashButton {
 
 				this._component.backgroundColor = undefined;
 
-				if (this._label) {
-					this._label.fg = theme.fg;
+				if (this._icon) {
+					this._icon.fg = theme.fg;
 				}
 
 				Confirmation.make({
@@ -75,7 +75,7 @@ export class EmptyTrashButton {
 			...this._options,
 		});
 
-		this.addLabel();
+		this.addIcon();
 		this.registerStoreListeners();
 	}
 
@@ -83,15 +83,15 @@ export class EmptyTrashButton {
 		return new this(options)._component;
 	}
 
-	private addLabel(): void {
-		this._label = new core.TextRenderable(ctx, {
-			content: "\udb81\udecc Empty Trash",
+	private addIcon(): void {
+		this._icon = new core.TextRenderable(ctx, {
+			content: "\uf48e",
 			fg: theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});
 
-		this._component.add(this._label);
+		this._component.add(this._icon);
 	}
 
 	private registerStoreListeners(): void {

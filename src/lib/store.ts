@@ -7,6 +7,8 @@ export const $currentPath = nanostores.atom<string>(HOME_DIRECTORY);
 
 export const $selectedDirent = nanostores.atom<Dirent | null>(null);
 
+export const $searchTerm = nanostores.atom<string>("");
+
 export const $trashFull = nanostores.atom<boolean>(false);
 
 export const $copyDirent = nanostores.atom<Dirent | null>(null);

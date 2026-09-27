@@ -1,9 +1,9 @@
 {
-	"name": "filet-mk2",
+	"name": "filet",
 	"module": "index.ts",
 	"type": "module",
 	"private": false,
-	"version": "0.1.9",
+	"version": "0.2.0",
 	"scripts": {
 		"dev": "bun run --watch src/main.ts",
 		"build": "bun run src/build.ts",
