@@ -9,14 +9,20 @@ import {
 	createFolder,
 	cut,
 	dragOut,
+	extract,
 	moveToTrash,
 	paste,
 	remove,
 	rename,
 	restoreFromTrash,
 } from "./filesystem";
-import { getDirentPath, go, openInDefault } from "./navigation";
-import { $dialogOpen, $previewing, $selectedDirent } from "./store";
+import { getDirentPath, go, isTrashPath, openInDefault } from "./navigation";
+import {
+	$currentPath,
+	$dialogOpen,
+	$previewing,
+	$selectedDirent,
+} from "./store";
 
 type Run = (dirent: Dirent | null) => void;
 
@@ -31,6 +37,22 @@ function withDirent(action: (dirent: Dirent) => void): Run {
 			action(dirent);
 		}
 	};
+}
+
+function inTrash(action: (dirent: Dirent) => void): Run {
+	return withDirent((dirent: Dirent): void => {
+		if (isTrashPath($currentPath.get())) {
+			action(dirent);
+		}
+	});
+}
+
+function outsideTrash(action: (dirent: Dirent) => void): Run {
+	return withDirent((dirent: Dirent): void => {
+		if (!isTrashPath($currentPath.get())) {
+			action(dirent);
+		}
+	});
 }
 
 function inDirectory(action: () => void): Run {
@@ -101,9 +123,10 @@ export const SHORTCUTS = {
 		}),
 	},
 	dragOut: { key: "ctrl+a", run: withDirent(dragOut) },
+	extract: { key: "ctrl+e", run: outsideTrash(extract) },
 	trash: {
 		key: "ctrl+t",
-		run: withDirent((dirent: Dirent): void => {
+		run: outsideTrash((dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Move to trash?",
 				description: `Are you sure you want to move '${dirent.name}' to trash?`,
@@ -115,7 +138,7 @@ export const SHORTCUTS = {
 	},
 	restore: {
 		key: "ctrl+z",
-		run: withDirent((dirent: Dirent): void => {
+		run: inTrash((dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Restore?",
 				description: `Are you sure you want to restore '${dirent.name}' to its original location?`,
@@ -127,7 +150,7 @@ export const SHORTCUTS = {
 	},
 	delete: {
 		key: "ctrl+d",
-		run: withDirent((dirent: Dirent): void => {
+		run: outsideTrash((dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Permanently delete?",
 				description: `Are you sure you want to permanently delete '${dirent.name}'?`,

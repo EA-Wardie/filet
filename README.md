@@ -96,6 +96,7 @@ danger = "#dc2626"
 | `Ctrl+T`     | Move the selected file or folder to trash, after confirmation.                                   |
 | `Ctrl+Z`     | Restore a file or folder from trash, after confirmation.                                         |
 | `Ctrl+D`     | Permanently delete the selected file or folder, after confirmation.                              |
+| `Ctrl+E`     | Extract the selected `.tar`, `.tar.gz` or `.tgz` archive into a folder next to it.               |
 | `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`.                                       |
 | `Q`          | Quit the application, after confirmation.                                                        |
 
@@ -188,3 +189,4 @@ This installs filet the same way as `bun run install:app`.
 - [x] Ability to open files marked as executables instead of previewing them.
 - [x] Hide the sidebar when the viewport reaches a small enough size.
 - [x] Option to restore a file from trash.
+- [ ] Add option to extract and compress files/folders.

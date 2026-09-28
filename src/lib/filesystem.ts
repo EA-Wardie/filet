@@ -4,7 +4,12 @@ import { basename, dirname, join } from "node:path";
 import { extname } from "node:path/win32";
 import type { Subprocess } from "bun";
 import { trashPath } from "./config";
-import { FILE_ICON, FILETYPE_ICONS, FOLDER_ICON } from "./consts";
+import {
+	ARCHIVE_EXTENSIONS,
+	FILE_ICON,
+	FILETYPE_ICONS,
+	FOLDER_ICON,
+} from "./consts";
 import { ctx } from "./context";
 import { logError } from "./log";
 import { getDirentPath, refresh } from "./navigation";
@@ -25,6 +30,24 @@ export function getFileIcon(dirent: Dirent): string {
 		FILETYPE_ICONS.get(extname(getDirentPath(dirent).toLowerCase())) ??
 		FILE_ICON
 	);
+}
+
+function getArchiveExtension(dirent: Dirent): string | null {
+	if (dirent.isDirectory()) {
+		return null;
+	}
+
+	const name: string = dirent.name.toLowerCase();
+
+	return (
+		ARCHIVE_EXTENSIONS.find((extension: string): boolean =>
+			name.endsWith(extension),
+		) ?? null
+	);
+}
+
+export function isArchive(dirent: Dirent): boolean {
+	return getArchiveExtension(dirent) !== null;
 }
 
 async function copyDirent(dirent: Dirent, toPath: string): Promise<void> {
@@ -111,6 +134,43 @@ export async function paste(): Promise<void> {
 
 			$copyDirent.set(null);
 		}
+	} catch (error) {
+		logError(error);
+	} finally {
+		refresh();
+
+		setTimeout((): void => {
+			$tasksCount.set($tasksCount.get() - 1);
+		}, 1000);
+	}
+}
+
+export async function extract(dirent: Dirent): Promise<void> {
+	const extension: string | null = getArchiveExtension(dirent);
+
+	if (!extension) {
+		return;
+	}
+
+	const toPath: string = join(
+		dirent.parentPath,
+		dirent.name.slice(0, -extension.length),
+	);
+
+	if (existsSync(toPath)) {
+		console.warn(`Cannot extract, ${toPath} already exists.`);
+
+		return;
+	}
+
+	$tasksCount.set($tasksCount.get() + 1);
+
+	try {
+		const archive: Bun.Archive = new Bun.Archive(
+			await Bun.file(getDirentPath(dirent)).bytes(),
+		);
+
+		await archive.extract(toPath);
 	} catch (error) {
 		logError(error);
 	} finally {

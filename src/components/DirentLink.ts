@@ -4,7 +4,7 @@ import { MouseButtons } from "@opentui/core/testing";
 import { doubleClickTimeout, theme } from "../lib/config";
 import { TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
-import { getFileIcon } from "../lib/filesystem";
+import { getFileIcon, isArchive } from "../lib/filesystem";
 import { isTrashPath } from "../lib/navigation";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import { $currentPath, $selectedDirent } from "../lib/store";
@@ -69,6 +69,9 @@ export class DirentLink {
 	}
 
 	private showMenu(event: core.MouseEvent): void {
+		const canExtract: boolean =
+			isArchive(this._options.dirent) && !isTrashPath($currentPath.get());
+
 		Menu.make({
 			x: event.x,
 			y: event.y,
@@ -78,6 +81,15 @@ export class DirentLink {
 					shortcut: shortcutLabel(SHORTCUTS.open),
 					onClick: (): void => {
 						SHORTCUTS.open.run(this._options.dirent);
+					},
+				}),
+				Divider.make({ visible: canExtract }),
+				MenuButton.make({
+					label: "\uf1c6 Extract",
+					shortcut: shortcutLabel(SHORTCUTS.extract),
+					visible: canExtract,
+					onClick: (): void => {
+						SHORTCUTS.extract.run(this._options.dirent);
 					},
 				}),
 				Divider.make(),
@@ -151,7 +163,6 @@ export class DirentLink {
 	}
 
 	private registerStoreEvents(): void {
-		// Every link hears each selection change, so only the old and new selections restyle.
 		const unbindSelectedDirent = $selectedDirent.listen(
 			(dirent: Readonly<Dirent> | null): void => {
 				const selected: boolean = dirent === this._options.dirent;

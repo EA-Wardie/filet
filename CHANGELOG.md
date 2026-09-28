@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.2 (2026-09-28)
+
+### Added
+
+- Extract `.tar`, `.tar.gz` and `.tgz` archives from the context menu or with `Ctrl+E`. Archives unpack into a folder named after them, and existing folders are never overwritten.
+
+### Changed
+
+- Context menus are wider.
+
+### Fixed
+
+- Shortcuts follow the context menus in the trash. Trash, Delete and Extract are blocked there, and Restore is blocked everywhere else.
+
 ## 0.2.1 (2026-09-27)
 
 ### Removed
@@ -30,7 +44,6 @@
 - Navigation clears the search itself, so the explorer no longer tracks which folder it loaded.
 - `Preview` takes its path as an option.
 - `ListExplorer` no longer keeps the entry list as a field, and its context menu has moved into `showMenu()`.
-
 - File operations use a dedicated refresh signal instead of re-notifying the current path.
 - New `IconButton` component shared by the back, forward, empty trash and search buttons.
 - `isTrashPath()` helper and trash icon constants replace repeated checks and glyphs.
