@@ -2,30 +2,37 @@
 
 ## 0.2.1 (2026-09-27)
 
-### Added
+### Removed
 
-- Columns display mode: the display button switches the list into side-by-side columns that scroll horizontally.
+- Display type button and the `display_type` config value. The explorer is always a list.
 
 ### Changed
 
-- The `display_type` config value `"grid"` is now `"columns"`.
-- Display type button uses a columns icon.
 - Long names are truncated in the list.
 - Markdown files preview as highlighted source with line numbers.
 - Search is faster in large folders, as it hides non-matching entries instead of rebuilding the list.
+- Folders with over 1000 entries are now sorted too.
+- The selection stays on the same entry after a paste, trash or other refresh.
+- Changing the selection only restyles the old and new rows.
+- Opening a folder reads it with one call instead of two.
 
 ### Fixed
 
 - File operations no longer reset the path bar or re-highlight the sidebar.
 - A preview that finishes loading after you navigate away no longer draws into the new view.
 - Preview file type detection ignores extension case.
+- The Open menu item shows its real shortcut, `Ctrl+Space`.
+- New File, New Folder and Paste are disabled while previewing a file, from both the menu and the keyboard.
 
 ### Internal
 
-- `DisplayType` type shared from `lib/consts.ts`.
+- Each action is defined once in `lib/shortcuts.ts`. The menus and double click use it, and the menu labels come from the key bindings.
+- Navigation clears the search itself, so the explorer no longer tracks which folder it loaded.
+- `Preview` takes its path as an option.
+- `ListExplorer` no longer keeps the entry list as a field, and its context menu has moved into `showMenu()`.
 
 - File operations use a dedicated refresh signal instead of re-notifying the current path.
-- New `IconButton` component shared by the back, forward, display type, empty trash and search buttons.
+- New `IconButton` component shared by the back, forward, empty trash and search buttons.
 - `isTrashPath()` helper and trash icon constants replace repeated checks and glyphs.
 - Path bar handles Escape only while focused.
 - `sortLinks` renamed to `sortDirents`, plus small cleanups in `DirectorySearch`, `Divider` and `log.ts`.

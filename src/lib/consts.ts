@@ -7,9 +7,7 @@ export const TRASH_FULL_ICON: string = "\uf1f8";
 
 export const TRASH_EMPTY_ICON: string = "\uf48e";
 
-export type DisplayType = "list" | "columns";
-
-export const COLUMN_GAP: number = 1;
+export const COLLATOR: Intl.Collator = new Intl.Collator();
 
 export const USER_CONFIG_PATH: string = `${HOME_DIRECTORY}/.config/filet/config.toml`;
 

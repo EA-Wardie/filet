@@ -37,7 +37,7 @@ export class DirectorySearch {
 			icon: "\uf002",
 			onClick: (): void => {
 				if (this._input?.visible) {
-					this.hideInput();
+					this.clearSearch();
 				} else {
 					this.showInput();
 				}
@@ -57,9 +57,13 @@ export class DirectorySearch {
 		}
 	}
 
-	private hideInput(): void {
+	private clearSearch(): void {
 		$searchTerm.set("");
 
+		this.hideInput();
+	}
+
+	private hideInput(): void {
 		if (this._button && this._input) {
 			this._input.value = "";
 			this._button.visible = true;
@@ -100,7 +104,7 @@ export class DirectorySearch {
 	private registerKeyboardEvents(): void {
 		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
 			if (key.name === "escape" && this._input?.visible) {
-				this.hideInput();
+				this.clearSearch();
 			}
 		});
 	}

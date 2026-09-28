@@ -4,27 +4,13 @@ import { MouseButtons } from "@opentui/core/testing";
 import { doubleClickTimeout, theme } from "../lib/config";
 import { TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
-import {
-	copy,
-	cut,
-	getFileIcon,
-	moveToTrash,
-	remove,
-	rename,
-	restoreFromTrash,
-} from "../lib/filesystem";
-import {
-	getDirentPath,
-	go,
-	isTrashPath,
-	openInDefault,
-} from "../lib/navigation";
+import { getFileIcon } from "../lib/filesystem";
+import { isTrashPath } from "../lib/navigation";
+import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import { $currentPath, $selectedDirent } from "../lib/store";
-import { Confirmation } from "./Confirmation";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
-import { Prompt } from "./Prompt";
 
 interface Options extends core.BoxOptions {
 	dirent: Dirent;
@@ -35,6 +21,7 @@ export class DirentLink {
 	private _component: core.BoxRenderable;
 	private _label: core.TextRenderable | null = null;
 	private _lastClick: number | null = null;
+	private _selected: boolean = false;
 
 	constructor(options: Options) {
 		this._options = options;
@@ -42,12 +29,12 @@ export class DirentLink {
 		this._component = new core.BoxRenderable(ctx, {
 			paddingX: 1,
 			onMouseOver: (): void => {
-				if ($selectedDirent.get() !== this._options.dirent) {
+				if (!this._selected) {
 					this._component.backgroundColor = theme.fg_light;
 				}
 			},
 			onMouseOut: (): void => {
-				if ($selectedDirent.get() !== this._options.dirent) {
+				if (!this._selected) {
 					this._component.backgroundColor = undefined;
 				}
 			},
@@ -60,7 +47,7 @@ export class DirentLink {
 					if (lastClick && Date.now() - lastClick < doubleClickTimeout) {
 						this._lastClick = null;
 
-						go(getDirentPath(this._options.dirent));
+						SHORTCUTS.go.run(this._options.dirent);
 					}
 				} else if (event.button === MouseButtons.RIGHT) {
 					$selectedDirent.set(this._options.dirent);
@@ -88,43 +75,32 @@ export class DirentLink {
 			items: [
 				MenuButton.make({
 					label: "\udb80\udfcc Open",
-					shortcut: "Ctrl+_",
+					shortcut: shortcutLabel(SHORTCUTS.open),
 					onClick: (): void => {
-						openInDefault(this._options.dirent);
+						SHORTCUTS.open.run(this._options.dirent);
 					},
 				}),
 				Divider.make(),
 				MenuButton.make({
 					label: "\uf0c5 Copy",
-					shortcut: "Ctrl+C",
+					shortcut: shortcutLabel(SHORTCUTS.copy),
 					onClick: (): void => {
-						copy(this._options.dirent);
+						SHORTCUTS.copy.run(this._options.dirent);
 					},
 				}),
 				MenuButton.make({
 					label: "\uf0c4 Cut",
-					shortcut: "Ctrl+X",
+					shortcut: shortcutLabel(SHORTCUTS.cut),
 					onClick: (): void => {
-						cut(this._options.dirent);
+						SHORTCUTS.cut.run(this._options.dirent);
 					},
 				}),
 				Divider.make(),
 				MenuButton.make({
 					label: "\uf040 Rename",
-					shortcut: "Ctrl+R",
+					shortcut: shortcutLabel(SHORTCUTS.rename),
 					onClick: (): void => {
-						Prompt.make({
-							heading: this._options.dirent.isDirectory()
-								? "Rename folder"
-								: "Rename file",
-							label: this._options.dirent.isDirectory()
-								? "Folder name"
-								: "Filename",
-							value: this._options.dirent.name,
-							onSubmit: (filename: string): void => {
-								rename(this._options.dirent, filename);
-							},
-						});
+						SHORTCUTS.rename.run(this._options.dirent);
 					},
 				}),
 				Divider.make({
@@ -132,30 +108,18 @@ export class DirentLink {
 				}),
 				MenuButton.make({
 					label: `${TRASH_FULL_ICON} Trash`,
-					shortcut: "Ctrl+T",
+					shortcut: shortcutLabel(SHORTCUTS.trash),
 					visible: !isTrashPath($currentPath.get()),
 					onClick: (): void => {
-						Confirmation.make({
-							heading: "Move to trash?",
-							description: `Are you sure you want to move '${this._options.dirent.name}' to trash?`,
-							onConfirm: (): void => {
-								moveToTrash(this._options.dirent);
-							},
-						});
+						SHORTCUTS.trash.run(this._options.dirent);
 					},
 				}),
 				MenuButton.make({
 					label: "\udb81\ude91 Delete",
-					shortcut: "Ctrl+D",
+					shortcut: shortcutLabel(SHORTCUTS.delete),
 					visible: !isTrashPath($currentPath.get()),
 					onClick: (): void => {
-						Confirmation.make({
-							heading: "Permanently delete?",
-							description: `Are you sure you want to permanently delete '${this._options.dirent.name}'?`,
-							onConfirm: (): void => {
-								remove(this._options.dirent);
-							},
-						});
+						SHORTCUTS.delete.run(this._options.dirent);
 					},
 				}),
 				Divider.make({
@@ -163,16 +127,10 @@ export class DirentLink {
 				}),
 				MenuButton.make({
 					label: "\udb82\udd9b Restore",
-					shortcut: "Ctrl+Z",
+					shortcut: shortcutLabel(SHORTCUTS.restore),
 					visible: isTrashPath($currentPath.get()),
 					onClick: (): void => {
-						Confirmation.make({
-							heading: "Restore?",
-							description: `Are you sure you want to restore '${this._options.dirent.name}' to its original location?`,
-							onConfirm: (): void => {
-								restoreFromTrash(this._options.dirent);
-							},
-						});
+						SHORTCUTS.restore.run(this._options.dirent);
 					},
 				}),
 			],
@@ -193,20 +151,20 @@ export class DirentLink {
 	}
 
 	private registerStoreEvents(): void {
+		// Every link hears each selection change, so only the old and new selections restyle.
 		const unbindSelectedDirent = $selectedDirent.listen(
-			(dirent: Readonly<Dirent> | null) => {
-				if (dirent === this._options.dirent) {
-					this._component.backgroundColor = theme.fg_dark;
+			(dirent: Readonly<Dirent> | null): void => {
+				const selected: boolean = dirent === this._options.dirent;
 
-					if (this._label) {
-						this._label.fg = theme.bg;
-					}
-				} else {
-					this._component.backgroundColor = undefined;
+				if (selected === this._selected) {
+					return;
+				}
 
-					if (this._label) {
-						this._label.fg = theme.fg;
-					}
+				this._selected = selected;
+				this._component.backgroundColor = selected ? theme.fg_dark : undefined;
+
+				if (this._label) {
+					this._label.fg = selected ? theme.bg : theme.fg;
 				}
 			},
 		);

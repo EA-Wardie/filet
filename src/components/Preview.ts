@@ -5,33 +5,34 @@ import { theme } from "../lib/config";
 import { CODE_FILETYPES, IMAGE_FILETYPES, syntaxStyles } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { logError } from "../lib/log";
-import { $currentPath } from "../lib/store";
+
+interface Options extends core.BoxOptions {
+	path: string;
+}
 
 export class Preview {
-	private _options: core.BoxOptions;
+	private _options: Options;
 	private _component: core.BoxRenderable;
-	private _path: string;
 	private _code: core.CodeRenderable | null = null;
 	private _lineNumbers: core.LineNumberRenderable | null = null;
 	private _image: core.ImageRenderable | null = null;
 
-	constructor(options: core.BoxOptions) {
+	constructor(options: Options) {
 		this._options = options;
-		this._path = $currentPath.get();
 
 		this._component = new core.BoxRenderable(ctx, {
 			paddingX: 1,
 			...this._options,
 		});
 
-		if (IMAGE_FILETYPES.has(extname(this._path).toLowerCase())) {
+		if (IMAGE_FILETYPES.has(extname(this._options.path).toLowerCase())) {
 			this.addImage();
 		} else {
 			this.addCode();
 		}
 	}
 
-	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
+	public static make(options: Options): core.BoxRenderable {
 		return new this(options)._component;
 	}
 
@@ -39,7 +40,7 @@ export class Preview {
 		this._image = new core.ImageRenderable(ctx, {
 			width: "100%",
 			height: "100%",
-			source: this._path,
+			source: this._options.path,
 			fit: "fit",
 		});
 
@@ -48,7 +49,7 @@ export class Preview {
 
 	private addCode(): void {
 		readFile(
-			this._path,
+			this._options.path,
 			{ encoding: "utf-8" },
 			async (
 				error: NodeJS.ErrnoException | null,
@@ -79,7 +80,8 @@ export class Preview {
 					wrapMode: "word",
 					syntaxStyle: syntaxStyles(),
 					flexGrow: 1,
-					filetype: CODE_FILETYPES[extname(this._path).toLowerCase()] ?? "text",
+					filetype:
+						CODE_FILETYPES[extname(this._options.path).toLowerCase()] ?? "text",
 					treeSitterClient: tsClient,
 				});
 

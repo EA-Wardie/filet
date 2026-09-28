@@ -1,16 +1,16 @@
-import { type Dirent, readdir, type Stats, stat } from "node:fs";
+import { type Dirent, readdir } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { theme } from "../lib/config";
-import { COLUMN_GAP } from "../lib/consts";
+import { COLLATOR } from "../lib/consts";
 import { ctx } from "../lib/context";
-import { createFile, createFolder, paste } from "../lib/filesystem";
 import { logError } from "../lib/log";
+import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import {
 	$copyDirent,
 	$currentPath,
 	$cutDirent,
-	$displayType,
+	$previewing,
 	$refresh,
 	$searchTerm,
 	$selectedDirent,
@@ -20,7 +20,6 @@ import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
 import { Preview } from "./Preview";
-import { Prompt } from "./Prompt";
 
 interface Link {
 	dirent: Dirent;
@@ -31,8 +30,6 @@ interface Link {
 export class ListExplorer {
 	private _options: core.BoxOptions;
 	private _component: core.ScrollBoxRenderable;
-	private _dirents: Dirent[] = [];
-	private _direntsPath: string | null = null;
 	private _links: Link[] = [];
 	private _noMatches: core.TextRenderable | null = null;
 	private _scan: number = 0;
@@ -44,62 +41,14 @@ export class ListExplorer {
 			width: "100%",
 			height: "100%",
 			viewportCulling: true,
-			scrollX: true,
 			onMouseDown: (event: core.MouseEvent): void => {
-				if (event.button === MouseButtons.RIGHT) {
-					Menu.make({
-						x: event.x,
-						y: event.y,
-						items: [
-							MenuButton.make({
-								label: "\ued80 New File",
-								shortcut: "Ctrl+N",
-								onClick: (): void => {
-									Prompt.make({
-										heading: "Create a new file",
-										label: "Filename",
-										onSubmit: (filename: string): void => {
-											createFile(filename);
-										},
-									});
-								},
-							}),
-							MenuButton.make({
-								label: "\ueec7 New Folder",
-								shortcut: "Ctrl+F",
-								onClick: (): void => {
-									Prompt.make({
-										heading: "Create a new folder",
-										label: "Folder Name",
-										onSubmit: (folderName: string): void => {
-											createFolder(folderName);
-										},
-									});
-								},
-							}),
-							Divider.make({
-								visible: !!$copyDirent.get() || !!$cutDirent.get(),
-							}),
-							MenuButton.make({
-								label: "\uf07f Paste",
-								shortcut: "Ctrl+V",
-								visible: !!$copyDirent.get() || !!$cutDirent.get(),
-								onClick: (): void => {
-									paste();
-								},
-							}),
-						],
-					});
+				if (event.button === MouseButtons.RIGHT && !$previewing.get()) {
+					this.showMenu(event);
 				}
 			},
 			...this._options,
 		});
 
-		this._component.viewport.on("resize", (): void => {
-			this.updateLayout();
-		});
-
-		this.updateLayout();
 		this.registerStoreEvents();
 		this.scanAndMakeDirents($currentPath.get());
 	}
@@ -108,58 +57,72 @@ export class ListExplorer {
 		return new this(options)._component;
 	}
 
+	private showMenu(event: core.MouseEvent): void {
+		const canPaste: boolean = !!$copyDirent.get() || !!$cutDirent.get();
+
+		Menu.make({
+			x: event.x,
+			y: event.y,
+			items: [
+				MenuButton.make({
+					label: "\ued80 New File",
+					shortcut: shortcutLabel(SHORTCUTS.newFile),
+					onClick: (): void => {
+						SHORTCUTS.newFile.run(null);
+					},
+				}),
+				MenuButton.make({
+					label: "\ueec7 New Folder",
+					shortcut: shortcutLabel(SHORTCUTS.newFolder),
+					onClick: (): void => {
+						SHORTCUTS.newFolder.run(null);
+					},
+				}),
+				Divider.make({
+					visible: canPaste,
+				}),
+				MenuButton.make({
+					label: "\uf07f Paste",
+					shortcut: shortcutLabel(SHORTCUTS.paste),
+					visible: canPaste,
+					onClick: (): void => {
+						SHORTCUTS.paste.run(null);
+					},
+				}),
+			],
+		});
+	}
+
 	private registerStoreEvents(): void {
 		$currentPath.listen((path: string): void => {
 			this.scanAndMakeDirents(path);
 		});
 
 		$refresh.listen((): void => {
-			this.scanAndMakeDirents($currentPath.get());
+			this.scanAndMakeDirents($currentPath.get(), $selectedDirent.get()?.name);
 		});
 
 		$searchTerm.listen((): void => {
-			if (this._direntsPath === $currentPath.get()) {
-				this.filterLinks();
-			}
-		});
-
-		$displayType.listen((): void => {
-			this.updateLayout();
+			this.filterLinks();
 		});
 	}
 
-	private updateLayout(): void {
-		const columns: boolean =
-			$displayType.get() === "columns" && this._direntsPath !== null;
-		const { horizontalScrollBar, verticalScrollBar, viewport } =
-			this._component;
-
-		if (columns) {
-			horizontalScrollBar.visible = true;
-			verticalScrollBar.visible = false;
-		} else {
-			horizontalScrollBar.resetVisibilityControl();
-			verticalScrollBar.resetVisibilityControl();
-		}
-
-		this._component.contentOptions = {
-			flexWrap: columns ? "wrap" : "no-wrap",
-			columnGap: columns ? COLUMN_GAP : 0,
-			width: columns ? "auto" : "100%",
-			height: columns ? viewport.height : "auto",
-			minHeight: columns ? 0 : "100%",
-		};
-	}
-
-	private filterLinks(): void {
+	private filterLinks(selectName?: string): void {
 		const term: string = $searchTerm.get().toLocaleLowerCase();
 		let first: Dirent | null = null;
+		let named: Dirent | null = null;
 
 		for (const { dirent, name, link } of this._links) {
 			link.visible = name.includes(term);
 
-			if (link.visible && !first) {
-				first = dirent;
+			if (!link.visible) {
+				continue;
+			}
+
+			first ??= dirent;
+
+			if (dirent.name === selectName) {
+				named = dirent;
 			}
 		}
 
@@ -167,14 +130,10 @@ export class ListExplorer {
 			this._noMatches.visible = !first;
 		}
 
-		$selectedDirent.set(first);
+		$selectedDirent.set(named ?? first);
 	}
 
-	private sortDirents(): void {
-		if (this._dirents.length > 1000) {
-			return;
-		}
-
+	private sortDirents(dirents: Dirent[]): void {
 		const rank = (dirent: Dirent): number => {
 			if (!dirent.isDirectory()) {
 				return 2;
@@ -183,19 +142,19 @@ export class ListExplorer {
 			return dirent.name.startsWith(".") ? 1 : 0;
 		};
 
-		this._dirents.sort((a: Dirent, b: Dirent): number => {
+		dirents.sort((a: Dirent, b: Dirent): number => {
 			const rankDifference: number = rank(a) - rank(b);
 
 			if (rankDifference !== 0) {
 				return rankDifference;
 			}
 
-			return a.name.localeCompare(b.name);
+			return COLLATOR.compare(a.name, b.name);
 		});
 	}
 
-	private addLinks(): void {
-		for (const dirent of this._dirents) {
+	private addLinks(dirents: Dirent[]): void {
+		for (const dirent of dirents) {
 			const link: core.BoxRenderable = DirentLink.make({ dirent: dirent });
 
 			this._links.push({
@@ -209,14 +168,14 @@ export class ListExplorer {
 	}
 
 	private clearLinks(): void {
-		$selectedDirent.set(null);
-
 		this._links = [];
 		this._noMatches = null;
 
-		for (const child of [...this._component.getChildren()]) {
+		for (const child of this._component.getChildren()) {
 			child.destroyRecursively();
 		}
+
+		$selectedDirent.set(null);
 	}
 
 	private addMessage(
@@ -237,11 +196,9 @@ export class ListExplorer {
 		return message;
 	}
 
-	private makeLinks(): void {
-		this.clearLinks();
-
+	private makeLinks(dirents: Dirent[], selectName?: string): void {
 		try {
-			if (!this._dirents.length) {
+			if (!dirents.length) {
 				this.addMessage("\uf07c  --Empty--");
 
 				return;
@@ -249,61 +206,45 @@ export class ListExplorer {
 
 			this._noMatches = this.addMessage("\uf002  --No Matches--", false);
 
-			this.addLinks();
-			this.filterLinks();
+			this.addLinks(dirents);
+			this.filterLinks(selectName);
 		} catch (error) {
 			logError(error);
 		}
 	}
 
-	private scanAndMakeDirents(path: string): void {
-		this._scan += 1;
+	private scanAndMakeDirents(path: string, selectName?: string): void {
+		const scan: number = ++this._scan;
 
-		const scan: number = this._scan;
+		$previewing.set(false);
 
-		this._dirents = [];
-		this._direntsPath = null;
-
-		this.updateLayout();
 		this.clearLinks();
 
-		stat(path, (error: ErrnoException | null, dirent: Stats) => {
-			if (scan !== this._scan) {
-				return;
-			}
+		readdir(
+			path,
+			{ withFileTypes: true },
+			(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
+				if (scan !== this._scan) {
+					return;
+				}
 
-			if (error) {
-				logError(error);
+				if (error?.code === "ENOTDIR") {
+					$previewing.set(true);
 
-				return;
-			}
+					this._component.add(Preview.make({ path: path }));
 
-			if (dirent.isDirectory()) {
-				readdir(
-					path,
-					{ withFileTypes: true },
-					(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
-						if (scan !== this._scan) {
-							return;
-						}
+					return;
+				}
 
-						if (error) {
-							logError(error);
+				if (error) {
+					logError(error);
 
-							return;
-						}
+					return;
+				}
 
-						this._dirents = dirents;
-						this._direntsPath = path;
-
-						this.updateLayout();
-						this.sortDirents();
-						this.makeLinks();
-					},
-				);
-			} else {
-				this._component.add(Preview.make());
-			}
-		});
+				this.sortDirents(dirents);
+				this.makeLinks(dirents, selectName);
+			},
+		);
 	}
 }

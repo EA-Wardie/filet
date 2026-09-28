@@ -1,6 +1,6 @@
 import { RGBA } from "@opentui/core";
 import defaultConfig from "../../config.toml";
-import { type DisplayType, HOME_DIRECTORY, USER_CONFIG_PATH } from "./consts";
+import { HOME_DIRECTORY, USER_CONFIG_PATH } from "./consts";
 import { logError } from "./log";
 
 export interface BookmarkType {
@@ -34,7 +34,6 @@ interface ThemeConfig {
 
 interface ConfigFile {
 	bookmarks?: BookmarkType[];
-	display_type?: DisplayType;
 	trash_path?: string;
 	double_click_timeout?: number;
 	theme?: Partial<ThemeConfig>;
@@ -60,9 +59,6 @@ const userConfig: ConfigFile = await loadUserConfig();
 
 export const bookmarks: BookmarkType[] =
 	userConfig.bookmarks ?? defaultConfig.bookmarks;
-
-export const displayType: DisplayType =
-	userConfig.display_type ?? defaultConfig.display_type;
 
 export const trashPath: string =
 	userConfig.trash_path ?? `${HOME_DIRECTORY}/.local/share/Trash`;

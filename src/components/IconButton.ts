@@ -55,14 +55,6 @@ export class IconButton {
 		return new this(options)._component;
 	}
 
-	public get component(): core.BoxRenderable {
-		return this._component;
-	}
-
-	public setIcon(icon: string): void {
-		this._icon.content = icon;
-	}
-
 	private setColors(
 		background: core.RGBA | undefined,
 		foreground: core.RGBA,
