@@ -3,6 +3,12 @@ import * as core from "@opentui/core";
 
 export const HOME_DIRECTORY: string = homedir();
 
+export const TRASH_FULL_ICON: string = "\uf1f8";
+
+export const TRASH_EMPTY_ICON: string = "\uf48e";
+
+export const COLLATOR: Intl.Collator = new Intl.Collator();
+
 export const USER_CONFIG_PATH: string = `${HOME_DIRECTORY}/.config/filet/config.toml`;
 
 export const IMAGE_FILETYPES: Set<string> = new Set([

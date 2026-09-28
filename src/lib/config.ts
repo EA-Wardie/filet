@@ -34,7 +34,6 @@ interface ThemeConfig {
 
 interface ConfigFile {
 	bookmarks?: BookmarkType[];
-	display_type?: "list" | "grid";
 	trash_path?: string;
 	double_click_timeout?: number;
 	theme?: Partial<ThemeConfig>;
@@ -60,9 +59,6 @@ const userConfig: ConfigFile = await loadUserConfig();
 
 export const bookmarks: BookmarkType[] =
 	userConfig.bookmarks ?? defaultConfig.bookmarks;
-
-export const displayType: "list" | "grid" =
-	userConfig.display_type ?? defaultConfig.display_type;
 
 export const trashPath: string =
 	userConfig.trash_path ?? `${HOME_DIRECTORY}/.local/share/Trash`;

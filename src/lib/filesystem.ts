@@ -7,7 +7,7 @@ import { trashPath } from "./config";
 import { FILE_ICON, FILETYPE_ICONS, FOLDER_ICON } from "./consts";
 import { ctx } from "./context";
 import { logError } from "./log";
-import { getDirentPath } from "./navigation";
+import { getDirentPath, refresh } from "./navigation";
 import {
 	$copyDirent,
 	$currentPath,
@@ -114,7 +114,7 @@ export async function paste(): Promise<void> {
 	} catch (error) {
 		logError(error);
 	} finally {
-		$currentPath.notify();
+		refresh();
 
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
@@ -127,7 +127,7 @@ export function createFile(name: string): void {
 
 	Bun.write(path, "")
 		.then((): void => {
-			$currentPath.notify();
+			refresh();
 		})
 		.catch((error: Error): void => {
 			logError(error);
@@ -139,7 +139,7 @@ export function createFolder(name: string): void {
 
 	mkdir(path)
 		.then((): void => {
-			$currentPath.notify();
+			refresh();
 		})
 		.catch((error: Error): void => {
 			logError(error);
@@ -155,7 +155,7 @@ export async function rename(dirent: Dirent, name: string): Promise<void> {
 	try {
 		await renameEntry(fromPath, toPath);
 
-		$currentPath.notify();
+		refresh();
 	} catch (error) {
 		logError(error);
 	} finally {
@@ -171,7 +171,7 @@ export async function remove(dirent: Dirent): Promise<void> {
 	try {
 		await removeDirent(dirent);
 
-		$currentPath.notify();
+		refresh();
 	} catch (error) {
 		logError(error);
 	} finally {
@@ -233,7 +233,7 @@ export async function moveToTrash(dirent: Dirent): Promise<void> {
 		await moveDirent(dirent, `${trashPath}/files/${dirent.name}`);
 
 		$trashFull.set(true);
-		$currentPath.notify();
+		refresh();
 	} catch (error) {
 		logError(error);
 	} finally {
@@ -262,7 +262,7 @@ export async function restoreFromTrash(dirent: Dirent): Promise<void> {
 
 		checkTrash();
 
-		$currentPath.notify();
+		refresh();
 	} catch (error) {
 		logError(error);
 	} finally {
@@ -287,7 +287,7 @@ export async function emptyTrash(): Promise<void> {
 		]);
 
 		$trashFull.set(false);
-		$currentPath.notify();
+		refresh();
 	} catch (error) {
 		logError(error);
 	} finally {

@@ -1,16 +1,15 @@
 import * as core from "@opentui/core";
-import { theme, trashPath } from "../lib/config";
+import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
+import { isTrashPath } from "../lib/navigation";
 import { $currentPath, $searchTerm } from "../lib/store";
+import { IconButton } from "./IconButton";
 
 export class DirectorySearch {
 	private _options: core.BoxOptions;
 	private _component: core.BoxRenderable;
 	private _button: core.BoxRenderable | null = null;
-	private _icon: core.TextRenderable | null = null;
 	private _input: core.InputRenderable | null = null;
-	private _active: boolean = false;
-	private _path: string = $currentPath.get();
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
@@ -19,7 +18,7 @@ export class DirectorySearch {
 			maxWidth: 50,
 			flexDirection: "row",
 			flexGrow: 0,
-			visible: !$currentPath.get().includes(trashPath),
+			visible: !isTrashPath($currentPath.get()),
 			...this._options,
 		});
 
@@ -34,58 +33,21 @@ export class DirectorySearch {
 	}
 
 	private addButton(): void {
-		this._button = new core.BoxRenderable(ctx, {
-			paddingX: 1,
-			onMouseOver: () => {
-				this._component.backgroundColor = theme.fg;
-
-				if (this._icon) {
-					this._icon.fg = theme.bg;
-				}
-			},
-			onMouseOut: () => {
-				this._component.backgroundColor = undefined;
-
-				if (this._icon) {
-					this._icon.fg = theme.fg;
-				}
-			},
-			onMouseDown: () => {
-				this._component.backgroundColor = theme.fg_dark;
-
-				if (this._icon) {
-					this._icon.fg = theme.bg;
-				}
-			},
-			onMouseUp: () => {
-				this._component.backgroundColor = undefined;
-
-				if (this._icon) {
-					this._icon.fg = theme.fg;
-				}
-
-				if (this._active) {
-					this.hideInput();
+		this._button = IconButton.make({
+			icon: "\uf002",
+			onClick: (): void => {
+				if (this._input?.visible) {
+					this.clearSearch();
 				} else {
 					this.showInput();
 				}
 			},
 		});
 
-		this._icon = new core.TextRenderable(ctx, {
-			content: "\uf002",
-			fg: theme.fg,
-			attributes: core.TextAttributes.BOLD,
-			selectable: false,
-		});
-
-		this._button.add(this._icon);
 		this._component.add(this._button);
 	}
 
 	private showInput(): void {
-		this._active = true;
-
 		if (this._button && this._input) {
 			this._button.visible = false;
 			this._input.visible = true;
@@ -95,11 +57,13 @@ export class DirectorySearch {
 		}
 	}
 
-	private hideInput(): void {
-		this._active = false;
-
+	private clearSearch(): void {
 		$searchTerm.set("");
 
+		this.hideInput();
+	}
+
+	private hideInput(): void {
 		if (this._button && this._input) {
 			this._input.value = "";
 			this._button.visible = true;
@@ -131,20 +95,16 @@ export class DirectorySearch {
 
 	private registerStoreEvents(): void {
 		$currentPath.listen((path: string) => {
-			this._component.visible = !path.includes(trashPath);
+			this._component.visible = !isTrashPath(path);
 
-			if (path !== this._path) {
-				this._path = path;
-
-				this.hideInput();
-			}
+			this.hideInput();
 		});
 	}
 
 	private registerKeyboardEvents(): void {
 		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "escape" && this._active) {
-				this.hideInput();
+			if (key.name === "escape" && this._input?.visible) {
+				this.clearSearch();
 			}
 		});
 	}

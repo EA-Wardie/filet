@@ -1,7 +1,20 @@
 import { access, constants, type Dirent } from "node:fs";
 import { dirname, join } from "node:path";
+import { trashPath } from "./config";
 import { logError } from "./log";
-import { $backHistory, $currentPath, $forwardHistory } from "./store";
+import {
+	$backHistory,
+	$currentPath,
+	$forwardHistory,
+	$refresh,
+	$searchTerm,
+} from "./store";
+
+// The search is cleared after the path, so it never re-filters the previous folder.
+function setPath(path: string): void {
+	$currentPath.set(path);
+	$searchTerm.set("");
+}
 
 export function go(path: string): void {
 	if ($currentPath.get() === path) {
@@ -10,7 +23,7 @@ export function go(path: string): void {
 
 	$backHistory.set([...$backHistory.get(), $currentPath.get()]);
 	$forwardHistory.set([]);
-	$currentPath.set(path);
+	setPath(path);
 }
 
 export function back(): void {
@@ -23,7 +36,7 @@ export function back(): void {
 
 	$backHistory.set(backStack.slice(0, -1));
 	$forwardHistory.set([...$forwardHistory.get(), $currentPath.get()]);
-	$currentPath.set(previousPath);
+	setPath(previousPath);
 }
 
 export function forward(): void {
@@ -36,7 +49,15 @@ export function forward(): void {
 
 	$forwardHistory.set(forwardStack.slice(0, -1));
 	$backHistory.set([...$backHistory.get(), $currentPath.get()]);
-	$currentPath.set(nextPath);
+	setPath(nextPath);
+}
+
+export function refresh(): void {
+	$refresh.set($refresh.get() + 1);
+}
+
+export function isTrashPath(path: string): boolean {
+	return path.includes(trashPath);
 }
 
 export function getDirentPath(dirent: Dirent): string {
