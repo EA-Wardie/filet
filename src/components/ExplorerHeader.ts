@@ -4,7 +4,6 @@ import { ctx } from "../lib/context";
 import { BackButton } from "./BackButton";
 import { CurrentPathInput } from "./CurrentPathInput";
 import { DirectorySearch } from "./DirectorySearch";
-import { Divider } from "./Divider";
 import { EmptyTrashButton } from "./EmptyTrashButton";
 import { ForwardButton } from "./ForwardButton";
 import { Spacer } from "./Spacer";
@@ -35,9 +34,7 @@ export class ExplorerHeader {
 		this._component.add(BackButton.make());
 		this._component.add(ForwardButton.make());
 		this._component.add(CurrentPathInput.make());
-		this._component.add(Divider.make({ vertical: true }));
 		this._component.add(Spacer.make());
-		this._component.add(Divider.make({ vertical: true }));
 		this._component.add(EmptyTrashButton.make());
 		this._component.add(DirectorySearch.make());
 	}
