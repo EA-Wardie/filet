@@ -210,10 +210,11 @@ This installs filet the same way as `bun run install:app`.
 ## Roadmap
 
 - [x] Allow manually editing the current path.
-- [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
 - [x] Simple search function for the current directory.
 - [x] Ability to open files marked as executables instead of previewing them.
 - [x] Hide the sidebar when the viewport reaches a small enough size.
 - [x] Option to restore a file from trash.
 - [x] Add option to extract archives.
 - [ ] Add option to compress files/folders.
+- [ ] Virtualize the explorer list so directories with more than ~16,000 entries (e.g. `/nix/store`) load fully.
+- [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
