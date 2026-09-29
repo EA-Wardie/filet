@@ -1,34 +1,16 @@
-import { type Dirent, existsSync, readdir } from "node:fs";
+import { type Dirent, existsSync } from "node:fs";
 import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
-import { basename, dirname, join } from "node:path";
-import { extname } from "node:path/win32";
-import type { Subprocess } from "bun";
-import { trashPath } from "./config";
-import { FILE_ICON, FILETYPE_ICONS, FOLDER_ICON } from "./consts";
+import { basename, join } from "node:path";
 import { ctx } from "./context";
-import { logError } from "./log";
-import { getDirentPath, refresh } from "./navigation";
-import {
-	$copyDirent,
-	$currentPath,
-	$cutDirent,
-	$tasksCount,
-	$trashFull,
-} from "./store";
+import { getDirentPath } from "./navigation";
+import { $copyDirent, $currentPath, $cutDirent } from "./store";
+import { runTask } from "./tasks";
 
-export function getFileIcon(dirent: Dirent): string {
-	if (dirent.isDirectory()) {
-		return FOLDER_ICON;
-	}
-
-	return (
-		FILETYPE_ICONS.get(extname(getDirentPath(dirent).toLowerCase())) ??
-		FILE_ICON
-	);
-}
-
-async function copyDirent(dirent: Dirent, toPath: string): Promise<void> {
-	const fromPath: string | null = getDirentPath(dirent);
+export async function copyDirent(
+	dirent: Dirent,
+	toPath: string,
+): Promise<void> {
+	const fromPath: string = getDirentPath(dirent);
 
 	if (dirent.isDirectory()) {
 		await cp(fromPath, toPath, { recursive: true });
@@ -39,8 +21,8 @@ async function copyDirent(dirent: Dirent, toPath: string): Promise<void> {
 	await Bun.write(toPath, Bun.file(fromPath));
 }
 
-async function removeDirent(dirent: Dirent): Promise<void> {
-	const path: string | null = getDirentPath(dirent);
+export async function removeDirent(dirent: Dirent): Promise<void> {
+	const path: string = getDirentPath(dirent);
 
 	if (dirent.isDirectory()) {
 		await rm(path, { recursive: true, force: true });
@@ -51,7 +33,10 @@ async function removeDirent(dirent: Dirent): Promise<void> {
 	await Bun.file(path).delete();
 }
 
-async function moveDirent(dirent: Dirent, toPath: string): Promise<void> {
+export async function moveDirent(
+	dirent: Dirent,
+	toPath: string,
+): Promise<void> {
 	try {
 		await renameEntry(getDirentPath(dirent), toPath);
 	} catch (error) {
@@ -93,15 +78,11 @@ export async function paste(): Promise<void> {
 		return;
 	}
 
-	if (existsSync(toPath)) {
-		console.warn(`Cannot paste, ${toPath} already exists.`);
+	await runTask(async (): Promise<void> => {
+		if (existsSync(toPath)) {
+			throw new Error(`Cannot paste, ${toPath} already exists.`);
+		}
 
-		return;
-	}
-
-	$tasksCount.set($tasksCount.get() + 1);
-
-	try {
 		if (isCutting) {
 			await moveDirent(dirent, toPath);
 
@@ -111,222 +92,26 @@ export async function paste(): Promise<void> {
 
 			$copyDirent.set(null);
 		}
-	} catch (error) {
-		logError(error);
-	} finally {
-		refresh();
-
-		setTimeout((): void => {
-			$tasksCount.set($tasksCount.get() - 1);
-		}, 1000);
-	}
+	});
 }
 
-export function createFile(name: string): void {
-	const path: string = join($currentPath.get(), name);
-
-	Bun.write(path, "")
-		.then((): void => {
-			refresh();
-		})
-		.catch((error: Error): void => {
-			logError(error);
-		});
-}
-
-export function createFolder(name: string): void {
-	const path: string = join($currentPath.get(), name);
-
-	mkdir(path)
-		.then((): void => {
-			refresh();
-		})
-		.catch((error: Error): void => {
-			logError(error);
-		});
-}
-
-export async function rename(dirent: Dirent, name: string): Promise<void> {
-	const fromPath: string = getDirentPath(dirent);
-	const toPath: string = join(dirent.parentPath, name);
-
-	$tasksCount.set($tasksCount.get() + 1);
-
-	try {
-		await renameEntry(fromPath, toPath);
-
-		refresh();
-	} catch (error) {
-		logError(error);
-	} finally {
-		setTimeout((): void => {
-			$tasksCount.set($tasksCount.get() - 1);
-		}, 1000);
-	}
-}
-
-export async function remove(dirent: Dirent): Promise<void> {
-	$tasksCount.set($tasksCount.get() + 1);
-
-	try {
-		await removeDirent(dirent);
-
-		refresh();
-	} catch (error) {
-		logError(error);
-	} finally {
-		setTimeout((): void => {
-			$tasksCount.set($tasksCount.get() - 1);
-		}, 1000);
-	}
-}
-
-async function writeTrashInfo(path: string): Promise<void> {
-	const filename: string = `${basename(path)}.trashinfo`;
-
-	const content: string = [
-		"[Trash Info]",
-		`Path=${encodeURI(path)}`,
-		`DeletionDate=${new Date().toISOString()}`,
-		"",
-	].join("\n");
-
-	await Bun.write(`${trashPath}/info/${filename}`, content);
-}
-
-async function readTrashInfoPath(name: string): Promise<string> {
-	const content: string = await Bun.file(
-		`${trashPath}/info/${name}.trashinfo`,
-	).text();
-
-	const pathLine: string | undefined = content
-		.split("\n")
-		.find((line: string): boolean => line.startsWith("Path="));
-
-	if (!pathLine) {
-		throw new Error(`No Path entry in ${name}.trashinfo`);
-	}
-
-	return decodeURIComponent(pathLine.slice("Path=".length).trim());
-}
-
-export function checkTrash(): void {
-	readdir(
-		`${trashPath}/files`,
-		(error: NodeJS.ErrnoException | null, files: string[]) => {
-			if (error) {
-				return;
-			}
-
-			$trashFull.set(files.length > 0);
-		},
+export function createFile(name: string): Promise<void> {
+	return runTask(
+		(): Promise<number> => Bun.write(join($currentPath.get(), name), ""),
 	);
 }
 
-export async function moveToTrash(dirent: Dirent): Promise<void> {
-	const fromPath: string = getDirentPath(dirent);
-
-	$tasksCount.set($tasksCount.get() + 1);
-
-	try {
-		await writeTrashInfo(fromPath);
-		await moveDirent(dirent, `${trashPath}/files/${dirent.name}`);
-
-		$trashFull.set(true);
-		refresh();
-	} catch (error) {
-		logError(error);
-	} finally {
-		setTimeout((): void => {
-			$tasksCount.set($tasksCount.get() - 1);
-		}, 1000);
-	}
+export function createFolder(name: string): Promise<void> {
+	return runTask((): Promise<void> => mkdir(join($currentPath.get(), name)));
 }
 
-export async function restoreFromTrash(dirent: Dirent): Promise<void> {
-	$tasksCount.set($tasksCount.get() + 1);
-
-	try {
-		const toPath: string = await readTrashInfoPath(dirent.name);
-
-		if (existsSync(toPath)) {
-			throw new Error(`Cannot restore, ${toPath} already exists.`);
-		}
-
-		await mkdir(dirname(toPath), { recursive: true });
-		await copyDirent(dirent, toPath);
-		await Promise.all([
-			removeDirent(dirent),
-			rm(`${trashPath}/info/${dirent.name}.trashinfo`, { force: true }),
-		]);
-
-		checkTrash();
-
-		refresh();
-	} catch (error) {
-		logError(error);
-	} finally {
-		setTimeout((): void => {
-			$tasksCount.set($tasksCount.get() - 1);
-		}, 1000);
-	}
+export function rename(dirent: Dirent, name: string): Promise<void> {
+	return runTask(
+		(): Promise<void> =>
+			renameEntry(getDirentPath(dirent), join(dirent.parentPath, name)),
+	);
 }
 
-export async function emptyTrash(): Promise<void> {
-	$tasksCount.set($tasksCount.get() + 1);
-
-	try {
-		await Promise.all([
-			rm(`${trashPath}/files`, { recursive: true, force: true }),
-			rm(`${trashPath}/info`, { recursive: true, force: true }),
-		]);
-
-		await Promise.all([
-			mkdir(`${trashPath}/files`, { recursive: true }),
-			mkdir(`${trashPath}/info`, { recursive: true }),
-		]);
-
-		$trashFull.set(false);
-		refresh();
-	} catch (error) {
-		logError(error);
-	} finally {
-		setTimeout((): void => {
-			$tasksCount.set($tasksCount.get() - 1);
-		}, 1000);
-	}
-}
-
-let currentRipdrag: Subprocess | null = null;
-
-export function dragOut(dirent: Dirent): void {
-	currentRipdrag?.kill();
-
-	try {
-		const process: Subprocess = Bun.spawn(
-			[
-				"ripdrag",
-				"--all-compact",
-				"--no-click",
-				"--basename",
-				"--and-exit",
-				getDirentPath(dirent),
-			],
-			{
-				stdin: "ignore",
-				stdout: "ignore",
-				stderr: "ignore",
-			},
-		);
-
-		currentRipdrag = process;
-
-		process.exited.then((): void => {
-			if (currentRipdrag === process) {
-				currentRipdrag = null;
-			}
-		});
-	} catch (error) {
-		logError(error);
-	}
+export function remove(dirent: Dirent): Promise<void> {
+	return runTask((): Promise<void> => removeDirent(dirent));
 }

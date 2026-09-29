@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.2.2 (2026-09-28)
+
+### Added
+
+- Extract `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst`, `.tzst` and `.zip` archives from the context menu or with `Ctrl+E`, using `tar` and `unzip`. Archives unpack into a folder named after them, existing folders are never overwritten, and a failed extract removes its partial folder.
+- Requirements section in the README.
+
+### Changed
+
+- Context menus are wider.
+- Creating a file or folder shows in the tasks counter.
+- Paste and extract collisions are logged as errors, like restore.
+
+### Fixed
+
+- Shortcuts follow the context menus in the trash. Trash, Delete and Extract are blocked there, and Restore is blocked everywhere else.
+- Rename, delete and trash actions refresh the view even when they fail.
+- File icons no longer use Windows path rules to find the extension.
+
+### Internal
+
+- `lib/filesystem.ts` split into `trash.ts`, `archive.ts`, `ripdrag.ts` and `icons.ts`.
+- New `runTask()` in `lib/tasks.ts` handles the task counter, error logging and refresh for every file operation, including creating files and folders.
+- Shortcuts can declare a `when` check, which guards the key binding and sets the context menu item visibility.
+- Trash folder paths are defined once in `lib/config.ts`.
+
 ## 0.2.1 (2026-09-27)
 
 ### Removed
@@ -30,7 +56,6 @@
 - Navigation clears the search itself, so the explorer no longer tracks which folder it loaded.
 - `Preview` takes its path as an option.
 - `ListExplorer` no longer keeps the entry list as a field, and its context menu has moved into `showMenu()`.
-
 - File operations use a dedicated refresh signal instead of re-notifying the current path.
 - New `IconButton` component shared by the back, forward, empty trash and search buttons.
 - `isTrashPath()` helper and trash icon constants replace repeated checks and glyphs.

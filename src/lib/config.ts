@@ -63,6 +63,10 @@ export const bookmarks: BookmarkType[] =
 export const trashPath: string =
 	userConfig.trash_path ?? `${HOME_DIRECTORY}/.local/share/Trash`;
 
+export const trashFilesPath: string = `${trashPath}/files`;
+
+export const trashInfoPath: string = `${trashPath}/info`;
+
 export const doubleClickTimeout: number =
 	userConfig.double_click_timeout ?? defaultConfig.double_click_timeout;
 

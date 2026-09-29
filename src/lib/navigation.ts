@@ -10,7 +10,6 @@ import {
 	$searchTerm,
 } from "./store";
 
-// The search is cleared after the path, so it never re-filters the previous folder.
 function setPath(path: string): void {
 	$currentPath.set(path);
 	$searchTerm.set("");

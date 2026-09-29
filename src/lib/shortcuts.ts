@@ -2,27 +2,35 @@ import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
 import { Prompt } from "../components/Prompt";
+import { extract, isArchive } from "./archive";
 import { ctx } from "./context";
 import {
 	copy,
 	createFile,
 	createFolder,
 	cut,
-	dragOut,
-	moveToTrash,
 	paste,
 	remove,
 	rename,
-	restoreFromTrash,
 } from "./filesystem";
-import { getDirentPath, go, openInDefault } from "./navigation";
-import { $dialogOpen, $previewing, $selectedDirent } from "./store";
+import { getDirentPath, go, isTrashPath, openInDefault } from "./navigation";
+import { dragOut } from "./ripdrag";
+import {
+	$currentPath,
+	$dialogOpen,
+	$previewing,
+	$selectedDirent,
+} from "./store";
+import { moveToTrash, restoreFromTrash } from "./trash";
 
 type Run = (dirent: Dirent | null) => void;
+
+type When = (dirent: Dirent) => boolean;
 
 interface Shortcut {
 	key: string;
 	run: Run;
+	when?: When;
 }
 
 function withDirent(action: (dirent: Dirent) => void): Run {
@@ -31,6 +39,28 @@ function withDirent(action: (dirent: Dirent) => void): Run {
 			action(dirent);
 		}
 	};
+}
+
+function guard(
+	when: When,
+	action: (dirent: Dirent) => void,
+): { run: Run; when: When } {
+	return {
+		when: when,
+		run: withDirent((dirent: Dirent): void => {
+			if (when(dirent)) {
+				action(dirent);
+			}
+		}),
+	};
+}
+
+function inTrash(): boolean {
+	return isTrashPath($currentPath.get());
+}
+
+function outsideTrash(): boolean {
+	return !inTrash();
 }
 
 function inDirectory(action: () => void): Run {
@@ -101,9 +131,16 @@ export const SHORTCUTS = {
 		}),
 	},
 	dragOut: { key: "ctrl+a", run: withDirent(dragOut) },
+	extract: {
+		key: "ctrl+e",
+		...guard(
+			(dirent: Dirent): boolean => outsideTrash() && isArchive(dirent),
+			extract,
+		),
+	},
 	trash: {
 		key: "ctrl+t",
-		run: withDirent((dirent: Dirent): void => {
+		...guard(outsideTrash, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Move to trash?",
 				description: `Are you sure you want to move '${dirent.name}' to trash?`,
@@ -115,7 +152,7 @@ export const SHORTCUTS = {
 	},
 	restore: {
 		key: "ctrl+z",
-		run: withDirent((dirent: Dirent): void => {
+		...guard(inTrash, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Restore?",
 				description: `Are you sure you want to restore '${dirent.name}' to its original location?`,
@@ -127,7 +164,7 @@ export const SHORTCUTS = {
 	},
 	delete: {
 		key: "ctrl+d",
-		run: withDirent((dirent: Dirent): void => {
+		...guard(outsideTrash, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Permanently delete?",
 				description: `Are you sure you want to permanently delete '${dirent.name}'?`,

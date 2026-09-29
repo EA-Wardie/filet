@@ -1,8 +1,8 @@
 import type * as core from "@opentui/core";
 import { TRASH_EMPTY_ICON } from "../lib/consts";
-import { emptyTrash } from "../lib/filesystem";
 import { isTrashPath } from "../lib/navigation";
 import { $currentPath, $trashFull } from "../lib/store";
+import { emptyTrash } from "../lib/trash";
 import { Confirmation } from "./Confirmation";
 import { IconButton } from "./IconButton";
 

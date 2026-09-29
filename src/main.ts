@@ -5,8 +5,8 @@ import { Flex } from "./components/Flex";
 import { ListExplorer } from "./components/ListExplorer";
 import { Sidebar } from "./components/Sidebar";
 import { makeApp } from "./lib/context";
-import { checkTrash } from "./lib/filesystem";
 import { registerKeyboardShortcuts } from "./lib/shortcuts";
+import { checkTrash } from "./lib/trash";
 
 function main() {
 	makeApp((): void => {
