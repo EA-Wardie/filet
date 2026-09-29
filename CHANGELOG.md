@@ -4,7 +4,8 @@
 
 ### Added
 
-- Extract `.tar`, `.tar.gz` and `.tgz` archives from the context menu or with `Ctrl+E`. Archives unpack into a folder named after them, and existing folders are never overwritten.
+- Extract `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst`, `.tzst` and `.zip` archives from the context menu or with `Ctrl+E`, using `tar` and `unzip`. Archives unpack into a folder named after them, existing folders are never overwritten, and a failed extract removes its partial folder.
+- Requirements section in the README.
 
 ### Changed
 

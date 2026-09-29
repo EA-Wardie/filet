@@ -12,11 +12,23 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - This is beta software and bugs should be expected. Use at your own risk.
 - A Nerd Font is required for icon support.
 
+## Requirements
+
+- `tar` and `unzip` for extracting archives. Supported formats are `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst`, `.tzst` and `.zip`.
+- `xz`, `bzip2` and `zstd` for `.tar.xz`, `.tar.bz2` and `.tar.zst` archives respectively.
+- [ripdrag](https://github.com/nik012003/ripdrag) for drag and drop with `Ctrl+A`.
+
 ## Features
 
-- Explore directories.
-- Preview text based files and images.
-- Copy, cut, rename, trash and delete files and directories.
+- Explore directories with back and forward navigation and an editable path bar.
+- Search the current directory by name.
+- Preview text based files with syntax highlighting and line numbers, and preview images.
+- Open files in their default application, or run them if they are executable.
+- Create, copy, cut, paste, rename, trash and delete files and directories.
+- Restore files and directories from trash, or empty it.
+- Extract `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
+- Drag and drop files and directories into other applications with `ripdrag`.
+- Nerd Font file icons, context menus and keyboard shortcuts.
 - Bookmarks and a themeable UI, configurable through a user config file.
 - First party mouse support.
 
@@ -96,13 +108,11 @@ danger = "#dc2626"
 | `Ctrl+T`     | Move the selected file or folder to trash, after confirmation.                                   |
 | `Ctrl+Z`     | Restore a file or folder from trash, after confirmation.                                         |
 | `Ctrl+D`     | Permanently delete the selected file or folder, after confirmation.                              |
-| `Ctrl+E`     | Extract the selected `.tar`, `.tar.gz` or `.tgz` archive into a folder next to it.               |
+| `Ctrl+E`     | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
 | `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`.                                       |
 | `Q`          | Quit the application, after confirmation.                                                        |
 
 In a confirmation or prompt dialog, `Return` confirms and `Escape` cancels.
-
-`Ctrl+A` requires [ripdrag](https://github.com/nik012003/ripdrag) to be installed and available on your `PATH`.
 
 ## Theming
 
@@ -189,4 +199,5 @@ This installs filet the same way as `bun run install:app`.
 - [x] Ability to open files marked as executables instead of previewing them.
 - [x] Hide the sidebar when the viewport reaches a small enough size.
 - [x] Option to restore a file from trash.
-- [ ] Add option to extract and compress files/folders.
+- [x] Add option to extract archives.
+- [ ] Add option to compress files/folders.

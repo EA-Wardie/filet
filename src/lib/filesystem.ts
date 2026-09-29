@@ -165,14 +165,30 @@ export async function extract(dirent: Dirent): Promise<void> {
 
 	$tasksCount.set($tasksCount.get() + 1);
 
-	try {
-		const archive: Bun.Archive = new Bun.Archive(
-			await Bun.file(getDirentPath(dirent)).bytes(),
-		);
+	const path: string = getDirentPath(dirent);
+	let created: boolean = false;
 
-		await archive.extract(toPath);
+	try {
+		await mkdir(toPath);
+
+		created = true;
+
+		const { exitCode, stderr } = await (extension === ".zip"
+			? Bun.$`unzip -q -n ${path} -d ${toPath}`
+			: Bun.$`tar -xf ${path} -C ${toPath}`
+		)
+			.nothrow()
+			.quiet();
+
+		if (exitCode !== 0) {
+			throw new Error(stderr.toString().trim());
+		}
 	} catch (error) {
 		logError(error);
+
+		if (created) {
+			await rm(toPath, { recursive: true, force: true });
+		}
 	} finally {
 		refresh();
 

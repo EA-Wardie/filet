@@ -9,7 +9,18 @@ export const TRASH_EMPTY_ICON: string = "\uf48e";
 
 export const COLLATOR: Intl.Collator = new Intl.Collator();
 
-export const ARCHIVE_EXTENSIONS: string[] = [".tar.gz", ".tgz", ".tar"];
+export const ARCHIVE_EXTENSIONS: string[] = [
+	".tar.gz",
+	".tar.xz",
+	".tar.bz2",
+	".tar.zst",
+	".tgz",
+	".txz",
+	".tbz2",
+	".tzst",
+	".tar",
+	".zip",
+];
 
 export const USER_CONFIG_PATH: string = `${HOME_DIRECTORY}/.config/filet/config.toml`;
 
