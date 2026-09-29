@@ -1,6 +1,5 @@
-import { type Dirent, existsSync } from "node:fs";
+import type { Dirent } from "node:fs";
 import { mkdir, rm } from "node:fs/promises";
-import { join } from "node:path";
 import { ARCHIVE_EXTENSIONS } from "./consts";
 import { getDirentPath } from "./navigation";
 import { runTask } from "./tasks";
@@ -31,18 +30,10 @@ export async function extract(dirent: Dirent): Promise<void> {
 	}
 
 	const path: string = getDirentPath(dirent);
-	const toPath: string = join(
-		dirent.parentPath,
-		dirent.name.slice(0, -extension.length),
-	);
-
-	if (existsSync(toPath)) {
-		console.warn(`Cannot extract, ${toPath} already exists.`);
-
-		return;
-	}
+	const toPath: string = path.slice(0, -extension.length);
 
 	await runTask(async (): Promise<void> => {
+		// Fails with EEXIST rather than extracting into an existing folder.
 		await mkdir(toPath);
 
 		const { exitCode, stderr } = await (extension === ".zip"

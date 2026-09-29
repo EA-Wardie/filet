@@ -10,6 +10,8 @@
 ### Changed
 
 - Context menus are wider.
+- Creating a file or folder shows in the tasks counter.
+- Paste and extract collisions are logged as errors, like restore.
 
 ### Fixed
 
@@ -20,7 +22,9 @@
 ### Internal
 
 - `lib/filesystem.ts` split into `trash.ts`, `archive.ts`, `ripdrag.ts` and `icons.ts`.
-- New `runTask()` in `lib/tasks.ts` handles the task counter, error logging and refresh for every file operation.
+- New `runTask()` in `lib/tasks.ts` handles the task counter, error logging and refresh for every file operation, including creating files and folders.
+- Shortcuts can declare a `when` check, which guards the key binding and sets the context menu item visibility.
+- Trash folder paths are defined once in `lib/config.ts`.
 
 ## 0.2.1 (2026-09-27)
 

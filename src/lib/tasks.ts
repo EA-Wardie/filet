@@ -2,7 +2,7 @@ import { logError } from "./log";
 import { refresh } from "./navigation";
 import { $tasksCount } from "./store";
 
-export async function runTask(task: () => Promise<void>): Promise<void> {
+export async function runTask(task: () => Promise<unknown>): Promise<void> {
 	$tasksCount.set($tasksCount.get() + 1);
 
 	try {

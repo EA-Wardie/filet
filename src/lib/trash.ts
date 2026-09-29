@@ -1,15 +1,17 @@
 import { type Dirent, existsSync, readdir } from "node:fs";
 import { mkdir, rm } from "node:fs/promises";
 import { basename, dirname } from "node:path";
-import { trashPath } from "./config";
+import { trashFilesPath, trashInfoPath } from "./config";
 import { copyDirent, moveDirent, removeDirent } from "./filesystem";
 import { getDirentPath } from "./navigation";
 import { $trashFull } from "./store";
 import { runTask } from "./tasks";
 
-async function writeTrashInfo(path: string): Promise<void> {
-	const filename: string = `${basename(path)}.trashinfo`;
+function trashInfoFile(name: string): string {
+	return `${trashInfoPath}/${name}.trashinfo`;
+}
 
+async function writeTrashInfo(path: string): Promise<void> {
 	const content: string = [
 		"[Trash Info]",
 		`Path=${encodeURI(path)}`,
@@ -17,13 +19,11 @@ async function writeTrashInfo(path: string): Promise<void> {
 		"",
 	].join("\n");
 
-	await Bun.write(`${trashPath}/info/${filename}`, content);
+	await Bun.write(trashInfoFile(basename(path)), content);
 }
 
 async function readTrashInfoPath(name: string): Promise<string> {
-	const content: string = await Bun.file(
-		`${trashPath}/info/${name}.trashinfo`,
-	).text();
+	const content: string = await Bun.file(trashInfoFile(name)).text();
 
 	const pathLine: string | undefined = content
 		.split("\n")
@@ -38,7 +38,7 @@ async function readTrashInfoPath(name: string): Promise<string> {
 
 export function checkTrash(): void {
 	readdir(
-		`${trashPath}/files`,
+		trashFilesPath,
 		(error: NodeJS.ErrnoException | null, files: string[]) => {
 			if (error) {
 				return;
@@ -49,17 +49,17 @@ export function checkTrash(): void {
 	);
 }
 
-export async function moveToTrash(dirent: Dirent): Promise<void> {
-	await runTask(async (): Promise<void> => {
+export function moveToTrash(dirent: Dirent): Promise<void> {
+	return runTask(async (): Promise<void> => {
 		await writeTrashInfo(getDirentPath(dirent));
-		await moveDirent(dirent, `${trashPath}/files/${dirent.name}`);
+		await moveDirent(dirent, `${trashFilesPath}/${dirent.name}`);
 
 		$trashFull.set(true);
 	});
 }
 
-export async function restoreFromTrash(dirent: Dirent): Promise<void> {
-	await runTask(async (): Promise<void> => {
+export function restoreFromTrash(dirent: Dirent): Promise<void> {
+	return runTask(async (): Promise<void> => {
 		const toPath: string = await readTrashInfoPath(dirent.name);
 
 		if (existsSync(toPath)) {
@@ -70,23 +70,23 @@ export async function restoreFromTrash(dirent: Dirent): Promise<void> {
 		await copyDirent(dirent, toPath);
 		await Promise.all([
 			removeDirent(dirent),
-			rm(`${trashPath}/info/${dirent.name}.trashinfo`, { force: true }),
+			rm(trashInfoFile(dirent.name), { force: true }),
 		]);
 
 		checkTrash();
 	});
 }
 
-export async function emptyTrash(): Promise<void> {
-	await runTask(async (): Promise<void> => {
+export function emptyTrash(): Promise<void> {
+	return runTask(async (): Promise<void> => {
 		await Promise.all([
-			rm(`${trashPath}/files`, { recursive: true, force: true }),
-			rm(`${trashPath}/info`, { recursive: true, force: true }),
+			rm(trashFilesPath, { recursive: true, force: true }),
+			rm(trashInfoPath, { recursive: true, force: true }),
 		]);
 
 		await Promise.all([
-			mkdir(`${trashPath}/files`, { recursive: true }),
-			mkdir(`${trashPath}/info`, { recursive: true }),
+			mkdir(trashFilesPath, { recursive: true }),
+			mkdir(trashInfoPath, { recursive: true }),
 		]);
 
 		$trashFull.set(false);

@@ -1,14 +1,12 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { isArchive } from "../lib/archive";
 import { doubleClickTimeout, theme } from "../lib/config";
 import { TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { getFileIcon } from "../lib/icons";
-import { isTrashPath } from "../lib/navigation";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
-import { $currentPath, $selectedDirent } from "../lib/store";
+import { $selectedDirent } from "../lib/store";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
@@ -70,8 +68,10 @@ export class DirentLink {
 	}
 
 	private showMenu(event: core.MouseEvent): void {
-		const canExtract: boolean =
-			isArchive(this._options.dirent) && !isTrashPath($currentPath.get());
+		const { dirent } = this._options;
+		const canExtract: boolean = SHORTCUTS.extract.when(dirent);
+		const canTrash: boolean = SHORTCUTS.trash.when(dirent);
+		const canRestore: boolean = SHORTCUTS.restore.when(dirent);
 
 		Menu.make({
 			x: event.x,
@@ -81,7 +81,7 @@ export class DirentLink {
 					label: "\udb80\udfcc Open",
 					shortcut: shortcutLabel(SHORTCUTS.open),
 					onClick: (): void => {
-						SHORTCUTS.open.run(this._options.dirent);
+						SHORTCUTS.open.run(dirent);
 					},
 				}),
 				Divider.make({ visible: canExtract }),
@@ -90,7 +90,7 @@ export class DirentLink {
 					shortcut: shortcutLabel(SHORTCUTS.extract),
 					visible: canExtract,
 					onClick: (): void => {
-						SHORTCUTS.extract.run(this._options.dirent);
+						SHORTCUTS.extract.run(dirent);
 					},
 				}),
 				Divider.make(),
@@ -98,14 +98,14 @@ export class DirentLink {
 					label: "\uf0c5 Copy",
 					shortcut: shortcutLabel(SHORTCUTS.copy),
 					onClick: (): void => {
-						SHORTCUTS.copy.run(this._options.dirent);
+						SHORTCUTS.copy.run(dirent);
 					},
 				}),
 				MenuButton.make({
 					label: "\uf0c4 Cut",
 					shortcut: shortcutLabel(SHORTCUTS.cut),
 					onClick: (): void => {
-						SHORTCUTS.cut.run(this._options.dirent);
+						SHORTCUTS.cut.run(dirent);
 					},
 				}),
 				Divider.make(),
@@ -113,37 +113,33 @@ export class DirentLink {
 					label: "\uf040 Rename",
 					shortcut: shortcutLabel(SHORTCUTS.rename),
 					onClick: (): void => {
-						SHORTCUTS.rename.run(this._options.dirent);
+						SHORTCUTS.rename.run(dirent);
 					},
 				}),
-				Divider.make({
-					visible: !isTrashPath($currentPath.get()),
-				}),
+				Divider.make({ visible: canTrash }),
 				MenuButton.make({
 					label: `${TRASH_FULL_ICON} Trash`,
 					shortcut: shortcutLabel(SHORTCUTS.trash),
-					visible: !isTrashPath($currentPath.get()),
+					visible: canTrash,
 					onClick: (): void => {
-						SHORTCUTS.trash.run(this._options.dirent);
+						SHORTCUTS.trash.run(dirent);
 					},
 				}),
 				MenuButton.make({
 					label: "\udb81\ude91 Delete",
 					shortcut: shortcutLabel(SHORTCUTS.delete),
-					visible: !isTrashPath($currentPath.get()),
+					visible: SHORTCUTS.delete.when(dirent),
 					onClick: (): void => {
-						SHORTCUTS.delete.run(this._options.dirent);
+						SHORTCUTS.delete.run(dirent);
 					},
 				}),
-				Divider.make({
-					visible: isTrashPath($currentPath.get()),
-				}),
+				Divider.make({ visible: canRestore }),
 				MenuButton.make({
 					label: "\udb82\udd9b Restore",
 					shortcut: shortcutLabel(SHORTCUTS.restore),
-					visible: isTrashPath($currentPath.get()),
+					visible: canRestore,
 					onClick: (): void => {
-						SHORTCUTS.restore.run(this._options.dirent);
+						SHORTCUTS.restore.run(dirent);
 					},
 				}),
 			],

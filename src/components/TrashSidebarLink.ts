@@ -1,6 +1,6 @@
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { theme, trashPath } from "../lib/config";
+import { theme, trashFilesPath } from "../lib/config";
 import { TRASH_EMPTY_ICON, TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { go, isTrashPath } from "../lib/navigation";
@@ -35,7 +35,7 @@ export class TrashSidebarLink {
 			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.LEFT) {
-					go(`${trashPath}/files`);
+					go(trashFilesPath);
 				}
 			},
 			...this._options,

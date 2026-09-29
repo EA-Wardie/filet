@@ -2,8 +2,7 @@ import { type Dirent, existsSync } from "node:fs";
 import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { ctx } from "./context";
-import { logError } from "./log";
-import { getDirentPath, refresh } from "./navigation";
+import { getDirentPath } from "./navigation";
 import { $copyDirent, $currentPath, $cutDirent } from "./store";
 import { runTask } from "./tasks";
 
@@ -79,13 +78,11 @@ export async function paste(): Promise<void> {
 		return;
 	}
 
-	if (existsSync(toPath)) {
-		console.warn(`Cannot paste, ${toPath} already exists.`);
-
-		return;
-	}
-
 	await runTask(async (): Promise<void> => {
+		if (existsSync(toPath)) {
+			throw new Error(`Cannot paste, ${toPath} already exists.`);
+		}
+
 		if (isCutting) {
 			await moveDirent(dirent, toPath);
 
@@ -98,38 +95,23 @@ export async function paste(): Promise<void> {
 	});
 }
 
-export function createFile(name: string): void {
-	const path: string = join($currentPath.get(), name);
-
-	Bun.write(path, "")
-		.then((): void => {
-			refresh();
-		})
-		.catch((error: Error): void => {
-			logError(error);
-		});
+export function createFile(name: string): Promise<void> {
+	return runTask(
+		(): Promise<number> => Bun.write(join($currentPath.get(), name), ""),
+	);
 }
 
-export function createFolder(name: string): void {
-	const path: string = join($currentPath.get(), name);
-
-	mkdir(path)
-		.then((): void => {
-			refresh();
-		})
-		.catch((error: Error): void => {
-			logError(error);
-		});
+export function createFolder(name: string): Promise<void> {
+	return runTask((): Promise<void> => mkdir(join($currentPath.get(), name)));
 }
 
-export async function rename(dirent: Dirent, name: string): Promise<void> {
-	await runTask(async (): Promise<void> => {
-		await renameEntry(getDirentPath(dirent), join(dirent.parentPath, name));
-	});
+export function rename(dirent: Dirent, name: string): Promise<void> {
+	return runTask(
+		(): Promise<void> =>
+			renameEntry(getDirentPath(dirent), join(dirent.parentPath, name)),
+	);
 }
 
-export async function remove(dirent: Dirent): Promise<void> {
-	await runTask(async (): Promise<void> => {
-		await removeDirent(dirent);
-	});
+export function remove(dirent: Dirent): Promise<void> {
+	return runTask((): Promise<void> => removeDirent(dirent));
 }
