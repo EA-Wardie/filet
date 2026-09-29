@@ -1,7 +1,6 @@
 import { RGBA } from "@opentui/core";
-import defaultConfig from "../../config.toml";
-import { HOME_DIRECTORY, USER_CONFIG_PATH } from "./consts";
-import { logError } from "./log";
+import { TRASH_PATH, USER_CONFIG_PATH } from "./consts";
+import { logError, setLogsPath } from "./log";
 
 export interface BookmarkType {
 	label: string;
@@ -35,6 +34,7 @@ interface ThemeConfig {
 interface ConfigFile {
 	bookmarks?: BookmarkType[];
 	trash_path?: string;
+	logs_path?: string;
 	double_click_timeout?: number;
 	theme?: Partial<ThemeConfig>;
 }
@@ -57,21 +57,27 @@ async function loadUserConfig(): Promise<ConfigFile> {
 
 const userConfig: ConfigFile = await loadUserConfig();
 
-export const bookmarks: BookmarkType[] =
-	userConfig.bookmarks ?? defaultConfig.bookmarks;
+export const bookmarks: BookmarkType[] = userConfig.bookmarks ?? [];
 
-export const trashPath: string =
-	userConfig.trash_path ?? `${HOME_DIRECTORY}/.local/share/Trash`;
+export const trashPath: string = userConfig.trash_path ?? TRASH_PATH;
 
 export const trashFilesPath: string = `${trashPath}/files`;
 
 export const trashInfoPath: string = `${trashPath}/info`;
 
+if (userConfig.logs_path) {
+	setLogsPath(userConfig.logs_path);
+}
+
 export const doubleClickTimeout: number =
-	userConfig.double_click_timeout ?? defaultConfig.double_click_timeout;
+	userConfig.double_click_timeout ?? 250;
 
 const themeConfig: ThemeConfig = {
-	...defaultConfig.theme,
+	bg: "#0C0C0C",
+	fg: "#fafafa",
+	border: "#d4d4d4",
+	success: "#16a34a",
+	danger: "#dc2626",
 	...userConfig.theme,
 };
 
