@@ -2,27 +2,26 @@ import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
 import { Prompt } from "../components/Prompt";
+import { extract } from "./archive";
 import { ctx } from "./context";
 import {
 	copy,
 	createFile,
 	createFolder,
 	cut,
-	dragOut,
-	extract,
-	moveToTrash,
 	paste,
 	remove,
 	rename,
-	restoreFromTrash,
 } from "./filesystem";
 import { getDirentPath, go, isTrashPath, openInDefault } from "./navigation";
+import { dragOut } from "./ripdrag";
 import {
 	$currentPath,
 	$dialogOpen,
 	$previewing,
 	$selectedDirent,
 } from "./store";
+import { moveToTrash, restoreFromTrash } from "./trash";
 
 type Run = (dirent: Dirent | null) => void;
 

@@ -14,6 +14,13 @@
 ### Fixed
 
 - Shortcuts follow the context menus in the trash. Trash, Delete and Extract are blocked there, and Restore is blocked everywhere else.
+- Rename, delete and trash actions refresh the view even when they fail.
+- File icons no longer use Windows path rules to find the extension.
+
+### Internal
+
+- `lib/filesystem.ts` split into `trash.ts`, `archive.ts`, `ripdrag.ts` and `icons.ts`.
+- New `runTask()` in `lib/tasks.ts` handles the task counter, error logging and refresh for every file operation.
 
 ## 0.2.1 (2026-09-27)
 

@@ -1,10 +1,11 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
+import { isArchive } from "../lib/archive";
 import { doubleClickTimeout, theme } from "../lib/config";
 import { TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
-import { getFileIcon, isArchive } from "../lib/filesystem";
+import { getFileIcon } from "../lib/icons";
 import { isTrashPath } from "../lib/navigation";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import { $currentPath, $selectedDirent } from "../lib/store";
