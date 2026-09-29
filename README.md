@@ -55,7 +55,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Configuration
 
-filet ships with a default config at `config.toml`. To override it, create your own config file at:
+filet works without a config file. To change its defaults, create a config file at:
 
 ```
 ~/.config/filet/config.toml
@@ -70,6 +70,8 @@ bookmarks = [
 
 trash_path = "/home/<user>/.local/share/Trash"
 
+logs_path = "/home/<user>/.local/state/filet/logs"
+
 double_click_timeout = 250
 
 [theme]
@@ -78,6 +80,20 @@ fg = "#fafafa"
 border = "#d4d4d4"
 success = "#16a34a"
 danger = "#dc2626"
+```
+
+## Logs
+
+Errors are saved to a file per day at `~/.local/state/filet/logs/YYYY-MM-DD.jsonl`, or in the folder set by `logs_path`. Each line is a JSON object with a local `timestamp`, the error `message`, and the `code`, `errno`, `syscall` and `path` where available, for example:
+
+```json
+{"timestamp":"2026-09-29T14:03:12.345+02:00","code":"EEXIST","syscall":"mkdir","path":"/home/<user>/archive","message":"EEXIST: file already exists, mkdir '/home/<user>/archive'"}
+```
+
+To read a day's logs with [jq](https://jqlang.org):
+
+```
+jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 ```
 
 ## Controls
@@ -109,10 +125,10 @@ danger = "#dc2626"
 | `Ctrl+Z`     | Restore a file or folder from trash, after confirmation.                                         |
 | `Ctrl+D`     | Permanently delete the selected file or folder, after confirmation.                              |
 | `Ctrl+E`     | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
-| `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`.                                       |
+| `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`. See [Requirements](#requirements).    |
 | `Q`          | Quit the application, after confirmation.                                                        |
 
-In a confirmation or prompt dialog, `Return` confirms and `Escape` cancels.
+In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
 
 ## Theming
 

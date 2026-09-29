@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.3 (2026-09-29)
+
+### Added
+
+- Errors are saved to a JSON Lines file per day in `~/.local/state/filet/logs`, with a local timestamp. The folder can be changed with the new `logs_path` config value.
+- Logs section in the README, covering the log location, format and reading logs with `jq`.
+
+### Changed
+
+- Default config values live in `lib/config.ts`, and the bundled `config.toml` is removed. A user config at `~/.config/filet/config.toml` still overrides any of them.
+- Errors in the console are shown as the same JSON line that is saved to the log file.
+
+### Internal
+
+- Log timestamps and file names use `Temporal` instead of hand-written date formatting.
+- Default trash and logs paths are `TRASH_PATH` and `LOGS_PATH` in `lib/consts.ts`.
+
 ## 0.2.2 (2026-09-28)
 
 ### Added

@@ -24,6 +24,10 @@ export const ARCHIVE_EXTENSIONS: string[] = [
 
 export const USER_CONFIG_PATH: string = `${HOME_DIRECTORY}/.config/filet/config.toml`;
 
+export const TRASH_PATH: string = `${HOME_DIRECTORY}/.local/share/Trash`;
+
+export const LOGS_PATH: string = `${HOME_DIRECTORY}/.local/state/filet/logs`;
+
 export const IMAGE_FILETYPES: Set<string> = new Set([
 	".png",
 	".jpg",

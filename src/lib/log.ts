@@ -1,18 +1,57 @@
+import { appendFile, mkdir } from "node:fs";
+import { LOGS_PATH } from "./consts";
+
+interface LogEntry {
+	timestamp: string;
+	code?: string;
+	errno?: number;
+	syscall?: string;
+	path?: string;
+	message: string;
+}
+
+let logsPath: string = LOGS_PATH;
+
+export function setLogsPath(path: string): void {
+	logsPath = path;
+}
+
+function toLogEntry(error: unknown, now: Temporal.ZonedDateTime): LogEntry {
+	const { code, errno, syscall, path, message }: NodeJS.ErrnoException =
+		error instanceof Error ? error : { name: "", message: String(error) };
+
+	return {
+		timestamp: now.toString({
+			timeZoneName: "never",
+			smallestUnit: "millisecond",
+		}),
+		code: code,
+		errno: errno,
+		syscall: syscall,
+		path: path,
+		message: message,
+	};
+}
+
+function persist(line: string, now: Temporal.ZonedDateTime): void {
+	const file: string = `${logsPath}/${now.toPlainDate()}.jsonl`;
+
+	appendFile(file, line, (error: NodeJS.ErrnoException | null): void => {
+		if (error?.code !== "ENOENT") {
+			return;
+		}
+
+		mkdir(logsPath, { recursive: true }, (): void => {
+			appendFile(file, line, (): void => {});
+		});
+	});
+}
+
 export function logError(error: unknown): void {
-	if (!(error instanceof Error)) {
-		console.error(error);
+	const now: Temporal.ZonedDateTime = Temporal.Now.zonedDateTimeISO();
+	const line: string = JSON.stringify(toLogEntry(error, now));
 
-		return;
-	}
+	console.error(line);
 
-	const { code, errno, syscall, path, message } =
-		error as NodeJS.ErrnoException;
-
-	console.error(
-		Object.fromEntries(
-			Object.entries({ code, errno, syscall, path, message }).filter(
-				([_, value]) => value !== undefined,
-			),
-		),
-	);
+	persist(`${line}\n`, now);
 }
