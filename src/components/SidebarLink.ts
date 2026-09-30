@@ -2,7 +2,7 @@ import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { go } from "../lib/navigation";
+import { goToPath } from "../lib/navigation";
 import { $currentPath } from "../lib/store";
 
 interface Options extends core.BoxOptions {
@@ -38,7 +38,7 @@ export class SidebarLink {
 			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.LEFT) {
-					go(this._options.path);
+					goToPath(this._options.path);
 				}
 			},
 			...this._options,

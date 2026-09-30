@@ -28,15 +28,25 @@ export const TRASH_PATH: string = `${HOME_DIRECTORY}/.local/share/Trash`;
 
 export const LOGS_PATH: string = `${HOME_DIRECTORY}/.local/state/filet/logs`;
 
+export const PREVIEW_MAX_SIZE: number = 1024 * 1024;
+
+export const PREVIEW_DELAY: number = 100;
+
+// How long a folder waits for its symlinks to resolve before it is shown.
+export const SYMLINK_TIMEOUT: number = 100;
+
+export const BINARY_CHECK_SIZE: number = 8000;
+
+export const SIDEBAR_MIN_WIDTH: number = 100;
+
+export const PREVIEW_MIN_WIDTH: number = 140;
+
 export const IMAGE_FILETYPES: Set<string> = new Set([
 	".png",
 	".jpg",
 	".jpeg",
 	".gif",
 	".webp",
-	".avif",
-	".ico",
-	".svg",
 ]);
 
 export const CODE_FILETYPES: Record<string, string> = {
@@ -46,8 +56,10 @@ export const CODE_FILETYPES: Record<string, string> = {
 	".svelte": "typescriptreact",
 	".html": "typescriptreact",
 	".htm": "typescriptreact",
+	".svg": "typescriptreact",
 	".js": "javascript",
 	".jsx": "javascriptreact",
+	".json": "javascript",
 	".md": "markdown",
 	".zig": "zig",
 };
@@ -169,8 +181,10 @@ export const FILE_ICON: string = "";
 
 export const FOLDER_ICON: string = "";
 
+let styles: core.SyntaxStyle | undefined;
+
 export function syntaxStyles(): core.SyntaxStyle {
-	return core.SyntaxStyle.fromStyles({
+	styles ??= core.SyntaxStyle.fromStyles({
 		// Basic tokens
 		keyword: { fg: core.RGBA.fromHex("#FF7B72"), bold: true },
 		"keyword.import": { fg: core.RGBA.fromHex("#FF7B72"), bold: true },
@@ -203,4 +217,6 @@ export function syntaxStyles(): core.SyntaxStyle {
 		// Default fallback
 		default: { fg: core.RGBA.fromHex("#E6EDF3") },
 	});
+
+	return styles;
 }

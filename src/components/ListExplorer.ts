@@ -1,16 +1,16 @@
-import { type Dirent, readdir } from "node:fs";
+import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { theme } from "../lib/config";
 import { COLLATOR } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { logError } from "../lib/log";
+import { isFolder, readFolder, takeSelectName } from "../lib/navigation";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import {
 	$copyDirent,
 	$currentPath,
 	$cutDirent,
-	$previewing,
+	$dirents,
 	$refresh,
 	$searchTerm,
 	$selectedDirent,
@@ -19,7 +19,7 @@ import { DirentLink } from "./DirentLink";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
-import { Preview } from "./Preview";
+import { Message } from "./Message";
 
 interface Link {
 	dirent: Dirent;
@@ -42,12 +42,16 @@ export class ListExplorer {
 			height: "100%",
 			viewportCulling: true,
 			onMouseDown: (event: core.MouseEvent): void => {
-				if (event.button === MouseButtons.RIGHT && !$previewing.get()) {
+				if (event.button === MouseButtons.RIGHT) {
 					this.showMenu(event);
 				}
 			},
 			...this._options,
 		});
+
+		// The up and down shortcuts move the selection, so the scroll box must not
+		// also scroll on those keys once a click has focused it.
+		this._component.focusable = false;
 
 		this.registerStoreEvents();
 		this.scanAndMakeDirents($currentPath.get());
@@ -68,14 +72,14 @@ export class ListExplorer {
 					label: "\ued80 New File",
 					shortcut: shortcutLabel(SHORTCUTS.newFile),
 					onClick: (): void => {
-						SHORTCUTS.newFile.run(null);
+						SHORTCUTS.newFile.run();
 					},
 				}),
 				MenuButton.make({
 					label: "\ueec7 New Folder",
 					shortcut: shortcutLabel(SHORTCUTS.newFolder),
 					onClick: (): void => {
-						SHORTCUTS.newFolder.run(null);
+						SHORTCUTS.newFolder.run();
 					},
 				}),
 				Divider.make({
@@ -86,7 +90,7 @@ export class ListExplorer {
 					shortcut: shortcutLabel(SHORTCUTS.paste),
 					visible: canPaste,
 					onClick: (): void => {
-						SHORTCUTS.paste.run(null);
+						SHORTCUTS.paste.run();
 					},
 				}),
 			],
@@ -94,22 +98,43 @@ export class ListExplorer {
 	}
 
 	private registerStoreEvents(): void {
+		// The selection is cleared after the links are destroyed, so their
+		// listeners are gone before it notifies.
 		$currentPath.listen((path: string): void => {
-			this.scanAndMakeDirents(path);
+			this.clearLinks();
+
+			$selectedDirent.set(null);
+
+			this.scanAndMakeDirents(path, takeSelectName());
 		});
 
+		// A refresh keeps the selection until the folder is read again.
 		$refresh.listen((): void => {
-			this.scanAndMakeDirents($currentPath.get(), $selectedDirent.get()?.name);
+			this.clearLinks();
+			this.scanAndMakeDirents(
+				$currentPath.get(),
+				takeSelectName() ?? $selectedDirent.get()?.name,
+			);
 		});
 
 		$searchTerm.listen((): void => {
 			this.filterLinks();
 		});
+
+		$selectedDirent.listen((dirent: Dirent | null): void => {
+			const link: core.BoxRenderable | undefined = this._links.find(
+				(link: Link): boolean => link.dirent === dirent,
+			)?.link;
+
+			if (link) {
+				this._component.scrollChildIntoView(link.id);
+			}
+		});
 	}
 
 	private filterLinks(selectName?: string): void {
 		const term: string = $searchTerm.get().toLocaleLowerCase();
-		let first: Dirent | null = null;
+		const visible: Dirent[] = [];
 		let named: Dirent | null = null;
 
 		for (const { dirent, name, link } of this._links) {
@@ -119,7 +144,7 @@ export class ListExplorer {
 				continue;
 			}
 
-			first ??= dirent;
+			visible.push(dirent);
 
 			if (dirent.name === selectName) {
 				named = dirent;
@@ -127,15 +152,16 @@ export class ListExplorer {
 		}
 
 		if (this._noMatches) {
-			this._noMatches.visible = !first;
+			this._noMatches.visible = !visible.length;
 		}
 
-		$selectedDirent.set(named ?? first);
+		$dirents.set(visible);
+		$selectedDirent.set(named ?? visible[0] ?? null);
 	}
 
 	private sortDirents(dirents: Dirent[]): void {
 		const rank = (dirent: Dirent): number => {
-			if (!dirent.isDirectory()) {
+			if (!isFolder(dirent)) {
 				return 2;
 			}
 
@@ -171,23 +197,20 @@ export class ListExplorer {
 		this._links = [];
 		this._noMatches = null;
 
+		$dirents.set([]);
+
 		for (const child of this._component.getChildren()) {
 			child.destroyRecursively();
 		}
-
-		$selectedDirent.set(null);
 	}
 
 	private addMessage(
 		content: string,
 		visible: boolean = true,
 	): core.TextRenderable {
-		const message: core.TextRenderable = new core.TextRenderable(ctx, {
+		const message: core.TextRenderable = Message.make({
 			content: content,
-			fg: theme.fg,
-			attributes: core.TextAttributes.DIM,
 			marginX: 1,
-			selectable: false,
 			visible: visible,
 		});
 
@@ -200,6 +223,7 @@ export class ListExplorer {
 		try {
 			if (!dirents.length) {
 				this.addMessage("\uf07c  --Empty--");
+				this.filterLinks();
 
 				return;
 			}
@@ -216,28 +240,17 @@ export class ListExplorer {
 	private scanAndMakeDirents(path: string, selectName?: string): void {
 		const scan: number = ++this._scan;
 
-		$previewing.set(false);
-
-		this.clearLinks();
-
-		readdir(
+		readFolder(
 			path,
-			{ withFileTypes: true },
 			(error: NodeJS.ErrnoException | null, dirents: Dirent[]): void => {
 				if (scan !== this._scan) {
 					return;
 				}
 
-				if (error?.code === "ENOTDIR") {
-					$previewing.set(true);
-
-					this._component.add(Preview.make({ path: path }));
-
-					return;
-				}
-
 				if (error) {
 					logError(error);
+
+					this.filterLinks();
 
 					return;
 				}

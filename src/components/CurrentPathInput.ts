@@ -1,7 +1,7 @@
 import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { go } from "../lib/navigation";
+import { goToPath } from "../lib/navigation";
 import { $currentPath } from "../lib/store";
 
 export class CurrentPathInput {
@@ -54,9 +54,17 @@ export class CurrentPathInput {
 		});
 
 		this._input.on(core.InputRenderableEvents.ENTER, (value: string) => {
-			go(value);
+			goToPath(value);
 
 			this._input?.blur();
+		});
+
+		// The path bar shows the current folder whenever it is not being edited,
+		// including after a path that does not exist or a file in this folder.
+		this._input.on(core.RenderableEvents.BLURRED, (): void => {
+			if (this._input) {
+				this._input.value = $currentPath.get();
+			}
 		});
 
 		this._component.add(this._input);

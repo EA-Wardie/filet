@@ -6,7 +6,7 @@ import { TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { getFileIcon } from "../lib/icons";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
-import { $selectedDirent } from "../lib/store";
+import { $previewOpen, $selectedDirent } from "../lib/store";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
@@ -46,7 +46,7 @@ export class DirentLink {
 					if (lastClick && Date.now() - lastClick < doubleClickTimeout) {
 						this._lastClick = null;
 
-						SHORTCUTS.go.run(this._options.dirent);
+						SHORTCUTS.open.run(this._options.dirent);
 					}
 				} else if (event.button === MouseButtons.RIGHT) {
 					$selectedDirent.set(this._options.dirent);
@@ -69,6 +69,8 @@ export class DirentLink {
 
 	private showMenu(event: core.MouseEvent): void {
 		const { dirent } = this._options;
+		const canPreview: boolean =
+			SHORTCUTS.preview.when(dirent) && !$previewOpen.get();
 		const canExtract: boolean = SHORTCUTS.extract.when(dirent);
 		const canTrash: boolean = SHORTCUTS.trash.when(dirent);
 		const canRestore: boolean = SHORTCUTS.restore.when(dirent);
@@ -82,6 +84,14 @@ export class DirentLink {
 					shortcut: shortcutLabel(SHORTCUTS.open),
 					onClick: (): void => {
 						SHORTCUTS.open.run(dirent);
+					},
+				}),
+				MenuButton.make({
+					label: "\uf06e Preview",
+					shortcut: shortcutLabel(SHORTCUTS.preview),
+					visible: canPreview,
+					onClick: (): void => {
+						SHORTCUTS.preview.run();
 					},
 				}),
 				Divider.make({ visible: canExtract }),

@@ -1,6 +1,6 @@
 import * as core from "@opentui/core";
 import { bookmarks, theme } from "../lib/config";
-import { HOME_DIRECTORY } from "../lib/consts";
+import { HOME_DIRECTORY, SIDEBAR_MIN_WIDTH } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { $tasksCount } from "../lib/store";
 import { Divider } from "./Divider";
@@ -180,7 +180,7 @@ export class Sidebar {
 
 	private registerContextEvents(): void {
 		ctx.on("resize", (width: number): void => {
-			this._component.visible = width > 100;
+			this._component.visible = width > SIDEBAR_MIN_WIDTH;
 		});
 	}
 }

@@ -1,10 +1,17 @@
-import { readFile } from "node:fs";
+import { readFile, type Stats, stat } from "node:fs";
 import { extname } from "node:path";
 import * as core from "@opentui/core";
 import { theme } from "../lib/config";
-import { CODE_FILETYPES, IMAGE_FILETYPES, syntaxStyles } from "../lib/consts";
+import {
+	BINARY_CHECK_SIZE,
+	CODE_FILETYPES,
+	IMAGE_FILETYPES,
+	PREVIEW_MAX_SIZE,
+	syntaxStyles,
+} from "../lib/consts";
 import { ctx } from "../lib/context";
 import { logError } from "../lib/log";
+import { Message } from "./Message";
 
 interface Options extends core.BoxOptions {
 	path: string;
@@ -13,54 +20,118 @@ interface Options extends core.BoxOptions {
 export class Preview {
 	private _options: Options;
 	private _component: core.BoxRenderable;
-	private _code: core.CodeRenderable | null = null;
-	private _lineNumbers: core.LineNumberRenderable | null = null;
-	private _image: core.ImageRenderable | null = null;
+	private _extension: string;
 
 	constructor(options: Options) {
 		this._options = options;
+		this._extension = extname(this._options.path).toLowerCase();
 
 		this._component = new core.BoxRenderable(ctx, {
 			paddingX: 1,
 			...this._options,
 		});
 
-		if (IMAGE_FILETYPES.has(extname(this._options.path).toLowerCase())) {
-			this.addImage();
-		} else {
-			this.addCode();
-		}
+		this.load();
 	}
 
 	public static make(options: Options): core.BoxRenderable {
 		return new this(options)._component;
 	}
 
+	private load(): void {
+		stat(
+			this._options.path,
+			(error: NodeJS.ErrnoException | null, stats: Stats): void => {
+				if (this._component.isDestroyed) {
+					return;
+				}
+
+				// Broken symlinks and unreadable files are common, so they are not logged.
+				if (error || !stats.isFile()) {
+					this.addNoPreview();
+
+					return;
+				}
+
+				if (IMAGE_FILETYPES.has(this._extension)) {
+					this.addImage();
+
+					return;
+				}
+
+				if (stats.size > PREVIEW_MAX_SIZE) {
+					this.addMessage("  --Too Large To Preview--");
+
+					return;
+				}
+
+				this.addCode();
+			},
+		);
+	}
+
+	private addNoPreview(): void {
+		this.addMessage("\uf05e  --No Preview--");
+	}
+
+	private addMessage(content: string): void {
+		this._component.add(Message.make({ content: content }));
+	}
+
 	private addImage(): void {
-		this._image = new core.ImageRenderable(ctx, {
+		const image: core.ImageRenderable = new core.ImageRenderable(ctx, {
 			width: "100%",
 			height: "100%",
 			source: this._options.path,
 			fit: "fit",
+			onError: (error: unknown): void => {
+				image.destroy();
+
+				this.addImageError(error);
+			},
 		});
 
-		this._component.add(this._image);
+		this._component.add(image);
+	}
+
+	// The decoder refuses images over 25 megapixels or 16384 pixels a side.
+	private addImageError(error: unknown): void {
+		const code: string | null =
+			error instanceof core.ImageError ? error.code : null;
+
+		if (code === "dimension-limit" || code === "memory-limit") {
+			this.addMessage("  --Image Too Large To Preview--");
+
+			return;
+		}
+
+		if (code !== "unsupported-format") {
+			logError(error);
+		}
+
+		this.addNoPreview();
 	}
 
 	private addCode(): void {
 		readFile(
 			this._options.path,
-			{ encoding: "utf-8" },
 			async (
 				error: NodeJS.ErrnoException | null,
-				content: string,
+				buffer: Buffer,
 			): Promise<void> => {
 				if (this._component.isDestroyed) {
 					return;
 				}
 
+				// Broken symlinks and unreadable files are common, so they are not logged.
 				if (error) {
-					logError(error);
+					this.addNoPreview();
+
+					return;
+				}
+
+				if (buffer.subarray(0, BINARY_CHECK_SIZE).includes(0)) {
+					this.addMessage("  --Binary File--");
 
 					return;
 				}
@@ -73,26 +144,25 @@ export class Preview {
 					return;
 				}
 
-				this._code = new core.CodeRenderable(ctx, {
+				const code: core.CodeRenderable = new core.CodeRenderable(ctx, {
 					width: "100%",
 					height: "100%",
-					content: content,
+					content: buffer.toString("utf-8"),
 					wrapMode: "word",
 					syntaxStyle: syntaxStyles(),
 					flexGrow: 1,
-					filetype:
-						CODE_FILETYPES[extname(this._options.path).toLowerCase()] ?? "text",
+					filetype: CODE_FILETYPES[this._extension] ?? "text",
 					treeSitterClient: tsClient,
 				});
 
-				this._lineNumbers = new core.LineNumberRenderable(ctx, {
-					minWidth: 0,
-					paddingRight: 1,
-					fg: theme.fg,
-					target: this._code,
-				});
-
-				this._component.add(this._lineNumbers);
+				this._component.add(
+					new core.LineNumberRenderable(ctx, {
+						minWidth: 0,
+						paddingRight: 1,
+						fg: theme.fg,
+						target: code,
+					}),
+				);
 			},
 		);
 	}

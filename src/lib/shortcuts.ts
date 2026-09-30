@@ -13,12 +13,13 @@ import {
 	remove,
 	rename,
 } from "./filesystem";
-import { getDirentPath, go, isTrashPath, openInDefault } from "./navigation";
+import { canPreview, isFolder, isTrashPath, openInDefault } from "./navigation";
 import { dragOut } from "./ripdrag";
 import {
 	$currentPath,
 	$dialogOpen,
-	$previewing,
+	$dirents,
+	$previewOpen,
 	$selectedDirent,
 } from "./store";
 import { moveToTrash, restoreFromTrash } from "./trash";
@@ -29,6 +30,8 @@ type When = (dirent: Dirent) => boolean;
 
 interface Shortcut {
 	key: string;
+	// A second key for the same action, such as the vim key.
+	alias?: string;
 	run: Run;
 	when?: When;
 }
@@ -63,20 +66,39 @@ function outsideTrash(): boolean {
 	return !inTrash();
 }
 
-function inDirectory(action: () => void): Run {
-	return (): void => {
-		if (!$previewing.get()) {
-			action();
-		}
-	};
+// Stops at the first and last entry. With nothing selected, down selects the
+// first entry and up the last.
+function moveSelection(step: number): void {
+	const dirents: Dirent[] = $dirents.get();
+	const selected: Dirent | null = $selectedDirent.get();
+
+	if (!selected) {
+		$selectedDirent.set((step > 0 ? dirents[0] : dirents.at(-1)) ?? null);
+
+		return;
+	}
+
+	const dirent: Dirent | undefined = dirents[dirents.indexOf(selected) + step];
+
+	if (dirent) {
+		$selectedDirent.set(dirent);
+	}
 }
 
 export const SHORTCUTS = {
-	go: {
-		key: "return",
-		run: withDirent((dirent: Dirent): void => {
-			go(getDirentPath(dirent));
-		}),
+	up: {
+		key: "up",
+		alias: "k",
+		run: (): void => {
+			moveSelection(-1);
+		},
+	},
+	down: {
+		key: "down",
+		alias: "j",
+		run: (): void => {
+			moveSelection(1);
+		},
 	},
 	deselect: {
 		key: "escape",
@@ -84,21 +106,28 @@ export const SHORTCUTS = {
 			$selectedDirent.set(null);
 		},
 	},
-	open: { key: "ctrl+space", run: withDirent(openInDefault) },
+	open: { key: "return", run: withDirent(openInDefault) },
+	preview: {
+		key: "p",
+		when: canPreview,
+		run: (): void => {
+			$previewOpen.set(!$previewOpen.get());
+		},
+	},
 	cut: { key: "ctrl+x", run: withDirent(cut) },
 	copy: { key: "ctrl+c", run: withDirent(copy) },
 	paste: {
 		key: "ctrl+v",
-		run: inDirectory((): void => {
+		run: (): void => {
 			paste();
-		}),
+		},
 	},
 	rename: {
-		key: "ctrl+r",
+		key: "r",
 		run: withDirent((dirent: Dirent): void => {
 			Prompt.make({
-				heading: dirent.isDirectory() ? "Rename folder" : "Rename file",
-				label: dirent.isDirectory() ? "Folder name" : "Filename",
+				heading: isFolder(dirent) ? "Rename folder" : "Rename file",
+				label: isFolder(dirent) ? "Folder name" : "Filename",
 				value: dirent.name,
 				onSubmit: (filename: string): void => {
 					rename(dirent, filename);
@@ -107,8 +136,8 @@ export const SHORTCUTS = {
 		}),
 	},
 	newFile: {
-		key: "ctrl+n",
-		run: inDirectory((): void => {
+		key: "n",
+		run: (): void => {
 			Prompt.make({
 				heading: "Create a new file",
 				label: "Filename",
@@ -116,11 +145,11 @@ export const SHORTCUTS = {
 					createFile(filename);
 				},
 			});
-		}),
+		},
 	},
 	newFolder: {
-		key: "ctrl+f",
-		run: inDirectory((): void => {
+		key: "f",
+		run: (): void => {
 			Prompt.make({
 				heading: "Create a new folder",
 				label: "Folder Name",
@@ -128,18 +157,18 @@ export const SHORTCUTS = {
 					createFolder(folderName);
 				},
 			});
-		}),
+		},
 	},
-	dragOut: { key: "ctrl+a", run: withDirent(dragOut) },
+	dragOut: { key: "a", run: withDirent(dragOut) },
 	extract: {
-		key: "ctrl+e",
+		key: "e",
 		...guard(
 			(dirent: Dirent): boolean => outsideTrash() && isArchive(dirent),
 			extract,
 		),
 	},
 	trash: {
-		key: "ctrl+t",
+		key: "t",
 		...guard(outsideTrash, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Move to trash?",
@@ -151,7 +180,7 @@ export const SHORTCUTS = {
 		}),
 	},
 	restore: {
-		key: "ctrl+z",
+		key: "z",
 		...guard(inTrash, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Restore?",
@@ -163,7 +192,7 @@ export const SHORTCUTS = {
 		}),
 	},
 	delete: {
-		key: "ctrl+d",
+		key: "d",
 		...guard(outsideTrash, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Permanently delete?",
@@ -188,9 +217,15 @@ export const SHORTCUTS = {
 	},
 } satisfies Record<string, Shortcut>;
 
-const KEYMAP: Map<string, Run> = new Map(
-	Object.values(SHORTCUTS).map(({ key, run }: Shortcut) => [key, run]),
-);
+const KEYMAP: Map<string, Run> = new Map<string, Run>();
+
+for (const { key, alias, run } of Object.values(SHORTCUTS) as Shortcut[]) {
+	KEYMAP.set(key, run);
+
+	if (alias) {
+		KEYMAP.set(alias, run);
+	}
+}
 
 export function shortcutLabel({ key }: Shortcut): string {
 	return key
@@ -201,9 +236,13 @@ export function shortcutLabel({ key }: Shortcut): string {
 
 export function registerKeyboardShortcuts(): void {
 	ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
+		// Alt is skipped, so Alt+D does not act as D. Shift is allowed, since
+		// letters typed with Caps Lock on also report Shift.
 		if (
 			$dialogOpen.get() ||
-			ctx.currentFocusedRenderable instanceof core.InputRenderable
+			ctx.currentFocusedRenderable instanceof core.InputRenderable ||
+			key.meta ||
+			key.option
 		) {
 			return;
 		}

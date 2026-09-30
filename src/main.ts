@@ -3,6 +3,7 @@ import { ExplorerFooter } from "./components/ExplorerFooter";
 import { ExplorerHeader } from "./components/ExplorerHeader";
 import { Flex } from "./components/Flex";
 import { ListExplorer } from "./components/ListExplorer";
+import { PreviewSidebar } from "./components/PreviewSidebar";
 import { Sidebar } from "./components/Sidebar";
 import { makeApp } from "./lib/context";
 import { registerKeyboardShortcuts } from "./lib/shortcuts";
@@ -23,6 +24,7 @@ function main() {
 						ExplorerFooter.make(),
 					],
 				}),
+				PreviewSidebar.make(),
 			],
 		});
 	});

@@ -1,9 +1,10 @@
 import type { Dirent } from "node:fs";
 import { extname } from "node:path";
 import { FILE_ICON, FILETYPE_ICONS, FOLDER_ICON } from "./consts";
+import { isFolder } from "./navigation";
 
 export function getFileIcon(dirent: Dirent): string {
-	if (dirent.isDirectory()) {
+	if (isFolder(dirent)) {
 		return FOLDER_ICON;
 	}
 

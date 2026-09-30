@@ -92,23 +92,28 @@ export async function paste(): Promise<void> {
 
 			$copyDirent.set(null);
 		}
-	});
+	}, basename(toPath));
 }
 
 export function createFile(name: string): Promise<void> {
 	return runTask(
 		(): Promise<number> => Bun.write(join($currentPath.get(), name), ""),
+		name,
 	);
 }
 
 export function createFolder(name: string): Promise<void> {
-	return runTask((): Promise<void> => mkdir(join($currentPath.get(), name)));
+	return runTask(
+		(): Promise<void> => mkdir(join($currentPath.get(), name)),
+		name,
+	);
 }
 
 export function rename(dirent: Dirent, name: string): Promise<void> {
 	return runTask(
 		(): Promise<void> =>
 			renameEntry(getDirentPath(dirent), join(dirent.parentPath, name)),
+		name,
 	);
 }
 

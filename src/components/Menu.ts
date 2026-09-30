@@ -46,7 +46,7 @@ export class Menu {
 
 	private addMenu(): void {
 		this._menu = new core.BoxRenderable(ctx, {
-			minWidth: 28,
+			minWidth: 24,
 			backgroundColor: theme.bg,
 			border: true,
 			borderColor: theme.border,

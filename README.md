@@ -16,19 +16,20 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 - `tar` and `unzip` for extracting archives. Supported formats are `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst`, `.tzst` and `.zip`.
 - `xz`, `bzip2` and `zstd` for `.tar.xz`, `.tar.bz2` and `.tar.zst` archives respectively.
-- [ripdrag](https://github.com/nik012003/ripdrag) for drag and drop with `Ctrl+A`.
+- [ripdrag](https://github.com/nik012003/ripdrag) for drag and drop with `A`.
 
 ## Features
 
-- Explore directories with back and forward navigation and an editable path bar.
+- Explore directories with back and forward navigation and an editable path bar. Entering a file path opens its folder with the file selected, and relative paths such as `..` resolve against the current folder.
 - Search the current directory by name.
-- Preview text based files with syntax highlighting and line numbers, and preview images.
+- Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
 - Open files in their default application, or run them if they are executable.
 - Create, copy, cut, paste, rename, trash and delete files and directories.
 - Restore files and directories from trash, or empty it.
 - Extract `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
 - Drag and drop files and directories into other applications with `ripdrag`.
-- Nerd Font file icons, context menus and keyboard shortcuts.
+- Move through the explorer with the arrow keys or `J` and `K`, and act on the selection with single letter shortcuts.
+- Nerd Font file icons and context menus.
 - Bookmarks and a themeable UI, configurable through a user config file.
 - First party mouse support.
 
@@ -100,35 +101,37 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 
 ### Mouse
 
-| Action         | Target         | Result                                                         |
-| -------------- | -------------- | -------------------------------------------------------------- |
-| `Left click`   | File or folder | Select it.                                                     |
-| `Double click` | File or folder | Open it. Folders in explorer and files a preview if suportted. |
-| `Right click`  | File or folder | Open its context menu.                                         |
-| `Right click`  | Explorer       | Open the explorer context menu.                                |
-| `Left click`   | Sidebar link   | Select and navigate to it.                                     |
+| Action         | Target         | Result                                                                                                      |
+| -------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |
+| `Left click`   | File or folder | Select it. Files are shown in the preview sidebar while it is open.                                         |
+| `Double click` | File or folder | Open it. Folders open in the explorer, and files in their default application, or run if executable.        |
+| `Right click`  | File or folder | Open its context menu.                                                                                      |
+| `Right click`  | Explorer       | Open the explorer context menu.                                                                             |
+| `Left click`   | Sidebar link   | Select and navigate to it.                                                                                  |
 
 ### Keyboard
 
 | Key          | Action                                                                                           |
 | ------------ | ------------------------------------------------------------------------------------------------ |
-| `Return`     | Open the selected file or folder. Folders open in the explorer and files a preview if supported. |
+| `Return`     | Open the selected file or folder, the same as a double click.                                    |
 | `Escape`     | Clear the selection.                                                                             |
-| `Ctrl+Space` | Open the selected file in its default application, or run it if it is executable.                |
+| `Up` / `K`   | Select the entry above, scrolling it into view. With nothing selected, select the last entry.    |
+| `Down` / `J` | Select the entry below, scrolling it into view. With nothing selected, select the first entry.   |
+| `P`          | Open or close the preview sidebar.                                                               |
 | `Ctrl+X`     | Cut the selected file or folder.                                                                 |
 | `Ctrl+C`     | Copy the selected file or folder.                                                                |
 | `Ctrl+V`     | Paste the cut or copied file or folder into the current folder.                                  |
-| `Ctrl+R`     | Rename the selected file or folder.                                                              |
-| `Ctrl+N`     | Create a new file in the current folder.                                                         |
-| `Ctrl+F`     | Create a new folder in the current folder.                                                       |
-| `Ctrl+T`     | Move the selected file or folder to trash, after confirmation.                                   |
-| `Ctrl+Z`     | Restore a file or folder from trash, after confirmation.                                         |
-| `Ctrl+D`     | Permanently delete the selected file or folder, after confirmation.                              |
-| `Ctrl+E`     | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
-| `Ctrl+A`     | Drag and drop the selected file or folder using `ripdrag`. See [Requirements](#requirements).    |
+| `R`          | Rename the selected file or folder.                                                              |
+| `N`          | Create a new file in the current folder.                                                         |
+| `F`          | Create a new folder in the current folder.                                                       |
+| `T`          | Move the selected file or folder to trash, after confirmation.                                   |
+| `Z`          | Restore a file or folder from trash, after confirmation.                                         |
+| `D`          | Permanently delete the selected file or folder, after confirmation.                              |
+| `E`          | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
+| `A`          | Drag and drop the selected file or folder using `ripdrag`. See [Requirements](#requirements).    |
 | `Q`          | Quit the application, after confirmation.                                                        |
 
-In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
+Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal. After a paste, rename or create, the new file or folder is selected. In the path bar, `Escape` stops editing and shows the current folder again. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
 
 ## Theming
 

@@ -1,11 +1,11 @@
 import type { Dirent } from "node:fs";
 import { mkdir, rm } from "node:fs/promises";
 import { ARCHIVE_EXTENSIONS } from "./consts";
-import { getDirentPath } from "./navigation";
+import { getDirentPath, isFolder } from "./navigation";
 import { runTask } from "./tasks";
 
 function getArchiveExtension(dirent: Dirent): string | null {
-	if (dirent.isDirectory()) {
+	if (isFolder(dirent)) {
 		return null;
 	}
 
@@ -33,7 +33,6 @@ export async function extract(dirent: Dirent): Promise<void> {
 	const toPath: string = path.slice(0, -extension.length);
 
 	await runTask(async (): Promise<void> => {
-		// Fails with EEXIST rather than extracting into an existing folder.
 		await mkdir(toPath);
 
 		const { exitCode, stderr } = await (extension === ".zip"

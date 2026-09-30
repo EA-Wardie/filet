@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.2.4 (2026-09-30)
+
+### Added
+
+- Preview sidebar on the right, opened from the new Preview context menu item and toggled with `P`. It starts closed and stays open until closed with `P` or its close button, previewing each file you select. It hides on narrow windows. The menu item only shows on files while the sidebar is closed.
+- JSON files preview with syntax highlighting.
+- `Up` and `Down`, or `K` and `J`, move the selection through the explorer and scroll it into view. They stop at the first and last entry, and only move through search matches.
+- Files over 1 MB, binary files, and special files such as sockets and pipes are not previewed. Broken symlinks and unreadable files show "No Preview".
+
+### Changed
+
+- Shortcuts are single letters, except `Ctrl+X`, `Ctrl+C` and `Ctrl+V` for cut, copy and paste. Rename is `R`, New File `N`, New Folder `F`, Trash `T`, Restore `Z`, Delete `D`, Extract `E` and Drag `A`. Letters held with Alt are ignored, and letters typed with Shift or Caps Lock still work.
+- Double click and `Return` open files in their default application, or run them if they are executable. Folders still open in the explorer.
+- Typing a file path into the path bar opens its folder with the file selected, without adding the file to the back history. Relative paths such as `./notes.txt` or `..` resolve against the current folder. A path that does not exist is logged, and the explorer stays on the current folder. The path bar shows the current folder again whenever it loses focus, including after `Escape`.
+- Bookmarks that point at a file open its folder with the file selected.
+- The preview loads a selection straight away, but while the selection keeps changing, such as when holding `J`, it only loads the last one.
+- Renaming, creating or pasting a file or folder selects it afterwards.
+- Refreshing after a file operation keeps the selection until the folder is read again, so the preview no longer reloads.
+- New File, New Folder and Paste are always available, since the explorer no longer switches to a preview.
+
+### Fixed
+
+- Symlinks to folders open, sort and show icons as folders. A folder waits at most 100 ms for its symlinks, so a link into an unresponsive mount does not keep it from showing.
+- Up and down keys no longer also scroll the explorer or preview after clicking in them.
+- Images over 25 megapixels or 16384 pixels a side, the limit of the image decoder, show "Image Too Large To Preview" instead of an empty preview. Image formats the decoder does not support show "No Preview".
+- `.svg` files preview as highlighted XML source, since the image decoder cannot draw them. `.avif` and `.ico` are no longer treated as images.
+
+### Removed
+
+- `Ctrl+Space`, which is now the same as `Return`.
+
+### Internal
+
+- New `PreviewSidebar` component and `$previewOpen` store, and `Preview` checks the file with `stat` before reading it. Binary files are detected from their first 8000 bytes before decoding.
+- New `Message` component for the dim placeholder text in the explorer and previews.
+- Path bar input is resolved by `goToPath()` in `lib/navigation.ts`. The entry to select after a navigation or refresh is passed with `refresh(select)` or `runTask(task, select)` and read once with `takeSelectName()`.
+- `syntaxStyles()` builds its style once, instead of leaking native memory on each code preview.
+- `$previewing` store and the `inDirectory()` shortcut wrapper removed.
+- `readFolder()` and `isFolder()` in `lib/navigation.ts` treat symlinks to folders as folders, and `canPreview()` is shared by the preview shortcut and sidebar. File operations still act on the link itself.
+- `PREVIEW_MAX_SIZE`, `PREVIEW_DELAY`, `SYMLINK_TIMEOUT`, `BINARY_CHECK_SIZE`, `SIDEBAR_MIN_WIDTH` and `PREVIEW_MIN_WIDTH` in `lib/consts.ts`.
+
 ## 0.2.3 (2026-09-29)
 
 ### Added
