@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.6 (2026-10-01)
+
+### Added
+
+- `Left` or `H` goes up to the parent folder and selects the folder you came from. It stops at the top of the trash. `Right` or `L` opens the selected folder, and does nothing on files or in the trash.
+
+### Changed
+
+- Restore from trash is `Ctrl+Z` again instead of `Z`, matching the common undo shortcut.
+
+### Fixed
+
+- Restore (`Ctrl+Z` and the context menu item) only works on items directly in the trash. Inside a trashed folder or the trash's own `files` and `info` folders, it could restore the wrong item or the whole trash.
+- Keyboard shortcuts are ignored while a context menu is open, so they no longer act on a file behind the menu or change folder under it.
+
 ## 0.2.5 (2026-10-01)
 
 ### Added

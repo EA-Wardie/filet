@@ -28,7 +28,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Restore files and directories from trash, or empty it.
 - Extract `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
 - Drag and drop files and directories into other applications with `ripdrag`.
-- Move through the explorer with the arrow keys or `J` and `K`, and act on the selection with single letter shortcuts.
+- Move through the explorer with the arrow keys or `H`, `J`, `K` and `L`, and act on the selection with single letter shortcuts.
 - Nerd Font file icons and context menus.
 - Bookmarks and a themeable UI, configurable through a user config file.
 - First party mouse support.
@@ -111,27 +111,29 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 
 ### Keyboard
 
-| Key          | Action                                                                                           |
-| ------------ | ------------------------------------------------------------------------------------------------ |
-| `Return`     | Open the selected file or folder, the same as a double click.                                    |
-| `Escape`     | Clear the selection.                                                                             |
-| `Up` / `K`   | Select the entry above, scrolling it into view. With nothing selected, select the last entry.    |
-| `Down` / `J` | Select the entry below, scrolling it into view. With nothing selected, select the first entry.   |
-| `P`          | Open or close the preview sidebar.                                                               |
-| `Ctrl+X`     | Cut the selected file or folder.                                                                 |
-| `Ctrl+C`     | Copy the selected file or folder.                                                                |
-| `Ctrl+V`     | Paste the cut or copied file or folder into the current folder.                                  |
-| `R`          | Rename the selected file or folder.                                                              |
-| `N`          | Create a new file in the current folder.                                                         |
-| `F`          | Create a new folder in the current folder.                                                       |
-| `T`          | Move the selected file or folder to trash, after confirmation.                                   |
-| `Z`          | Restore a file or folder from trash, after confirmation.                                         |
-| `D`          | Permanently delete the selected file or folder, after confirmation.                              |
-| `E`          | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
-| `A`          | Drag and drop the selected file or folder using `ripdrag`. See [Requirements](#requirements).    |
-| `Q`          | Quit the application, after confirmation.                                                        |
+| Key           | Action                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `Return`      | Open the selected file or folder, the same as a double click.                                    |
+| `Escape`      | Clear the selection.                                                                             |
+| `Up` / `K`    | Select the entry above, scrolling it into view. With nothing selected, select the last entry.    |
+| `Down` / `J`  | Select the entry below, scrolling it into view. With nothing selected, select the first entry.   |
+| `Left` / `H`  | Go up to the parent folder, selecting the folder you came from. Stops at the top of the trash.   |
+| `Right` / `L` | Open the selected folder. Does nothing in the trash.                                             |
+| `P`           | Open or close the preview sidebar.                                                               |
+| `Ctrl+X`      | Cut the selected file or folder.                                                                 |
+| `Ctrl+C`      | Copy the selected file or folder.                                                                |
+| `Ctrl+V`      | Paste the cut or copied file or folder into the current folder.                                  |
+| `R`           | Rename the selected file or folder.                                                              |
+| `N`           | Create a new file in the current folder.                                                         |
+| `F`           | Create a new folder in the current folder.                                                       |
+| `T`           | Move the selected file or folder to trash, after confirmation.                                   |
+| `Ctrl+Z`      | Restore a file or folder from trash, after confirmation.                                         |
+| `D`           | Permanently delete the selected file or folder, after confirmation.                              |
+| `E`           | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
+| `A`           | Drag and drop the selected file or folder using `ripdrag`. See [Requirements](#requirements).    |
+| `Q`           | Quit the application, after confirmation.                                                        |
 
-Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal. After a paste, rename or create, the new file or folder is selected. In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open, so you can type straight away. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
+Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal, and while a context menu is open. After a paste, rename or create, the new file or folder is selected. In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open, so you can type straight away. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
 
 ## Theming
 
