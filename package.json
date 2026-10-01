@@ -8,6 +8,8 @@
 		"dev": "bun run --watch src/main.ts",
 		"build": "bun run src/build.ts",
 		"install:app": "bash dist/install.sh",
+		"demo": "bash scripts/demo.sh",
+		"screenshots": "vhs scripts/screenshots.tape",
 		"format": "bunx biome check --write src/"
 	},
 	"devDependencies": {

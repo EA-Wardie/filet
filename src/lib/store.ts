@@ -6,7 +6,6 @@ export const $currentPath = nanostores.atom<string>(HOME_DIRECTORY);
 
 export const $selectedDirent = nanostores.atom<Dirent | null>(null);
 
-// Entries shown in the explorer, in order, after the search filter.
 export const $dirents = nanostores.atom<Dirent[]>([]);
 
 export const $searchTerm = nanostores.atom<string>("");

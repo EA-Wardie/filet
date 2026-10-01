@@ -18,7 +18,6 @@ import {
 	$searchTerm,
 } from "./store";
 
-// The entry to select once the next folder or refresh has been read.
 let selectName: string | undefined;
 
 export function takeSelectName(): string | undefined {
@@ -44,8 +43,6 @@ export function go(path: string): void {
 	setPath(path);
 }
 
-// Relative paths resolve against the current folder, and a file path opens its
-// folder with the file selected.
 export function goToPath(input: string): void {
 	const path: string = resolve($currentPath.get(), input);
 
@@ -116,7 +113,6 @@ export function getDirentPath(dirent: Dirent): string {
 	return join(dirent.parentPath, dirent.name);
 }
 
-// Symlinks that point at folders, found by resolveLinks() when a folder is read.
 const linkedFolders: WeakSet<Dirent> = new WeakSet<Dirent>();
 
 export function isFolder(dirent: Dirent): boolean {
@@ -127,8 +123,6 @@ export function canPreview(dirent: Dirent): boolean {
 	return !isFolder(dirent);
 }
 
-// Waits SYMLINK_TIMEOUT at most, so a link into a hung mount does not keep the
-// folder from showing.
 function resolveLinks(dirents: Dirent[], done: () => void): void {
 	let pending: number = 1;
 	const timeout: Timer = setTimeout(finish, SYMLINK_TIMEOUT);
@@ -174,7 +168,6 @@ function resolveLinks(dirents: Dirent[], done: () => void): void {
 	settle();
 }
 
-// Reads a folder and resolves which of its symlinks point at folders.
 export function readFolder(
 	path: string,
 	callback: (error: NodeJS.ErrnoException | null, dirents: Dirent[]) => void,

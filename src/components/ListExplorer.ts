@@ -49,8 +49,6 @@ export class ListExplorer {
 			...this._options,
 		});
 
-		// The up and down shortcuts move the selection, so the scroll box must not
-		// also scroll on those keys once a click has focused it.
 		this._component.focusable = false;
 
 		this.registerStoreEvents();
@@ -98,8 +96,6 @@ export class ListExplorer {
 	}
 
 	private registerStoreEvents(): void {
-		// The selection is cleared after the links are destroyed, so their
-		// listeners are gone before it notifies.
 		$currentPath.listen((path: string): void => {
 			this.clearLinks();
 
@@ -108,7 +104,6 @@ export class ListExplorer {
 			this.scanAndMakeDirents(path, takeSelectName());
 		});
 
-		// A refresh keeps the selection until the folder is read again.
 		$refresh.listen((): void => {
 			this.clearLinks();
 			this.scanAndMakeDirents(

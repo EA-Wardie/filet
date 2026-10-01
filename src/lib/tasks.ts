@@ -2,7 +2,6 @@ import { logError } from "./log";
 import { refresh } from "./navigation";
 import { $tasksCount } from "./store";
 
-// select names the entry to select after the refresh, if the task succeeds.
 export async function runTask(
 	task: () => Promise<unknown>,
 	select?: string,

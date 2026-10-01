@@ -44,6 +44,8 @@ export class CurrentPathInput {
 	private addInput(): void {
 		this._input = new core.InputRenderable(ctx, {
 			value: $currentPath.get(),
+			textColor: theme.fg,
+			focusedTextColor: theme.fg,
 			focusedBackgroundColor: theme.bg_light,
 			flexGrow: 1,
 			onKeyDown: (key: core.KeyEvent): void => {
@@ -59,8 +61,6 @@ export class CurrentPathInput {
 			this._input?.blur();
 		});
 
-		// The path bar shows the current folder whenever it is not being edited,
-		// including after a path that does not exist or a file in this folder.
 		this._input.on(core.RenderableEvents.BLURRED, (): void => {
 			if (this._input) {
 				this._input.value = $currentPath.get();

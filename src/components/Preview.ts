@@ -46,7 +46,6 @@ export class Preview {
 					return;
 				}
 
-				// Broken symlinks and unreadable files are common, so they are not logged.
 				if (error || !stats.isFile()) {
 					this.addNoPreview();
 
@@ -94,7 +93,6 @@ export class Preview {
 		this._component.add(image);
 	}
 
-	// The decoder refuses images over 25 megapixels or 16384 pixels a side.
 	private addImageError(error: unknown): void {
 		const code: string | null =
 			error instanceof core.ImageError ? error.code : null;
@@ -123,7 +121,6 @@ export class Preview {
 					return;
 				}
 
-				// Broken symlinks and unreadable files are common, so they are not logged.
 				if (error) {
 					this.addNoPreview();
 

@@ -32,7 +32,6 @@ export const PREVIEW_MAX_SIZE: number = 1024 * 1024;
 
 export const PREVIEW_DELAY: number = 100;
 
-// How long a folder waits for its symlinks to resolve before it is shown.
 export const SYMLINK_TIMEOUT: number = 100;
 
 export const BINARY_CHECK_SIZE: number = 8000;
@@ -60,6 +59,7 @@ export const CODE_FILETYPES: Record<string, string> = {
 	".js": "javascript",
 	".jsx": "javascriptreact",
 	".json": "javascript",
+	".jsonl": "javascript",
 	".md": "markdown",
 	".zig": "zig",
 };
