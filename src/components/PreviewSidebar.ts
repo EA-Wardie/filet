@@ -79,7 +79,6 @@ export class PreviewSidebar {
 			flexGrow: 1,
 		});
 
-		// Keeps j and k for the explorer selection once a click has focused it.
 		this._content.focusable = false;
 
 		this._component.add(this._content);
@@ -132,8 +131,6 @@ export class PreviewSidebar {
 	}
 
 	private registerStoreEvents(): void {
-		// A single selection shows at once. While it keeps changing, such as when
-		// holding down or j, a timer is pending and only the last one is loaded.
 		$selectedDirent.listen((dirent: Dirent | null): void => {
 			const idle: boolean = this._timeout === undefined;
 

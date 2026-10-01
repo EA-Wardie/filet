@@ -7,10 +7,10 @@ import {
 	CODE_FILETYPES,
 	IMAGE_FILETYPES,
 	PREVIEW_MAX_SIZE,
-	syntaxStyles,
 } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { logError } from "../lib/log";
+import { syntaxStyles } from "../lib/syntax";
 import { Message } from "./Message";
 
 interface Options extends core.BoxOptions {
@@ -46,7 +46,6 @@ export class Preview {
 					return;
 				}
 
-				// Broken symlinks and unreadable files are common, so they are not logged.
 				if (error || !stats.isFile()) {
 					this.addNoPreview();
 
@@ -94,7 +93,6 @@ export class Preview {
 		this._component.add(image);
 	}
 
-	// The decoder refuses images over 25 megapixels or 16384 pixels a side.
 	private addImageError(error: unknown): void {
 		const code: string | null =
 			error instanceof core.ImageError ? error.code : null;
@@ -123,7 +121,6 @@ export class Preview {
 					return;
 				}
 
-				// Broken symlinks and unreadable files are common, so they are not logged.
 				if (error) {
 					this.addNoPreview();
 
@@ -148,6 +145,7 @@ export class Preview {
 					width: "100%",
 					height: "100%",
 					content: buffer.toString("utf-8"),
+					fg: theme.fg,
 					wrapMode: "word",
 					syntaxStyle: syntaxStyles(),
 					flexGrow: 1,

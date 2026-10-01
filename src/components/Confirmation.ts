@@ -70,6 +70,7 @@ export class Confirmation {
 	private addHeader(): void {
 		this._header = new core.TextRenderable(ctx, {
 			content: this._options.heading,
+			fg: theme.fg,
 			wrapMode: "word",
 			marginBottom: 1,
 		});
@@ -79,6 +80,7 @@ export class Confirmation {
 	private addDescription(): void {
 		this._description = new core.TextRenderable(ctx, {
 			content: this._options.description,
+			fg: theme.fg,
 			wrapMode: "word",
 			marginBottom: 1,
 		});

@@ -20,7 +20,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Features
 
-- Explore directories with back and forward navigation and an editable path bar. Entering a file path opens its folder with the file selected, and relative paths such as `..` resolve against the current folder.
+- Explore directories with back and forward navigation and an editable path bar. Entering a file path opens its folder with the file selected, relative paths such as `..` resolve against the current folder, and `~` expands to your home folder. Paths that can't be opened are reported in the footer.
 - Search the current directory by name.
 - Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
 - Open files in their default application, or run them if they are executable.
@@ -62,7 +62,7 @@ filet works without a config file. To change its defaults, create a config file 
 ~/.config/filet/config.toml
 ```
 
-Values in your user config take priority over the defaults, and any values you leave out fall back to the defaults, for example:
+Values in your user config take priority over the defaults, and any values you leave out fall back to the defaults. Paths can start with `~` for your home folder. For example:
 
 ```toml
 bookmarks = [
@@ -131,13 +131,15 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `A`          | Drag and drop the selected file or folder using `ripdrag`. See [Requirements](#requirements).    |
 | `Q`          | Quit the application, after confirmation.                                                        |
 
-Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal. After a paste, rename or create, the new file or folder is selected. In the path bar, `Escape` stops editing and shows the current folder again. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
+Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal. After a paste, rename or create, the new file or folder is selected. In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open, so you can type straight away. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
 
 ## Theming
 
 Besides the default dark theme, here are a few others to try. Copy one into your `~/.config/filet/config.toml`, replacing the existing `[theme]` section. Or create your own theme.
 
 Tip: See the [tailwind](https://tailwindcss.com/docs/colors) color pallet.
+
+Code previews use a light syntax highlighting palette when `bg` is a light color, and a dark one otherwise.
 
 ### Ivory
 
@@ -189,6 +191,20 @@ bun run build
 ```
 
 This produces a binary at `dist/filet`.
+
+### Screenshots
+
+The screenshots in `assets/` are generated with [VHS](https://github.com/charmbracelet/vhs), and need [bubblewrap](https://github.com/containers/bubblewrap) (`bwrap`) and a JetBrainsMono Nerd Font:
+
+```
+bun run screenshots
+```
+
+This runs filet in a sandbox with a fake `/home/demo` home folder, so the screenshots don't show your username, files or config. To try the same sandbox yourself, run it with one of the `dark`, `ivory`, `sky` or `fuchsia` themes:
+
+```
+bun run demo ivory
+```
 
 ## Installing
 

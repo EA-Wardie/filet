@@ -1,9 +1,8 @@
-import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { version } from "../../package.json";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { $copyDirent, $cutDirent } from "../lib/store";
+import { $footerText } from "../lib/store";
 
 export class ExplorerFooter {
 	private _options: core.BoxOptions;
@@ -42,27 +41,9 @@ export class ExplorerFooter {
 	}
 
 	private registerStoreEvents(): void {
-		$copyDirent.subscribe((dirent: Dirent | null): void => {
-			if (dirent) {
-				if (this._text) {
-					this._text.content = `Copied ${dirent.name} to clipboard`;
-				}
-			} else {
-				if (this._text) {
-					this._text.content = "";
-				}
-			}
-		});
-
-		$cutDirent.subscribe((dirent: Dirent | null): void => {
-			if (dirent) {
-				if (this._text) {
-					this._text.content = `Cut ${dirent.name} to clipboard`;
-				}
-			} else {
-				if (this._text) {
-					this._text.content = "";
-				}
+		$footerText.subscribe((text: string): void => {
+			if (this._text) {
+				this._text.content = text;
 			}
 		});
 	}

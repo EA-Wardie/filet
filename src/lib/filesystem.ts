@@ -3,7 +3,7 @@ import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { ctx } from "./context";
 import { getDirentPath } from "./navigation";
-import { $copyDirent, $currentPath, $cutDirent } from "./store";
+import { $copyDirent, $currentPath, $cutDirent, $notice } from "./store";
 import { runTask } from "./tasks";
 
 export async function copyDirent(
@@ -52,6 +52,7 @@ export async function moveDirent(
 export function copy(dirent: Dirent): void {
 	ctx.copyToClipboardOSC52(getDirentPath(dirent));
 
+	$notice.set("");
 	$cutDirent.set(null);
 	$copyDirent.set(dirent);
 }
@@ -59,6 +60,7 @@ export function copy(dirent: Dirent): void {
 export function cut(dirent: Dirent): void {
 	ctx.copyToClipboardOSC52(getDirentPath(dirent));
 
+	$notice.set("");
 	$copyDirent.set(null);
 	$cutDirent.set(dirent);
 }

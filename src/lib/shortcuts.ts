@@ -30,7 +30,6 @@ type When = (dirent: Dirent) => boolean;
 
 interface Shortcut {
 	key: string;
-	// A second key for the same action, such as the vim key.
 	alias?: string;
 	run: Run;
 	when?: When;
@@ -66,8 +65,6 @@ function outsideTrash(): boolean {
 	return !inTrash();
 }
 
-// Stops at the first and last entry. With nothing selected, down selects the
-// first entry and up the last.
 function moveSelection(step: number): void {
 	const dirents: Dirent[] = $dirents.get();
 	const selected: Dirent | null = $selectedDirent.get();
@@ -236,8 +233,6 @@ export function shortcutLabel({ key }: Shortcut): string {
 
 export function registerKeyboardShortcuts(): void {
 	ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-		// Alt is skipped, so Alt+D does not act as D. Shift is allowed, since
-		// letters typed with Caps Lock on also report Shift.
 		if (
 			$dialogOpen.get() ||
 			ctx.currentFocusedRenderable instanceof core.InputRenderable ||
@@ -251,6 +246,9 @@ export function registerKeyboardShortcuts(): void {
 			key.ctrl ? `ctrl+${key.name}` : key.name,
 		);
 
-		run?.($selectedDirent.get());
+		if (run) {
+			key.preventDefault();
+			run($selectedDirent.get());
+		}
 	});
 }

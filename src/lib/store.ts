@@ -6,7 +6,6 @@ export const $currentPath = nanostores.atom<string>(HOME_DIRECTORY);
 
 export const $selectedDirent = nanostores.atom<Dirent | null>(null);
 
-// Entries shown in the explorer, in order, after the search filter.
 export const $dirents = nanostores.atom<Dirent[]>([]);
 
 export const $searchTerm = nanostores.atom<string>("");
@@ -30,3 +29,28 @@ export const $backHistory = nanostores.atom<string[]>([]);
 export const $forwardHistory = nanostores.atom<string[]>([]);
 
 export const $refresh = nanostores.atom<number>(0);
+
+export const $notice = nanostores.atom<string>("");
+
+export const $footerText = nanostores.computed(
+	[$notice, $copyDirent, $cutDirent],
+	(
+		notice: string,
+		copyDirent: Dirent | null,
+		cutDirent: Dirent | null,
+	): string => {
+		if (notice) {
+			return notice;
+		}
+
+		if (copyDirent) {
+			return `Copied ${copyDirent.name} to clipboard`;
+		}
+
+		if (cutDirent) {
+			return `Cut ${cutDirent.name} to clipboard`;
+		}
+
+		return "";
+	},
+);

@@ -1,5 +1,6 @@
+import { resolve } from "node:path";
 import { RGBA } from "@opentui/core";
-import { TRASH_PATH, USER_CONFIG_PATH } from "./consts";
+import { HOME_DIRECTORY, TRASH_PATH, USER_CONFIG_PATH } from "./consts";
 import { logError, setLogsPath } from "./log";
 
 export interface BookmarkType {
@@ -55,18 +56,37 @@ async function loadUserConfig(): Promise<ConfigFile> {
 	}
 }
 
+export function expandHome(path: string): string {
+	if (path === "~" || path.startsWith("~/")) {
+		return HOME_DIRECTORY + path.slice(1);
+	}
+
+	return path;
+}
+
+function normalizePath(path: string): string {
+	return resolve(expandHome(path));
+}
+
 const userConfig: ConfigFile = await loadUserConfig();
 
-export const bookmarks: BookmarkType[] = userConfig.bookmarks ?? [];
+export const bookmarks: BookmarkType[] = (userConfig.bookmarks ?? []).map(
+	(bookmark: BookmarkType): BookmarkType => ({
+		...bookmark,
+		mount: normalizePath(bookmark.mount),
+	}),
+);
 
-export const trashPath: string = userConfig.trash_path ?? TRASH_PATH;
+export const trashPath: string = normalizePath(
+	userConfig.trash_path ?? TRASH_PATH,
+);
 
 export const trashFilesPath: string = `${trashPath}/files`;
 
 export const trashInfoPath: string = `${trashPath}/info`;
 
 if (userConfig.logs_path) {
-	setLogsPath(userConfig.logs_path);
+	setLogsPath(normalizePath(userConfig.logs_path));
 }
 
 export const doubleClickTimeout: number =
