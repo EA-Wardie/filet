@@ -41,6 +41,7 @@ export class Prompt {
 
 		ctx.keyInput.on("keypress", this.onKeypress);
 		ctx.root.add(this._component);
+		this._input?.focus();
 
 		$dialogOpen.set(true);
 	}
@@ -70,6 +71,7 @@ export class Prompt {
 	private addHeader(): void {
 		this._header = new core.TextRenderable(ctx, {
 			content: this._options.heading,
+			fg: theme.fg,
 			wrapMode: "word",
 			marginBottom: 1,
 		});
@@ -80,6 +82,7 @@ export class Prompt {
 		this._dialog?.add(
 			new core.TextRenderable(ctx, {
 				content: this._options.label,
+				fg: theme.fg,
 				wrapMode: "word",
 			}),
 		);
@@ -88,6 +91,7 @@ export class Prompt {
 			value: this._options.value ?? "",
 			backgroundColor: theme.fg_light,
 			textColor: theme.fg,
+			cursorColor: theme.fg,
 			flexGrow: 1,
 			marginBottom: 1,
 		});

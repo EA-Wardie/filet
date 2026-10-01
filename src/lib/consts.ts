@@ -1,5 +1,4 @@
 import { homedir } from "node:os";
-import * as core from "@opentui/core";
 
 export const HOME_DIRECTORY: string = homedir();
 
@@ -59,7 +58,6 @@ export const CODE_FILETYPES: Record<string, string> = {
 	".js": "javascript",
 	".jsx": "javascriptreact",
 	".json": "javascript",
-	".jsonl": "javascript",
 	".md": "markdown",
 	".zig": "zig",
 };
@@ -76,6 +74,7 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	// Data / config
 	[".json", "󰘦"],
 	[".jsonc", "󰘦"],
+	[".jsonl", "󰘦"],
 	[".yaml", "\ue8eb"],
 	[".yml", "\ue8eb"],
 	[".toml", ""],
@@ -180,43 +179,3 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 export const FILE_ICON: string = "";
 
 export const FOLDER_ICON: string = "";
-
-let styles: core.SyntaxStyle | undefined;
-
-export function syntaxStyles(): core.SyntaxStyle {
-	styles ??= core.SyntaxStyle.fromStyles({
-		// Basic tokens
-		keyword: { fg: core.RGBA.fromHex("#FF7B72"), bold: true },
-		"keyword.import": { fg: core.RGBA.fromHex("#FF7B72"), bold: true },
-		"keyword.operator": { fg: core.RGBA.fromHex("#FF7B72") },
-
-		string: { fg: core.RGBA.fromHex("#A5D6FF") },
-		comment: { fg: core.RGBA.fromHex("#8B949E"), italic: true },
-		number: { fg: core.RGBA.fromHex("#79C0FF") },
-		boolean: { fg: core.RGBA.fromHex("#79C0FF") },
-		constant: { fg: core.RGBA.fromHex("#79C0FF") },
-
-		// Functions and types
-		function: { fg: core.RGBA.fromHex("#D2A8FF") },
-		"function.call": { fg: core.RGBA.fromHex("#D2A8FF") },
-		"function.method.call": { fg: core.RGBA.fromHex("#D2A8FF") },
-		type: { fg: core.RGBA.fromHex("#FFA657") },
-		constructor: { fg: core.RGBA.fromHex("#FFA657") },
-
-		// Variables and properties
-		variable: { fg: core.RGBA.fromHex("#E6EDF3") },
-		"variable.member": { fg: core.RGBA.fromHex("#79C0FF") },
-		property: { fg: core.RGBA.fromHex("#79C0FF") },
-
-		// Operators and punctuation
-		operator: { fg: core.RGBA.fromHex("#FF7B72") },
-		punctuation: { fg: core.RGBA.fromHex("#F0F6FC") },
-		"punctuation.bracket": { fg: core.RGBA.fromHex("#F0F6FC") },
-		"punctuation.delimiter": { fg: core.RGBA.fromHex("#C9D1D9") },
-
-		// Default fallback
-		default: { fg: core.RGBA.fromHex("#E6EDF3") },
-	});
-
-	return styles;
-}

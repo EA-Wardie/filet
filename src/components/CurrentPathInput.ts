@@ -45,7 +45,7 @@ export class CurrentPathInput {
 		this._input = new core.InputRenderable(ctx, {
 			value: $currentPath.get(),
 			textColor: theme.fg,
-			focusedTextColor: theme.fg,
+			cursorColor: theme.fg,
 			focusedBackgroundColor: theme.bg_light,
 			flexGrow: 1,
 			onKeyDown: (key: core.KeyEvent): void => {

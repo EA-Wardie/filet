@@ -8,12 +8,13 @@ import {
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { trashPath } from "./config";
-import { SYMLINK_TIMEOUT } from "./consts";
+import { HOME_DIRECTORY, SYMLINK_TIMEOUT } from "./consts";
 import { logError } from "./log";
 import {
 	$backHistory,
 	$currentPath,
 	$forwardHistory,
+	$notice,
 	$refresh,
 	$searchTerm,
 } from "./store";
@@ -31,6 +32,7 @@ export function takeSelectName(): string | undefined {
 function setPath(path: string): void {
 	$currentPath.set(path);
 	$searchTerm.set("");
+	$notice.set("");
 }
 
 export function go(path: string): void {
@@ -43,12 +45,26 @@ export function go(path: string): void {
 	setPath(path);
 }
 
+function expandHome(input: string): string {
+	if (input === "~" || input.startsWith("~/")) {
+		return HOME_DIRECTORY + input.slice(1);
+	}
+
+	return input;
+}
+
 export function goToPath(input: string): void {
-	const path: string = resolve($currentPath.get(), input);
+	const path: string = resolve($currentPath.get(), expandHome(input));
 
 	stat(path, (error: NodeJS.ErrnoException | null, stats: Stats): void => {
 		if (error) {
 			logError(error);
+
+			$notice.set(
+				error.code === "ENOENT"
+					? `${input} does not exist`
+					: `Can't open ${input}`,
+			);
 
 			return;
 		}
@@ -106,7 +122,7 @@ export function refresh(select?: string): void {
 }
 
 export function isTrashPath(path: string): boolean {
-	return path.includes(trashPath);
+	return path === trashPath || path.startsWith(`${trashPath}/`);
 }
 
 export function getDirentPath(dirent: Dirent): string {

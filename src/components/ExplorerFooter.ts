@@ -3,7 +3,7 @@ import * as core from "@opentui/core";
 import { version } from "../../package.json";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
-import { $copyDirent, $cutDirent } from "../lib/store";
+import { $copyDirent, $cutDirent, $notice } from "../lib/store";
 
 export class ExplorerFooter {
 	private _options: core.BoxOptions;
@@ -63,6 +63,12 @@ export class ExplorerFooter {
 				if (this._text) {
 					this._text.content = "";
 				}
+			}
+		});
+
+		$notice.listen((notice: string): void => {
+			if (this._text) {
+				this._text.content = notice;
 			}
 		});
 	}

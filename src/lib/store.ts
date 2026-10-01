@@ -29,3 +29,5 @@ export const $backHistory = nanostores.atom<string[]>([]);
 export const $forwardHistory = nanostores.atom<string[]>([]);
 
 export const $refresh = nanostores.atom<number>(0);
+
+export const $notice = nanostores.atom<string>("");

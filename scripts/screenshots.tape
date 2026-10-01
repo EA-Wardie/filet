@@ -2,7 +2,7 @@
 # from scripts/demo.sh, so they don't show your username or files.
 # Usage: bun run screenshots
 
-Output dist/screenshots.gif
+Output "/tmp/filet-screenshots.gif"
 
 Require bwrap
 Require bun
@@ -34,7 +34,7 @@ Sleep 300ms
 Enter
 Sleep 1s
 
-Type "bash scripts/demo.sh light"
+Type "bash scripts/demo.sh ivory"
 Enter
 Sleep 2s
 Type "jjj"
@@ -49,7 +49,7 @@ Sleep 300ms
 Enter
 Sleep 1s
 
-Type "bash scripts/demo.sh blue"
+Type "bash scripts/demo.sh sky"
 Enter
 Sleep 2s
 Type "jjj"
@@ -64,7 +64,7 @@ Sleep 300ms
 Enter
 Sleep 1s
 
-Type "bash scripts/demo.sh purple"
+Type "bash scripts/demo.sh fuchsia"
 Enter
 Sleep 2s
 Type "jjj"

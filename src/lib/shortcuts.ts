@@ -246,6 +246,9 @@ export function registerKeyboardShortcuts(): void {
 			key.ctrl ? `ctrl+${key.name}` : key.name,
 		);
 
-		run?.($selectedDirent.get());
+		if (run) {
+			key.preventDefault();
+			run($selectedDirent.get());
+		}
 	});
 }

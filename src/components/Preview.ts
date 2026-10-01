@@ -7,10 +7,10 @@ import {
 	CODE_FILETYPES,
 	IMAGE_FILETYPES,
 	PREVIEW_MAX_SIZE,
-	syntaxStyles,
 } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { logError } from "../lib/log";
+import { syntaxStyles } from "../lib/syntax";
 import { Message } from "./Message";
 
 interface Options extends core.BoxOptions {
@@ -145,6 +145,7 @@ export class Preview {
 					width: "100%",
 					height: "100%",
 					content: buffer.toString("utf-8"),
+					fg: theme.fg,
 					wrapMode: "word",
 					syntaxStyle: syntaxStyles(),
 					flexGrow: 1,
