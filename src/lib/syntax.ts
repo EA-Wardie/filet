@@ -34,14 +34,14 @@ function isLight(color: core.RGBA): boolean {
 
 let styles: core.SyntaxStyle | undefined;
 
-export function syntaxStyles(): core.SyntaxStyle {
+function createStyles(): core.SyntaxStyle {
 	const palette: Palette = isLight(theme.bg) ? LIGHT_PALETTE : DARK_PALETTE;
 	const keyword: core.RGBA = core.RGBA.fromHex(palette.keyword);
 	const number: core.RGBA = core.RGBA.fromHex(palette.number);
 	const fn: core.RGBA = core.RGBA.fromHex(palette.function);
 	const type: core.RGBA = core.RGBA.fromHex(palette.type);
 
-	styles ??= core.SyntaxStyle.fromStyles({
+	return core.SyntaxStyle.fromStyles({
 		keyword: { fg: keyword, bold: true },
 		"keyword.import": { fg: keyword, bold: true },
 		"keyword.operator": { fg: keyword },
@@ -69,6 +69,10 @@ export function syntaxStyles(): core.SyntaxStyle {
 
 		default: { fg: theme.fg },
 	});
+}
+
+export function syntaxStyles(): core.SyntaxStyle {
+	styles ??= createStyles();
 
 	return styles;
 }

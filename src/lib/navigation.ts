@@ -7,8 +7,8 @@ import {
 	stat,
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { trashPath } from "./config";
-import { HOME_DIRECTORY, SYMLINK_TIMEOUT } from "./consts";
+import { expandHome, trashPath } from "./config";
+import { SYMLINK_TIMEOUT } from "./consts";
 import { logError } from "./log";
 import {
 	$backHistory,
@@ -45,26 +45,21 @@ export function go(path: string): void {
 	setPath(path);
 }
 
-function expandHome(input: string): string {
-	if (input === "~" || input.startsWith("~/")) {
-		return HOME_DIRECTORY + input.slice(1);
-	}
-
-	return input;
-}
-
 export function goToPath(input: string): void {
 	const path: string = resolve($currentPath.get(), expandHome(input));
 
+	$notice.set("");
+
 	stat(path, (error: NodeJS.ErrnoException | null, stats: Stats): void => {
+		if (error?.code === "ENOENT") {
+			$notice.set(`${input} does not exist`);
+
+			return;
+		}
+
 		if (error) {
 			logError(error);
-
-			$notice.set(
-				error.code === "ENOENT"
-					? `${input} does not exist`
-					: `Can't open ${input}`,
-			);
+			$notice.set(`Can't open ${input}`);
 
 			return;
 		}

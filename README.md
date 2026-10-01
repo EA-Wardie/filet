@@ -62,7 +62,7 @@ filet works without a config file. To change its defaults, create a config file 
 ~/.config/filet/config.toml
 ```
 
-Values in your user config take priority over the defaults, and any values you leave out fall back to the defaults, for example:
+Values in your user config take priority over the defaults, and any values you leave out fall back to the defaults. Paths can start with `~` for your home folder. For example:
 
 ```toml
 bookmarks = [

@@ -31,3 +31,26 @@ export const $forwardHistory = nanostores.atom<string[]>([]);
 export const $refresh = nanostores.atom<number>(0);
 
 export const $notice = nanostores.atom<string>("");
+
+export const $footerText = nanostores.computed(
+	[$notice, $copyDirent, $cutDirent],
+	(
+		notice: string,
+		copyDirent: Dirent | null,
+		cutDirent: Dirent | null,
+	): string => {
+		if (notice) {
+			return notice;
+		}
+
+		if (copyDirent) {
+			return `Copied ${copyDirent.name} to clipboard`;
+		}
+
+		if (cutDirent) {
+			return `Cut ${cutDirent.name} to clipboard`;
+		}
+
+		return "";
+	},
+);
