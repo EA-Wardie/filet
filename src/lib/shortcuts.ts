@@ -3,6 +3,7 @@ import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
 import { Prompt } from "../components/Prompt";
 import { extract, isArchive } from "./archive";
+import { trashFilesPath } from "./config";
 import { ctx } from "./context";
 import {
 	copy,
@@ -13,12 +14,21 @@ import {
 	remove,
 	rename,
 } from "./filesystem";
-import { canPreview, isFolder, isTrashPath, openInDefault } from "./navigation";
+import {
+	canPreview,
+	getDirentPath,
+	go,
+	goToParent,
+	isFolder,
+	isTrashPath,
+	openInDefault,
+} from "./navigation";
 import { dragOut } from "./ripdrag";
 import {
 	$currentPath,
 	$dialogOpen,
 	$dirents,
+	$menuOpen,
 	$previewOpen,
 	$selectedDirent,
 } from "./store";
@@ -65,6 +75,10 @@ function outsideTrash(): boolean {
 	return !inTrash();
 }
 
+function isTrashed(dirent: Dirent): boolean {
+	return dirent.parentPath === trashFilesPath;
+}
+
 function moveSelection(step: number): void {
 	const dirents: Dirent[] = $dirents.get();
 	const selected: Dirent | null = $selectedDirent.get();
@@ -96,6 +110,17 @@ export const SHORTCUTS = {
 		run: (): void => {
 			moveSelection(1);
 		},
+	},
+	parent: { key: "left", alias: "h", run: goToParent },
+	openFolder: {
+		key: "right",
+		alias: "l",
+		...guard(
+			(dirent: Dirent): boolean => outsideTrash() && isFolder(dirent),
+			(dirent: Dirent): void => {
+				go(getDirentPath(dirent));
+			},
+		),
 	},
 	deselect: {
 		key: "escape",
@@ -177,8 +202,8 @@ export const SHORTCUTS = {
 		}),
 	},
 	restore: {
-		key: "z",
-		...guard(inTrash, (dirent: Dirent): void => {
+		key: "ctrl+z",
+		...guard(isTrashed, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Restore?",
 				description: `Are you sure you want to restore '${dirent.name}' to its original location?`,
@@ -235,6 +260,7 @@ export function registerKeyboardShortcuts(): void {
 	ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
 		if (
 			$dialogOpen.get() ||
+			$menuOpen.get() ||
 			ctx.currentFocusedRenderable instanceof core.InputRenderable ||
 			key.meta ||
 			key.option

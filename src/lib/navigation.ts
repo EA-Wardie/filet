@@ -7,7 +7,7 @@ import {
 	stat,
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { expandHome, trashPath } from "./config";
+import { expandHome, trashFilesPath, trashPath } from "./config";
 import { SYMLINK_TIMEOUT } from "./consts";
 import { logError } from "./log";
 import {
@@ -82,6 +82,19 @@ export function goToPath(input: string): void {
 
 		go(folder);
 	});
+}
+
+export function goToParent(): void {
+	const path: string = $currentPath.get();
+	const parent: string = dirname(path);
+
+	if (parent === path || path === trashFilesPath) {
+		return;
+	}
+
+	selectName = basename(path);
+
+	go(parent);
 }
 
 export function back(): void {
