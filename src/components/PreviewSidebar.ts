@@ -14,8 +14,8 @@ export class PreviewSidebar {
 	private _component: core.BoxRenderable;
 	private _title: core.TextRenderable | null = null;
 	private _content: core.ScrollBoxRenderable | null = null;
-	private _path?: string | null;
-	private _timeout?: Timer;
+	private _path: string | null | undefined;
+	private _timeout: Timer | undefined;
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;

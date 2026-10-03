@@ -3,10 +3,10 @@ import { LOGS_PATH } from "./consts";
 
 interface LogEntry {
 	timestamp: string;
-	code?: string;
-	errno?: number;
-	syscall?: string;
-	path?: string;
+	code: string | undefined;
+	errno: number | undefined;
+	syscall: string | undefined;
+	path: string | undefined;
 	message: string;
 }
 

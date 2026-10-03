@@ -79,10 +79,10 @@ export class DirectorySearch {
 			maxWidth: 50,
 			value: $searchTerm.get(),
 			placeholder: "Search...",
-			placeholderColor: theme.fg_dark,
+			placeholderColor: theme.muted,
 			textColor: theme.fg,
 			cursorColor: theme.fg,
-			focusedBackgroundColor: theme.bg_light,
+			focusedBackgroundColor: theme.input_bg,
 			flexGrow: 1,
 			visible: false,
 		});

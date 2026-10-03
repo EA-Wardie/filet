@@ -192,23 +192,24 @@ export class DirentLink {
 		this._component.add(this._label);
 	}
 
-	private background(): core.RGBA | undefined {
+	private background(): core.RGBA {
 		if (this._marked) {
-			return this._selected ? theme.success_dark : theme.success_light;
+			return this._selected ? theme.marked_selected : theme.marked;
 		}
 
 		if (this._selected) {
-			return theme.fg_dark;
+			return theme.selected;
 		}
 
-		return this._hovered ? theme.fg_light : undefined;
+		return this._hovered ? theme.hover : theme.transparent;
 	}
 
 	private paint(): void {
 		this._component.backgroundColor = this.background();
 
 		if (this._label) {
-			this._label.fg = this._selected && !this._marked ? theme.bg : theme.fg;
+			this._label.fg =
+				this._selected && !this._marked ? theme.fg_inverse : theme.fg;
 		}
 	}
 

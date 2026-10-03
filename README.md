@@ -81,6 +81,7 @@ fg = "#fafafa"
 border = "#d4d4d4"
 success = "#16a34a"
 danger = "#dc2626"
+accent = "#0369a1"
 ```
 
 ## Logs
@@ -135,7 +136,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `A`           | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements).   |
 | `Q`           | Quit the application, after confirmation.                                                        |
 
-Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal, and while a context menu is open. After a paste, rename or create, the new file or folder is selected. Marked items are highlighted in the success colour, and cut, copy, trash, delete and drag and drop act on all of them. Other actions still use the selected entry. Marks are cleared when you change folder, and right clicking an unmarked entry clears them before opening its menu. In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open, so you can type straight away. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
+Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal, and while a context menu is open. After a paste, rename or create, the new file or folder is selected. Marked items are highlighted in the accent colour, and cut, copy, trash, delete and drag and drop act on all of them. Other actions still use the selected entry. Marks are cleared when you change folder, and right clicking an unmarked entry clears them before opening its menu. In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open, so you can type straight away. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
 
 ## Theming
 
@@ -143,7 +144,26 @@ Besides the default dark theme, here are a few others to try. Copy one into your
 
 Tip: See the [tailwind](https://tailwindcss.com/docs/colors) color pallet.
 
-Code previews use a light syntax highlighting palette when `bg` is a light color, and a dark one otherwise.
+Colours are hex values, such as `#fafafa`, `#fff` or `#fafafaff`. An invalid colour falls back to its default. Invalid colours, unknown keys, and a `[theme]` or `[theme.syntax]` that isn't a table are written to the error log.
+
+Besides `bg`, `fg`, `border`, `success` and `danger`, a theme can set:
+
+- `accent`: the highlight for marked entries. Defaults to `#0369a1`.
+- `surface`: the background of menus, prompts and confirmations. Defaults to `bg`, made fully opaque.
+
+Set `bg = "transparent"` to use your terminal's own background. `surface` then defaults to black when `fg` is light and white when it is dark, so set it to match your terminal. A partly transparent `bg`, such as `#0c0c0c80`, keeps menus and modals opaque in its own colour.
+
+Code previews use a light syntax highlighting palette when `bg` is a light color, and a dark one otherwise. With `bg = "transparent"`, the palette follows `fg` instead: dark when `fg` is light, and light when it is dark. Any of its colours can be overridden:
+
+```toml
+[theme.syntax]
+keyword = "#ff7b72"
+string = "#a5d6ff"
+comment = "#8b949e"
+number = "#79c0ff"
+function = "#d2a8ff"
+type = "#ffa657"
+```
 
 ### Ivory
 
@@ -154,6 +174,7 @@ fg = "#0a0a0a"
 border = "#262626"
 success = "#16a34a"
 danger = "#dc2626"
+accent = "#0369a1"
 ```
 
 ### Sky
@@ -165,6 +186,7 @@ fg = "#f0f9ff"
 border = "#d4d4d4"
 success = "#16a34a"
 danger = "#dc2626"
+accent = "#ec4899"
 ```
 
 ### Fuchsia
@@ -176,6 +198,7 @@ fg = "#fdf4ff"
 border = "#d4d4d4"
 success = "#16a34a"
 danger = "#dc2626"
+accent = "#0369a1"
 ```
 
 ## Building

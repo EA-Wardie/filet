@@ -20,21 +20,23 @@ export class SidebarLink {
 
 		this._component = new core.BoxRenderable(ctx, {
 			backgroundColor:
-				$currentPath.get() === this._options.path ? theme.fg_dark : undefined,
+				$currentPath.get() === this._options.path
+					? theme.selected
+					: theme.transparent,
 			paddingX: 1,
 			onMouseOver: (): void => {
 				if ($currentPath.get() === this._options.path) {
 					return;
 				}
 
-				this._component.backgroundColor = theme.fg_light;
+				this._component.backgroundColor = theme.hover;
 			},
 			onMouseOut: (): void => {
 				if ($currentPath.get() === this._options.path) {
 					return;
 				}
 
-				this._component.backgroundColor = undefined;
+				this._component.backgroundColor = theme.transparent;
 			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.LEFT) {
@@ -55,7 +57,8 @@ export class SidebarLink {
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
 			content: this._options.label,
-			fg: $currentPath.get() === this._options.path ? theme.bg : theme.fg,
+			fg:
+				$currentPath.get() === this._options.path ? theme.fg_inverse : theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});
@@ -66,13 +69,13 @@ export class SidebarLink {
 	private registerStoreEvents(): void {
 		$currentPath.listen((path: string): void => {
 			if (this._options.path === path) {
-				this._component.backgroundColor = theme.fg_dark;
+				this._component.backgroundColor = theme.selected;
 
 				if (this._label) {
-					this._label.fg = theme.bg;
+					this._label.fg = theme.fg_inverse;
 				}
 			} else {
-				this._component.backgroundColor = undefined;
+				this._component.backgroundColor = theme.transparent;
 
 				if (this._label) {
 					this._label.fg = theme.fg;

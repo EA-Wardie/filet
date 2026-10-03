@@ -46,7 +46,7 @@ export class CurrentPathInput {
 			value: $currentPath.get(),
 			textColor: theme.fg,
 			cursorColor: theme.fg,
-			focusedBackgroundColor: theme.bg_light,
+			focusedBackgroundColor: theme.input_bg,
 			flexGrow: 1,
 			onKeyDown: (key: core.KeyEvent): void => {
 				if (key.name === "escape") {

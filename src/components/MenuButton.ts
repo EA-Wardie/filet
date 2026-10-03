@@ -22,18 +22,18 @@ export class MenuButton {
 			justifyContent: "space-between",
 			paddingX: 1,
 			onMouseOver: () => {
-				this._component.backgroundColor = theme.fg;
+				this._component.backgroundColor = theme.active;
 
 				if (this._label) {
-					this._label.fg = theme.bg;
+					this._label.fg = theme.fg_inverse;
 				}
 
 				if (this._shortcut) {
-					this._shortcut.fg = theme.bg;
+					this._shortcut.fg = theme.fg_inverse;
 				}
 			},
 			onMouseOut: () => {
-				this._component.backgroundColor = undefined;
+				this._component.backgroundColor = theme.transparent;
 
 				if (this._label) {
 					this._label.fg = theme.fg;
@@ -44,20 +44,20 @@ export class MenuButton {
 				}
 			},
 			onMouseDown: () => {
-				this._component.backgroundColor = theme.fg_dark;
+				this._component.backgroundColor = theme.pressed;
 
 				if (this._label) {
-					this._label.fg = theme.bg;
+					this._label.fg = theme.fg_inverse;
 				}
 
 				if (this._shortcut) {
-					this._shortcut.fg = theme.bg;
+					this._shortcut.fg = theme.fg_inverse;
 				}
 
 				this._options.onClick();
 			},
 			onMouseUp: () => {
-				this._component.backgroundColor = undefined;
+				this._component.backgroundColor = theme.transparent;
 
 				if (this._label) {
 					this._label.fg = theme.fg;
