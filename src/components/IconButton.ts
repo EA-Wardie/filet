@@ -21,20 +21,20 @@ export class IconButton {
 			justifyContent: "center",
 			paddingX: 1,
 			onMouseOver: (): void => {
-				this.setColors(theme.fg, theme.bg);
+				this.setColors(theme.active, theme.fg_inverse);
 			},
 			onMouseOut: (): void => {
-				this.setColors(undefined, theme.fg);
+				this.setColors(theme.transparent, theme.fg);
 			},
 			onMouseDown: (): void => {
-				this.setColors(theme.fg_dark, theme.bg);
+				this.setColors(theme.pressed, theme.fg_inverse);
 			},
 			onMouseUp: (): void => {
 				if (this._options.disabled?.()) {
 					return;
 				}
 
-				this.setColors(undefined, theme.fg);
+				this.setColors(theme.transparent, theme.fg);
 
 				this._options.onClick();
 			},
@@ -55,10 +55,7 @@ export class IconButton {
 		return new this(options)._component;
 	}
 
-	private setColors(
-		background: core.RGBA | undefined,
-		foreground: core.RGBA,
-	): void {
+	private setColors(background: core.RGBA, foreground: core.RGBA): void {
 		if (this._options.disabled?.()) {
 			return;
 		}

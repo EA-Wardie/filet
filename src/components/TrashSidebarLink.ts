@@ -16,22 +16,22 @@ export class TrashSidebarLink {
 
 		this._component = new core.BoxRenderable(ctx, {
 			backgroundColor: isTrashPath($currentPath.get())
-				? theme.fg_dark
-				: undefined,
+				? theme.selected
+				: theme.transparent,
 			paddingX: 1,
 			onMouseOver: (): void => {
 				if (isTrashPath($currentPath.get())) {
 					return;
 				}
 
-				this._component.backgroundColor = theme.fg_light;
+				this._component.backgroundColor = theme.hover;
 			},
 			onMouseOut: (): void => {
 				if (isTrashPath($currentPath.get())) {
 					return;
 				}
 
-				this._component.backgroundColor = undefined;
+				this._component.backgroundColor = theme.transparent;
 			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.LEFT) {
@@ -54,7 +54,7 @@ export class TrashSidebarLink {
 			content: $trashFull.get()
 				? `${TRASH_FULL_ICON} Trash`
 				: `${TRASH_EMPTY_ICON} Trash`,
-			fg: isTrashPath($currentPath.get()) ? theme.bg : theme.fg,
+			fg: isTrashPath($currentPath.get()) ? theme.fg_inverse : theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});
@@ -65,13 +65,13 @@ export class TrashSidebarLink {
 	private registerStoreEvents(): void {
 		$currentPath.listen((path: string): void => {
 			if (isTrashPath(path)) {
-				this._component.backgroundColor = theme.fg_dark;
+				this._component.backgroundColor = theme.selected;
 
 				if (this._label) {
-					this._label.fg = theme.bg;
+					this._label.fg = theme.fg_inverse;
 				}
 			} else {
-				this._component.backgroundColor = undefined;
+				this._component.backgroundColor = theme.transparent;
 
 				if (this._label) {
 					this._label.fg = theme.fg;

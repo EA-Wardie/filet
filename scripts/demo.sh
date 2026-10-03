@@ -21,10 +21,10 @@ if [[ "$(head -c 4 "$BUN_PATH")" != $'\x7fELF' ]]; then
 fi
 
 case "$THEME" in
-  dark) BG="#0C0C0C" FG="#fafafa" BORDER="#d4d4d4" ;;
-  ivory) BG="#e5e5e5" FG="#0a0a0a" BORDER="#262626" ;;
-  sky) BG="#075985" FG="#f0f9ff" BORDER="#d4d4d4" ;;
-  fuchsia) BG="#701a75" FG="#fdf4ff" BORDER="#d4d4d4" ;;
+  dark) BG="#0C0C0C" FG="#fafafa" BORDER="#d4d4d4" ACCENT="#0369a1" ;;
+  ivory) BG="#e5e5e5" FG="#0a0a0a" BORDER="#262626" ACCENT="#0369a1" ;;
+  sky) BG="#075985" FG="#f0f9ff" BORDER="#d4d4d4" ACCENT="#ec4899" ;;
+  fuchsia) BG="#701a75" FG="#fdf4ff" BORDER="#d4d4d4" ACCENT="#0369a1" ;;
   *)
     echo "error: unknown theme '$THEME' (expected dark, ivory, sky or fuchsia)." >&2
     exit 1
@@ -59,6 +59,7 @@ fg = "$FG"
 border = "$BORDER"
 success = "#16a34a"
 danger = "#dc2626"
+accent = "$ACCENT"
 EOF
 
 # /home is replaced with an empty tmpfs, so the real home directory is hidden.

@@ -14,9 +14,9 @@ const BACKGROUND_COLORS: Record<
 	Variant,
 	{ idle: core.RGBA; pressed: core.RGBA }
 > = {
-	default: { idle: theme.fg, pressed: theme.fg_dark },
-	success: { idle: theme.success, pressed: theme.success_dark },
-	danger: { idle: theme.danger, pressed: theme.danger_dark },
+	default: { idle: theme.active, pressed: theme.pressed },
+	success: { idle: theme.success, pressed: theme.success_pressed },
+	danger: { idle: theme.danger, pressed: theme.danger_pressed },
 };
 
 export class Button {
@@ -60,7 +60,7 @@ export class Button {
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
 			content: this._options.label,
-			fg: this._variant === "default" ? theme.bg : theme.fg,
+			fg: this._variant === "default" ? theme.fg_inverse : theme.fg,
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});

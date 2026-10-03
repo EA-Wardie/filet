@@ -25,7 +25,6 @@ export class Confirmation {
 		this._component = new core.BoxRenderable(ctx, {
 			width: "100%",
 			height: "100%",
-			backgroundColor: core.RGBA.fromHex("#ffffff1A"),
 			alignItems: "center",
 			justifyContent: "center",
 			position: "absolute",
@@ -56,7 +55,7 @@ export class Confirmation {
 	private addDialog(): void {
 		this._dialog = new core.BoxRenderable(ctx, {
 			width: 42,
-			backgroundColor: theme.bg,
+			backgroundColor: theme.surface,
 			border: true,
 			borderColor: theme.border,
 			paddingX: 1,

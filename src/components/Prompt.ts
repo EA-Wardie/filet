@@ -25,7 +25,6 @@ export class Prompt {
 		this._component = new core.BoxRenderable(ctx, {
 			width: "100%",
 			height: "100%",
-			backgroundColor: core.RGBA.fromHex("#ffffff1A"),
 			alignItems: "center",
 			justifyContent: "center",
 			position: "absolute",
@@ -57,7 +56,7 @@ export class Prompt {
 	private addDialog(): void {
 		this._dialog = new core.BoxRenderable(ctx, {
 			width: 42,
-			backgroundColor: theme.bg,
+			backgroundColor: theme.surface,
 			border: true,
 			borderColor: theme.border,
 			paddingX: 1,
@@ -89,7 +88,7 @@ export class Prompt {
 
 		this._input = new core.InputRenderable(ctx, {
 			value: this._options.value ?? "",
-			backgroundColor: theme.fg_light,
+			backgroundColor: theme.input_bg,
 			textColor: theme.fg,
 			cursorColor: theme.fg,
 			flexGrow: 1,

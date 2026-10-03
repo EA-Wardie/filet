@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.2.8 (2026-10-03)
+
+### Added
+
+- `bg = "transparent"` uses the terminal's own background. Menus and modals stay opaque, using the new `surface` colour, which defaults to black or white depending on `fg`. The code preview palette then follows `fg`.
+- Optional `accent` theme colour for marked entries, defaulting to `#0369a1`. Marked entries used `success` before. The README presets and `bun run demo` themes set `accent`, and Sky uses `#ec4899` so marked entries stand out from its blue background.
+- Optional `surface` theme colour for menus, prompts and confirmations, defaulting to `bg` made fully opaque, so a partly transparent `bg` doesn't make them see-through.
+- A `[theme.syntax]` table overrides the code preview colours for `keyword`, `string`, `comment`, `number`, `function` and `type`.
+
+### Changed
+
+- Unknown keys in `[theme]` and `[theme.syntax]`, and either one not being a table, are written to the error log. A typo like `acent` was silently ignored before.
+- Confirmations and prompts no longer tint the screen behind them with a 10% white overlay, which looked wrong on semi-transparent terminals and didn't show on light themes.
+- Scrollbars in the file list and preview follow the theme. The track is transparent instead of a fixed dark grey, so `bg = "transparent"` shows through it, and the thumb is `fg` at 50%.
+
+### Fixed
+
+- Theme colours written as short (`#fff`) or 8-digit hex no longer turn the hover, selected, marked and pressed shades magenta.
+- An invalid theme colour falls back to its default and is written to the error log, instead of printing a warning over the UI.
+
+### Internal
+
+- `ThemeType` uses semantic tokens (`hover`, `selected`, `active`, `pressed`, `fg_inverse`, `muted`, `input_bg`, `transparent`, `scrollbar_thumb`, `scrollbar_track`, `surface`, `marked`, `marked_selected`, `success_pressed`, `danger_pressed`) instead of `*_light` and `*_dark`. `bg_light` and `bg_dark`, which were built from `fg`, are gone. Components use `theme.transparent` instead of `undefined` or `"transparent"` for no background.
+- Shades are built from parsed `RGBA` values with `withAlpha()` instead of appending alpha to the hex string.
+- `[theme]` and `[theme.syntax]` are checked by one `parseColorTable()` in `lib/config.ts`. The syntax palettes moved there from `lib/syntax.ts`, and `theme.syntax` holds every syntax colour, so `syntaxStyles()` only maps them to styles.
+- `tsconfig.json` enables `exactOptionalPropertyTypes`, `noImplicitReturns` and `forceConsistentCasingInFileNames`. `LogEntry` fields and `PreviewSidebar`'s `_path` and `_timeout` are typed `| undefined` to match.
+
 ## 0.2.7 (2026-10-03)
 
 ### Added
