@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.2.7 (2026-10-03)
+
+### Added
+
+- Mark several files and folders with `Space`, which also selects the entry below, or with `Ctrl+click`. Marked entries are highlighted in the theme's success colour, and the footer shows how many are marked.
+- Cut, copy, trash, delete and drag and drop (`A`) act on all marked entries, or on the selected entry when nothing is marked. Open, preview, rename, extract and restore still act on the selected entry only. Confirmations name the entry, or say "N items" when there are several.
+- `ripdrag` receives every marked entry at once.
+
+### Changed
+
+- `Escape` clears the marks first, and the selection on the next press.
+- A plain left click clears the marks. Right clicking an unmarked entry clears them before opening its menu, so the menu acts on that entry.
+- Marks are cleared when you change folder, and when you cut or copy. After a refresh, marks stay on entries that still exist.
+- Entries hidden by the search keep their marks but are not acted on or counted until they are visible again.
+- Paste, trash and delete try every item and show "Couldn't <action> <name>" or "Couldn't <action> N items" in the footer when some fail, instead of stopping at the first error. Failed items stay marked, and failed pastes stay on the clipboard so `Ctrl+V` retries only those.
+- A multi-item paste checks every destination first, and pastes nothing if any name already exists.
+- The clipboard footer shows "Copied N items" or "Cut N items" for several entries.
+
+### Fixed
+
+- Moving an item to trash no longer leaves an orphaned `.trashinfo` file when the move fails.
+
+### Internal
+
+- `$copyDirent` and `$cutDirent` are replaced by the `$copyDirents` and `$cutDirents` lists. New `$markedNames` store of marked names, a `$markedDirents` computed store of the visible marked entries, and `clearMarks()` and `describeDirents()` in `lib/store.ts`.
+- `eachDirent()` in `lib/filesystem.ts` runs a batch, logs each failure, sets the footer notice and returns the failed items. `copy`, `cut`, `remove`, `moveToTrash` and `dragOut` take lists.
+- Shortcuts that use marks are wrapped with `withTargets()`, and trash and delete share `confirmOutsideTrash()`.
+
 ## 0.2.6 (2026-10-01)
 
 ### Added

@@ -28,9 +28,13 @@ import {
 	$currentPath,
 	$dialogOpen,
 	$dirents,
+	$markedDirents,
+	$markedNames,
 	$menuOpen,
 	$previewOpen,
 	$selectedDirent,
+	clearMarks,
+	describeDirents,
 } from "./store";
 import { moveToTrash, restoreFromTrash } from "./trash";
 
@@ -53,6 +57,18 @@ function withDirent(action: (dirent: Dirent) => void): Run {
 	};
 }
 
+function withTargets(action: (dirents: Dirent[]) => void): Run {
+	return (dirent: Dirent | null): void => {
+		const marked: Dirent[] = $markedDirents.get();
+
+		if (marked.length) {
+			action(marked);
+		} else if (dirent) {
+			action([dirent]);
+		}
+	};
+}
+
 function guard(
 	when: When,
 	action: (dirent: Dirent) => void,
@@ -65,6 +81,39 @@ function guard(
 			}
 		}),
 	};
+}
+
+function confirmOutsideTrash(
+	heading: string,
+	question: (targets: string) => string,
+	action: (dirents: Dirent[]) => void,
+): { run: Run; when: When } {
+	return {
+		when: outsideTrash,
+		run: withTargets((dirents: Dirent[]): void => {
+			if (!outsideTrash()) {
+				return;
+			}
+
+			Confirmation.make({
+				heading: heading,
+				description: question(describeDirents(dirents, "'")),
+				onConfirm: (): void => {
+					action(dirents);
+				},
+			});
+		}),
+	};
+}
+
+export function toggleMark(dirent: Dirent): void {
+	const markedNames: Set<string> = new Set<string>($markedNames.get());
+
+	if (!markedNames.delete(dirent.name)) {
+		markedNames.add(dirent.name);
+	}
+
+	$markedNames.set(markedNames);
 }
 
 function inTrash(): boolean {
@@ -122,9 +171,22 @@ export const SHORTCUTS = {
 			},
 		),
 	},
+	mark: {
+		key: "space",
+		run: withDirent((dirent: Dirent): void => {
+			toggleMark(dirent);
+			moveSelection(1);
+		}),
+	},
 	deselect: {
 		key: "escape",
 		run: (): void => {
+			if ($markedNames.get().size) {
+				clearMarks();
+
+				return;
+			}
+
 			$selectedDirent.set(null);
 		},
 	},
@@ -136,8 +198,8 @@ export const SHORTCUTS = {
 			$previewOpen.set(!$previewOpen.get());
 		},
 	},
-	cut: { key: "ctrl+x", run: withDirent(cut) },
-	copy: { key: "ctrl+c", run: withDirent(copy) },
+	cut: { key: "ctrl+x", run: withTargets(cut) },
+	copy: { key: "ctrl+c", run: withTargets(copy) },
 	paste: {
 		key: "ctrl+v",
 		run: (): void => {
@@ -181,7 +243,7 @@ export const SHORTCUTS = {
 			});
 		},
 	},
-	dragOut: { key: "a", run: withDirent(dragOut) },
+	dragOut: { key: "a", run: withTargets(dragOut) },
 	extract: {
 		key: "e",
 		...guard(
@@ -191,15 +253,12 @@ export const SHORTCUTS = {
 	},
 	trash: {
 		key: "t",
-		...guard(outsideTrash, (dirent: Dirent): void => {
-			Confirmation.make({
-				heading: "Move to trash?",
-				description: `Are you sure you want to move '${dirent.name}' to trash?`,
-				onConfirm: (): void => {
-					moveToTrash(dirent);
-				},
-			});
-		}),
+		...confirmOutsideTrash(
+			"Move to trash?",
+			(targets: string): string =>
+				`Are you sure you want to move ${targets} to trash?`,
+			moveToTrash,
+		),
 	},
 	restore: {
 		key: "ctrl+z",
@@ -215,15 +274,12 @@ export const SHORTCUTS = {
 	},
 	delete: {
 		key: "d",
-		...guard(outsideTrash, (dirent: Dirent): void => {
-			Confirmation.make({
-				heading: "Permanently delete?",
-				description: `Are you sure you want to permanently delete '${dirent.name}'?`,
-				onConfirm: (): void => {
-					remove(dirent);
-				},
-			});
-		}),
+		...confirmOutsideTrash(
+			"Permanently delete?",
+			(targets: string): string =>
+				`Are you sure you want to permanently delete ${targets}?`,
+			remove,
+		),
 	},
 	quit: {
 		key: "q",
