@@ -5,7 +5,7 @@ import { getDirentPath } from "./navigation";
 
 let currentRipdrag: Subprocess | null = null;
 
-export function dragOut(dirent: Dirent): void {
+export function dragOut(dirents: Dirent[]): void {
 	currentRipdrag?.kill();
 
 	try {
@@ -16,7 +16,7 @@ export function dragOut(dirent: Dirent): void {
 				"--no-click",
 				"--basename",
 				"--and-exit",
-				getDirentPath(dirent),
+				...dirents.map(getDirentPath),
 			],
 			{
 				stdin: "ignore",

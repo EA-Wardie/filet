@@ -7,13 +7,15 @@ import { logError } from "../lib/log";
 import { isFolder, readFolder, takeSelectName } from "../lib/navigation";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import {
-	$copyDirent,
+	$copyDirents,
 	$currentPath,
-	$cutDirent,
+	$cutDirents,
 	$dirents,
+	$markedNames,
 	$refresh,
 	$searchTerm,
 	$selectedDirent,
+	clearMarks,
 } from "../lib/store";
 import { DirentLink } from "./DirentLink";
 import { Divider } from "./Divider";
@@ -60,7 +62,8 @@ export class ListExplorer {
 	}
 
 	private showMenu(event: core.MouseEvent): void {
-		const canPaste: boolean = !!$copyDirent.get() || !!$cutDirent.get();
+		const canPaste: boolean =
+			!!$copyDirents.get().length || !!$cutDirents.get().length;
 
 		Menu.make({
 			x: event.x,
@@ -100,6 +103,7 @@ export class ListExplorer {
 			this.clearLinks();
 
 			$selectedDirent.set(null);
+			clearMarks();
 
 			this.scanAndMakeDirents(path, takeSelectName());
 		});
@@ -152,6 +156,20 @@ export class ListExplorer {
 
 		$dirents.set(visible);
 		$selectedDirent.set(named ?? visible[0] ?? null);
+	}
+
+	private pruneMarks(dirents: Dirent[]): void {
+		const markedNames: ReadonlySet<string> = $markedNames.get();
+
+		if (markedNames.size) {
+			$markedNames.set(
+				new Set<string>(
+					dirents
+						.map((dirent: Dirent): string => dirent.name)
+						.filter((name: string): boolean => markedNames.has(name)),
+				),
+			);
+		}
 	}
 
 	private sortDirents(dirents: Dirent[]): void {
@@ -250,6 +268,7 @@ export class ListExplorer {
 					return;
 				}
 
+				this.pruneMarks(dirents);
 				this.sortDirents(dirents);
 				this.makeLinks(dirents, selectName);
 			},

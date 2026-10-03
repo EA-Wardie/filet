@@ -5,8 +5,13 @@ import { doubleClickTimeout, theme } from "../lib/config";
 import { TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { getFileIcon } from "../lib/icons";
-import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
-import { $previewOpen, $selectedDirent } from "../lib/store";
+import { SHORTCUTS, shortcutLabel, toggleMark } from "../lib/shortcuts";
+import {
+	$markedNames,
+	$previewOpen,
+	$selectedDirent,
+	clearMarks,
+} from "../lib/store";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
@@ -21,6 +26,8 @@ export class DirentLink {
 	private _label: core.TextRenderable | null = null;
 	private _lastClick: number | null = null;
 	private _selected: boolean = false;
+	private _marked: boolean = false;
+	private _hovered: boolean = false;
 
 	constructor(options: Options) {
 		this._options = options;
@@ -28,28 +35,44 @@ export class DirentLink {
 		this._component = new core.BoxRenderable(ctx, {
 			paddingX: 1,
 			onMouseOver: (): void => {
-				if (!this._selected) {
-					this._component.backgroundColor = theme.fg_light;
-				}
+				this._hovered = true;
+
+				this.paint();
 			},
 			onMouseOut: (): void => {
-				if (!this._selected) {
-					this._component.backgroundColor = undefined;
-				}
+				this._hovered = false;
+
+				this.paint();
 			},
 			onMouseDown: (event: core.MouseEvent): void => {
+				const { dirent } = this._options;
+
 				if (event.button === MouseButtons.LEFT) {
 					const lastClick: number | null = this._lastClick;
 
-					$selectedDirent.set(this._options.dirent);
+					$selectedDirent.set(dirent);
+
+					if (event.modifiers.ctrl) {
+						toggleMark(dirent);
+
+						this._lastClick = null;
+
+						return;
+					}
+
+					clearMarks();
 
 					if (lastClick && Date.now() - lastClick < doubleClickTimeout) {
 						this._lastClick = null;
 
-						SHORTCUTS.open.run(this._options.dirent);
+						SHORTCUTS.open.run(dirent);
 					}
 				} else if (event.button === MouseButtons.RIGHT) {
-					$selectedDirent.set(this._options.dirent);
+					if (!this._marked) {
+						clearMarks();
+					}
+
+					$selectedDirent.set(dirent);
 
 					this.showMenu(event);
 				}
@@ -169,6 +192,26 @@ export class DirentLink {
 		this._component.add(this._label);
 	}
 
+	private background(): core.RGBA | undefined {
+		if (this._marked) {
+			return this._selected ? theme.success_dark : theme.success_light;
+		}
+
+		if (this._selected) {
+			return theme.fg_dark;
+		}
+
+		return this._hovered ? theme.fg_light : undefined;
+	}
+
+	private paint(): void {
+		this._component.backgroundColor = this.background();
+
+		if (this._label) {
+			this._label.fg = this._selected && !this._marked ? theme.bg : theme.fg;
+		}
+	}
+
 	private registerStoreEvents(): void {
 		const unbindSelectedDirent = $selectedDirent.listen(
 			(dirent: Readonly<Dirent> | null): void => {
@@ -179,14 +222,28 @@ export class DirentLink {
 				}
 
 				this._selected = selected;
-				this._component.backgroundColor = selected ? theme.fg_dark : undefined;
 
-				if (this._label) {
-					this._label.fg = selected ? theme.bg : theme.fg;
-				}
+				this.paint();
 			},
 		);
 
-		this._component.once(core.RenderableEvents.DESTROYED, unbindSelectedDirent);
+		const unbindMarkedNames = $markedNames.subscribe(
+			(markedNames: ReadonlySet<string>): void => {
+				const marked: boolean = markedNames.has(this._options.dirent.name);
+
+				if (marked === this._marked) {
+					return;
+				}
+
+				this._marked = marked;
+
+				this.paint();
+			},
+		);
+
+		this._component.once(core.RenderableEvents.DESTROYED, (): void => {
+			unbindSelectedDirent();
+			unbindMarkedNames();
+		});
 	}
 }

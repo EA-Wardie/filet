@@ -2,13 +2,17 @@ import { type Dirent, existsSync, readdir } from "node:fs";
 import { mkdir, rm } from "node:fs/promises";
 import { basename, dirname } from "node:path";
 import { trashFilesPath, trashInfoPath } from "./config";
-import { copyDirent, moveDirent, removeDirent } from "./filesystem";
+import { copyDirent, eachDirent, moveDirent, removeDirent } from "./filesystem";
 import { getDirentPath } from "./navigation";
 import { $trashFull } from "./store";
 import { runTask } from "./tasks";
 
 function trashInfoFile(name: string): string {
 	return `${trashInfoPath}/${name}.trashinfo`;
+}
+
+function removeTrashInfo(name: string): Promise<void> {
+	return rm(trashInfoFile(name), { force: true });
 }
 
 async function writeTrashInfo(path: string): Promise<void> {
@@ -49,12 +53,25 @@ export function checkTrash(): void {
 	);
 }
 
-export function moveToTrash(dirent: Dirent): Promise<void> {
-	return runTask(async (): Promise<void> => {
-		await writeTrashInfo(getDirentPath(dirent));
-		await moveDirent(dirent, `${trashFilesPath}/${dirent.name}`);
+async function trashDirent(dirent: Dirent): Promise<void> {
+	await writeTrashInfo(getDirentPath(dirent));
 
-		$trashFull.set(true);
+	try {
+		await moveDirent(dirent, `${trashFilesPath}/${dirent.name}`);
+	} catch (error) {
+		await removeTrashInfo(dirent.name);
+
+		throw error;
+	}
+}
+
+export function moveToTrash(dirents: Dirent[]): Promise<void> {
+	return runTask(async (): Promise<void> => {
+		const failed: Dirent[] = await eachDirent(dirents, "trash", trashDirent);
+
+		if (failed.length < dirents.length) {
+			$trashFull.set(true);
+		}
 	});
 }
 
@@ -68,10 +85,7 @@ export function restoreFromTrash(dirent: Dirent): Promise<void> {
 
 		await mkdir(dirname(toPath), { recursive: true });
 		await copyDirent(dirent, toPath);
-		await Promise.all([
-			removeDirent(dirent),
-			rm(trashInfoFile(dirent.name), { force: true }),
-		]);
+		await Promise.all([removeDirent(dirent), removeTrashInfo(dirent.name)]);
 
 		checkTrash();
 	});

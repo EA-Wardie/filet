@@ -14,9 +14,23 @@ export const $previewOpen = nanostores.atom<boolean>(false);
 
 export const $trashFull = nanostores.atom<boolean>(false);
 
-export const $copyDirent = nanostores.atom<Dirent | null>(null);
+export const $markedNames = nanostores.atom<ReadonlySet<string>>(new Set());
 
-export const $cutDirent = nanostores.atom<Dirent | null>(null);
+export function clearMarks(): void {
+	if ($markedNames.get().size) {
+		$markedNames.set(new Set());
+	}
+}
+
+export const $markedDirents = nanostores.computed(
+	[$dirents, $markedNames],
+	(dirents: Dirent[], markedNames: ReadonlySet<string>): Dirent[] =>
+		dirents.filter((dirent: Dirent): boolean => markedNames.has(dirent.name)),
+);
+
+export const $copyDirents = nanostores.atom<Dirent[]>([]);
+
+export const $cutDirents = nanostores.atom<Dirent[]>([]);
 
 export const $menuOpen = nanostores.atom<boolean>(false);
 
@@ -32,23 +46,34 @@ export const $refresh = nanostores.atom<number>(0);
 
 export const $notice = nanostores.atom<string>("");
 
+export function describeDirents(dirents: Dirent[], quote: string = ""): string {
+	return dirents.length === 1
+		? `${quote}${dirents[0]?.name}${quote}`
+		: `${dirents.length} items`;
+}
+
 export const $footerText = nanostores.computed(
-	[$notice, $copyDirent, $cutDirent],
+	[$notice, $copyDirents, $cutDirents, $markedDirents],
 	(
 		notice: string,
-		copyDirent: Dirent | null,
-		cutDirent: Dirent | null,
+		copyDirents: Dirent[],
+		cutDirents: Dirent[],
+		markedDirents: Dirent[],
 	): string => {
 		if (notice) {
 			return notice;
 		}
 
-		if (copyDirent) {
-			return `Copied ${copyDirent.name} to clipboard`;
+		if (copyDirents.length) {
+			return `Copied ${describeDirents(copyDirents)} to clipboard`;
 		}
 
-		if (cutDirent) {
-			return `Cut ${cutDirent.name} to clipboard`;
+		if (cutDirents.length) {
+			return `Cut ${describeDirents(cutDirents)} to clipboard`;
+		}
+
+		if (markedDirents.length) {
+			return `${markedDirents.length} marked`;
 		}
 
 		return "";

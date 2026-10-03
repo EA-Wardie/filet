@@ -1,9 +1,18 @@
 import { type Dirent, existsSync } from "node:fs";
 import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { join } from "node:path";
+import type { WritableAtom } from "nanostores";
 import { ctx } from "./context";
+import { logError } from "./log";
 import { getDirentPath } from "./navigation";
-import { $copyDirent, $currentPath, $cutDirent, $notice } from "./store";
+import {
+	$copyDirents,
+	$currentPath,
+	$cutDirents,
+	$notice,
+	clearMarks,
+	describeDirents,
+} from "./store";
 import { runTask } from "./tasks";
 
 export async function copyDirent(
@@ -49,52 +58,92 @@ export async function moveDirent(
 	}
 }
 
-export function copy(dirent: Dirent): void {
-	ctx.copyToClipboardOSC52(getDirentPath(dirent));
+export async function eachDirent(
+	dirents: Dirent[],
+	verb: string,
+	action: (dirent: Dirent) => Promise<void>,
+): Promise<Dirent[]> {
+	const failed: Dirent[] = [];
 
-	$notice.set("");
-	$cutDirent.set(null);
-	$copyDirent.set(dirent);
+	for (const dirent of dirents) {
+		try {
+			await action(dirent);
+		} catch (error) {
+			failed.push(dirent);
+			logError(error);
+		}
+	}
+
+	if (failed.length) {
+		$notice.set(`Couldn't ${verb} ${describeDirents(failed, "'")}`);
+	}
+
+	return failed;
 }
 
-export function cut(dirent: Dirent): void {
-	ctx.copyToClipboardOSC52(getDirentPath(dirent));
+function toClipboard(dirents: Dirent[]): void {
+	ctx.copyToClipboardOSC52(dirents.map(getDirentPath).join("\n"));
 
 	$notice.set("");
-	$copyDirent.set(null);
-	$cutDirent.set(dirent);
+	clearMarks();
+}
+
+export function copy(dirents: Dirent[]): void {
+	toClipboard(dirents);
+
+	$cutDirents.set([]);
+	$copyDirents.set(dirents);
+}
+
+export function cut(dirents: Dirent[]): void {
+	toClipboard(dirents);
+
+	$copyDirents.set([]);
+	$cutDirents.set(dirents);
 }
 
 export async function paste(): Promise<void> {
-	const dirent: Dirent | null = $copyDirent.get() ?? $cutDirent.get();
+	const isCutting: boolean = !$copyDirents.get().length;
+	const clipboard: WritableAtom<Dirent[]> = isCutting
+		? $cutDirents
+		: $copyDirents;
+	const transfer: (dirent: Dirent, toPath: string) => Promise<void> = isCutting
+		? moveDirent
+		: copyDirent;
+	const toFolder: string = $currentPath.get();
+	const toPath = (dirent: Dirent): string => join(toFolder, dirent.name);
+	const dirents: Dirent[] = clipboard
+		.get()
+		.filter(
+			(dirent: Dirent): boolean => toPath(dirent) !== getDirentPath(dirent),
+		);
 
-	if (!dirent) {
-		return;
-	}
-
-	const fromPath: string = getDirentPath(dirent);
-	const toPath: string = join($currentPath.get(), basename(fromPath));
-	const isCutting: boolean = !$copyDirent.get();
-
-	if (toPath === fromPath) {
+	if (!dirents.length) {
 		return;
 	}
 
 	await runTask(async (): Promise<void> => {
-		if (existsSync(toPath)) {
-			throw new Error(`Cannot paste, ${toPath} already exists.`);
+		for (const dirent of dirents) {
+			if (existsSync(toPath(dirent))) {
+				throw new Error(`Cannot paste, ${toPath(dirent)} already exists.`);
+			}
 		}
 
-		if (isCutting) {
-			await moveDirent(dirent, toPath);
+		const failed: Dirent[] = await eachDirent(
+			dirents,
+			"paste",
+			(dirent: Dirent): Promise<void> => transfer(dirent, toPath(dirent)),
+		);
 
-			$cutDirent.set(null);
-		} else {
-			await copyDirent(dirent, toPath);
-
-			$copyDirent.set(null);
-		}
-	}, basename(toPath));
+		clipboard.set(
+			clipboard
+				.get()
+				.filter(
+					(dirent: Dirent): boolean =>
+						!dirents.includes(dirent) || failed.includes(dirent),
+				),
+		);
+	}, dirents[0]?.name);
 }
 
 export function createFile(name: string): Promise<void> {
@@ -119,6 +168,8 @@ export function rename(dirent: Dirent, name: string): Promise<void> {
 	);
 }
 
-export function remove(dirent: Dirent): Promise<void> {
-	return runTask((): Promise<void> => removeDirent(dirent));
+export function remove(dirents: Dirent[]): Promise<void> {
+	return runTask(
+		(): Promise<Dirent[]> => eachDirent(dirents, "delete", removeDirent),
+	);
 }
