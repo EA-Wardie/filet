@@ -45,8 +45,9 @@ export interface ThemeType {
 	active: RGBA;
 	pressed: RGBA;
 	input_bg: RGBA;
-	overlay: RGBA;
 	transparent: RGBA;
+	scrollbar_thumb: RGBA;
+	scrollbar_track: RGBA;
 	marked: RGBA;
 	marked_selected: RGBA;
 	success: RGBA;
@@ -268,8 +269,9 @@ function makeTheme(config: unknown): ThemeType {
 		active: fg,
 		pressed: withAlpha(fg, 0.75),
 		input_bg: withAlpha(fg, 0.25),
-		overlay: withAlpha(fg, 0.1),
 		transparent: TRANSPARENT,
+		scrollbar_thumb: withAlpha(fg, 0.5),
+		scrollbar_track: TRANSPARENT,
 		marked: withAlpha(accent, 0.25),
 		marked_selected: withAlpha(accent, 0.75),
 		success,

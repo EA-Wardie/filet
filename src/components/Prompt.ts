@@ -25,7 +25,6 @@ export class Prompt {
 		this._component = new core.BoxRenderable(ctx, {
 			width: "100%",
 			height: "100%",
-			backgroundColor: theme.overlay,
 			alignItems: "center",
 			justifyContent: "center",
 			position: "absolute",

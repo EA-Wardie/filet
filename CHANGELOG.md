@@ -12,7 +12,8 @@
 ### Changed
 
 - Unknown keys in `[theme]` and `[theme.syntax]`, and either one not being a table, are written to the error log. A typo like `acent` was silently ignored before.
-- The backdrop behind confirmations and prompts is a 10% tint of `fg` instead of fixed white, so it shows on light themes too.
+- Confirmations and prompts no longer tint the screen behind them with a 10% white overlay, which looked wrong on semi-transparent terminals and didn't show on light themes.
+- Scrollbars in the file list and preview follow the theme. The track is transparent instead of a fixed dark grey, so `bg = "transparent"` shows through it, and the thumb is `fg` at 50%.
 
 ### Fixed
 
@@ -21,7 +22,7 @@
 
 ### Internal
 
-- `ThemeType` uses semantic tokens (`hover`, `selected`, `active`, `pressed`, `fg_inverse`, `muted`, `input_bg`, `overlay`, `transparent`, `surface`, `marked`, `marked_selected`, `success_pressed`, `danger_pressed`) instead of `*_light` and `*_dark`. `bg_light` and `bg_dark`, which were built from `fg`, are gone. Components use `theme.transparent` instead of `undefined` or `"transparent"` for no background.
+- `ThemeType` uses semantic tokens (`hover`, `selected`, `active`, `pressed`, `fg_inverse`, `muted`, `input_bg`, `transparent`, `scrollbar_thumb`, `scrollbar_track`, `surface`, `marked`, `marked_selected`, `success_pressed`, `danger_pressed`) instead of `*_light` and `*_dark`. `bg_light` and `bg_dark`, which were built from `fg`, are gone. Components use `theme.transparent` instead of `undefined` or `"transparent"` for no background.
 - Shades are built from parsed `RGBA` values with `withAlpha()` instead of appending alpha to the hex string.
 - `[theme]` and `[theme.syntax]` are checked by one `parseColorTable()` in `lib/config.ts`. The syntax palettes moved there from `lib/syntax.ts`, and `theme.syntax` holds every syntax colour, so `syntaxStyles()` only maps them to styles.
 - `tsconfig.json` enables `exactOptionalPropertyTypes`, `noImplicitReturns` and `forceConsistentCasingInFileNames`. `LogEntry` fields and `PreviewSidebar`'s `_path` and `_timeout` are typed `| undefined` to match.

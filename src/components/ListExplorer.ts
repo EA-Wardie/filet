@@ -1,6 +1,7 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
+import { theme } from "../lib/config";
 import { COLLATOR } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { logError } from "../lib/log";
@@ -43,6 +44,12 @@ export class ListExplorer {
 			width: "100%",
 			height: "100%",
 			viewportCulling: true,
+			scrollbarOptions: {
+				trackOptions: {
+					foregroundColor: theme.scrollbar_thumb,
+					backgroundColor: theme.scrollbar_track,
+				},
+			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.RIGHT) {
 					this.showMenu(event);

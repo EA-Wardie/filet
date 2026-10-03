@@ -77,6 +77,12 @@ export class PreviewSidebar {
 		this._content = new core.ScrollBoxRenderable(ctx, {
 			width: "100%",
 			flexGrow: 1,
+			scrollbarOptions: {
+				trackOptions: {
+					foregroundColor: theme.scrollbar_thumb,
+					backgroundColor: theme.scrollbar_track,
+				},
+			},
 		});
 
 		this._content.focusable = false;
