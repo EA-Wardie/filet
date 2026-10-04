@@ -1,7 +1,6 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { theme } from "../lib/config";
 import { COLLATOR } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { logError } from "../lib/log";
@@ -18,38 +17,27 @@ import {
 	$selectedDirent,
 	clearMarks,
 } from "../lib/store";
-import { DirentLink } from "./DirentLink";
+import { DirentList } from "./DirentList";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
 import { Message } from "./Message";
 
-interface Link {
-	dirent: Dirent;
-	name: string;
-	link: core.BoxRenderable;
-}
-
-export class ListExplorer {
+export class VirtualExplorer {
 	private _options: core.BoxOptions;
-	private _component: core.ScrollBoxRenderable;
-	private _links: Link[] = [];
-	private _noMatches: core.TextRenderable | null = null;
+	private _component: core.BoxRenderable;
+	private _message: core.TextRenderable;
+	private _dirents: Dirent[] = [];
+	private _names: string[] | null = null;
+	private _loaded: boolean = false;
 	private _scan: number = 0;
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
 
-		this._component = new core.ScrollBoxRenderable(ctx, {
+		this._component = new core.BoxRenderable(ctx, {
 			width: "100%",
 			height: "100%",
-			viewportCulling: true,
-			scrollbarOptions: {
-				trackOptions: {
-					foregroundColor: theme.scrollbar_thumb,
-					backgroundColor: theme.scrollbar_track,
-				},
-			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.RIGHT) {
 					this.showMenu(event);
@@ -58,10 +46,17 @@ export class ListExplorer {
 			...this._options,
 		});
 
-		this._component.focusable = false;
+		this._message = Message.make({
+			content: "",
+			marginX: 1,
+			visible: false,
+		});
+
+		this._component.add(this._message);
+		this._component.add(DirentList.make({ flexGrow: 1 }));
 
 		this.registerStoreEvents();
-		this.scanAndMakeDirents($currentPath.get());
+		this.scanAndShowDirents($currentPath.get());
 	}
 
 	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
@@ -77,14 +72,14 @@ export class ListExplorer {
 			y: event.y,
 			items: [
 				MenuButton.make({
-					label: "\ued80 New File",
+					label: " New File",
 					shortcut: shortcutLabel(SHORTCUTS.newFile),
 					onClick: (): void => {
 						SHORTCUTS.newFile.run();
 					},
 				}),
 				MenuButton.make({
-					label: "\ueec7 New Folder",
+					label: " New Folder",
 					shortcut: shortcutLabel(SHORTCUTS.newFolder),
 					onClick: (): void => {
 						SHORTCUTS.newFolder.run();
@@ -94,7 +89,7 @@ export class ListExplorer {
 					visible: canPaste,
 				}),
 				MenuButton.make({
-					label: "\uf07f Paste",
+					label: " Paste",
 					shortcut: shortcutLabel(SHORTCUTS.paste),
 					visible: canPaste,
 					onClick: (): void => {
@@ -107,59 +102,49 @@ export class ListExplorer {
 
 	private registerStoreEvents(): void {
 		$currentPath.listen((path: string): void => {
-			this.clearLinks();
+			this.clearDirents();
 
-			$selectedDirent.set(null);
 			clearMarks();
 
-			this.scanAndMakeDirents(path, takeSelectName());
+			this.scanAndShowDirents(path, takeSelectName());
 		});
 
 		$refresh.listen((): void => {
-			this.clearLinks();
-			this.scanAndMakeDirents(
+			this.scanAndShowDirents(
 				$currentPath.get(),
 				takeSelectName() ?? $selectedDirent.get()?.name,
 			);
 		});
 
 		$searchTerm.listen((): void => {
-			this.filterLinks();
-		});
-
-		$selectedDirent.listen((dirent: Dirent | null): void => {
-			const link: core.BoxRenderable | undefined = this._links.find(
-				(link: Link): boolean => link.dirent === dirent,
-			)?.link;
-
-			if (link) {
-				this._component.scrollChildIntoView(link.id);
-			}
+			this.filterDirents();
 		});
 	}
 
-	private filterLinks(selectName?: string): void {
+	private matching(term: string): Dirent[] {
+		this._names ??= this._dirents.map((dirent: Dirent): string =>
+			dirent.name.toLocaleLowerCase(),
+		);
+
+		const names: string[] = this._names;
+
+		return this._dirents.filter(
+			(_dirent: Dirent, index: number): boolean =>
+				names[index]?.includes(term) ?? false,
+		);
+	}
+
+	private filterDirents(selectName?: string): void {
 		const term: string = $searchTerm.get().toLocaleLowerCase();
-		const visible: Dirent[] = [];
-		let named: Dirent | null = null;
+		const visible: Dirent[] = term ? this.matching(term) : this._dirents;
+		const named: Dirent | undefined = visible.find(
+			(dirent: Dirent): boolean => dirent.name === selectName,
+		);
 
-		for (const { dirent, name, link } of this._links) {
-			link.visible = name.includes(term);
-
-			if (!link.visible) {
-				continue;
-			}
-
-			visible.push(dirent);
-
-			if (dirent.name === selectName) {
-				named = dirent;
-			}
-		}
-
-		if (this._noMatches) {
-			this._noMatches.visible = !visible.length;
-		}
+		this._message.content = this._dirents.length
+			? "  --No Matches--"
+			: "  --Empty--";
+		this._message.visible = this._loaded && !visible.length;
 
 		$dirents.set(visible);
 		$selectedDirent.set(named ?? visible[0] ?? null);
@@ -199,65 +184,23 @@ export class ListExplorer {
 		});
 	}
 
-	private addLinks(dirents: Dirent[]): void {
-		for (const dirent of dirents) {
-			const link: core.BoxRenderable = DirentLink.make({ dirent: dirent });
+	private showDirents(
+		dirents: Dirent[],
+		loaded: boolean,
+		selectName?: string,
+	): void {
+		this._dirents = dirents;
+		this._names = null;
+		this._loaded = loaded;
 
-			this._links.push({
-				dirent: dirent,
-				name: dirent.name.toLocaleLowerCase(),
-				link: link,
-			});
-
-			this._component.add(link);
-		}
+		this.filterDirents(selectName);
 	}
 
-	private clearLinks(): void {
-		this._links = [];
-		this._noMatches = null;
-
-		$dirents.set([]);
-
-		for (const child of this._component.getChildren()) {
-			child.destroyRecursively();
-		}
+	private clearDirents(): void {
+		this.showDirents([], false);
 	}
 
-	private addMessage(
-		content: string,
-		visible: boolean = true,
-	): core.TextRenderable {
-		const message: core.TextRenderable = Message.make({
-			content: content,
-			marginX: 1,
-			visible: visible,
-		});
-
-		this._component.add(message);
-
-		return message;
-	}
-
-	private makeLinks(dirents: Dirent[], selectName?: string): void {
-		try {
-			if (!dirents.length) {
-				this.addMessage("\uf07c  --Empty--");
-				this.filterLinks();
-
-				return;
-			}
-
-			this._noMatches = this.addMessage("\uf002  --No Matches--", false);
-
-			this.addLinks(dirents);
-			this.filterLinks(selectName);
-		} catch (error) {
-			logError(error);
-		}
-	}
-
-	private scanAndMakeDirents(path: string, selectName?: string): void {
+	private scanAndShowDirents(path: string, selectName?: string): void {
 		const scan: number = ++this._scan;
 
 		readFolder(
@@ -270,14 +213,14 @@ export class ListExplorer {
 				if (error) {
 					logError(error);
 
-					this.filterLinks();
+					this.clearDirents();
 
 					return;
 				}
 
 				this.pruneMarks(dirents);
 				this.sortDirents(dirents);
-				this.makeLinks(dirents, selectName);
+				this.showDirents(dirents, true, selectName);
 			},
 		);
 	}
