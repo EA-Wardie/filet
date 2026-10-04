@@ -2,9 +2,9 @@ import { homedir } from "node:os";
 
 export const HOME_DIRECTORY: string = homedir();
 
-export const TRASH_FULL_ICON: string = "\uf1f8";
+export const TRASH_FULL_ICON: string = "";
 
-export const TRASH_EMPTY_ICON: string = "\uf48e";
+export const TRASH_EMPTY_ICON: string = "";
 
 export const COLLATOR: Intl.Collator = new Intl.Collator();
 
@@ -32,6 +32,8 @@ export const PREVIEW_MAX_SIZE: number = 1024 * 1024;
 export const PREVIEW_DELAY: number = 100;
 
 export const SYMLINK_TIMEOUT: number = 100;
+
+export const TERMINAL_STARTUP_TIMEOUT: number = 2000;
 
 export const BINARY_CHECK_SIZE: number = 8000;
 
@@ -75,10 +77,10 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".json", "󰘦"],
 	[".jsonc", "󰘦"],
 	[".jsonl", "󰘦"],
-	[".yaml", "\ue8eb"],
-	[".yml", "\ue8eb"],
+	[".yaml", ""],
+	[".yml", ""],
 	[".toml", ""],
-	[".xml", "\udb81\uddc0"],
+	[".xml", "󰗀"],
 	[".env", ""],
 	[".ini", ""],
 	[".conf", ""],
@@ -112,7 +114,7 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".scss", ""],
 	[".sass", ""],
 	[".less", ""],
-	[".vue", "\ued4a"],
+	[".vue", ""],
 	[".svelte", ""],
 
 	// Systems languages
@@ -123,7 +125,7 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".cpp", ""],
 	[".cc", ""],
 	[".hpp", ""],
-	[".cs", "\ue648"],
+	[".cs", ""],
 	[".zig", ""],
 
 	// JVM
@@ -157,23 +159,23 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".nix", "󱄅"],
 
 	// Images
-	[".png", "\uf03e"],
-	[".jpg", "\uf03e"],
-	[".jpeg", "\uf03e"],
-	[".gif", "\uf03e"],
-	[".webp", "\uf03e"],
-	[".avif", "\uf03e"],
+	[".png", ""],
+	[".jpg", ""],
+	[".jpeg", ""],
+	[".gif", ""],
+	[".webp", ""],
+	[".avif", ""],
 	[".ico", ""],
 	[".svg", ""],
 
 	// Certificates
-	[".cer", "\uf0a3"],
-	[".p8", "\uf0a3"],
-	[".p12", "\uf0a3"],
-	[".mobileprovision", "\ued08"],
-	[".pepk", "\uf0a3"],
-	[".jks", "\uf0a3"],
-	[".pem", "\uf0a3"],
+	[".cer", ""],
+	[".p8", ""],
+	[".p12", ""],
+	[".mobileprovision", ""],
+	[".pepk", ""],
+	[".jks", ""],
+	[".pem", ""],
 ]);
 
 export const FILE_ICON: string = "";

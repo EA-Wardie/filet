@@ -11,7 +11,7 @@ export class ForwardButton {
 		this._options = options;
 
 		this._component = IconButton.make({
-			icon: "\uf061",
+			icon: "",
 			marginRight: 1,
 			opacity: 0.4,
 			disabled: (): boolean => !$forwardHistory.get().length,

@@ -4,7 +4,7 @@ import { ctx } from "../lib/context";
 
 interface Options extends core.BoxOptions {
 	label: string;
-	shortcut: string;
+	shortcut?: string;
 	onClick: () => void;
 }
 
@@ -90,6 +90,10 @@ export class MenuButton {
 	}
 
 	private addShortcut(): void {
+		if (!this._options.shortcut) {
+			return;
+		}
+
 		this._shortcut = new core.TextRenderable(ctx, {
 			content: this._options.shortcut,
 			fg: theme.fg,

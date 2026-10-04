@@ -7,8 +7,14 @@ import {
 	stat,
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { expandHome, trashFilesPath, trashPath } from "./config";
-import { SYMLINK_TIMEOUT } from "./consts";
+import type { Subprocess } from "bun";
+import {
+	expandHome,
+	terminalCommand,
+	trashFilesPath,
+	trashPath,
+} from "./config";
+import { SYMLINK_TIMEOUT, TERMINAL_STARTUP_TIMEOUT } from "./consts";
 import { logError } from "./log";
 import {
 	$backHistory,
@@ -213,6 +219,65 @@ export function readFolder(
 	);
 }
 
+function spawnDetached(
+	command: string[],
+	cwd: string = process.cwd(),
+): Subprocess | null {
+	try {
+		const subprocess: Subprocess = Bun.spawn(command, {
+			cwd: cwd,
+			stdio: ["ignore", "ignore", "ignore"],
+			detached: true,
+		});
+
+		subprocess.unref();
+
+		return subprocess;
+	} catch (error) {
+		logError(error);
+
+		return null;
+	}
+}
+
+function spawnTerminal(path: string): void {
+	const notice: string = `Can't open ${terminalCommand[0]}`;
+	const startedAt: number = performance.now();
+	const terminal: Subprocess | null = spawnDetached(terminalCommand, path);
+
+	if (!terminal) {
+		$notice.set(notice);
+
+		return;
+	}
+
+	terminal.exited.then((exitCode: number): void => {
+		if (
+			exitCode !== 0 &&
+			performance.now() - startedAt < TERMINAL_STARTUP_TIMEOUT
+		) {
+			logError(new Error(`${terminalCommand[0]} exited with code ${exitCode}`));
+			$notice.set(notice);
+		}
+	});
+}
+
+export function openTerminal(path: string = $currentPath.get()): void {
+	stat(path, (error: NodeJS.ErrnoException | null, stats: Stats): void => {
+		if (error || !stats.isDirectory()) {
+			if (error) {
+				logError(error);
+			}
+
+			$notice.set(`Can't open a terminal in ${path}`);
+
+			return;
+		}
+
+		spawnTerminal(path);
+	});
+}
+
 export function openInDefault(dirent: Dirent): void {
 	const path: string = getDirentPath(dirent);
 
@@ -224,26 +289,11 @@ export function openInDefault(dirent: Dirent): void {
 
 	access(path, constants.X_OK, (error: ErrnoException | null) => {
 		if (error) {
-			try {
-				Bun.spawn(["xdg-open", path], {
-					stdio: ["ignore", "ignore", "ignore"],
-					detached: true,
-				}).unref();
-			} catch (error) {
-				logError(error);
-			}
+			spawnDetached(["xdg-open", path]);
 
 			return;
 		}
 
-		try {
-			Bun.spawn([path], {
-				cwd: dirname(path),
-				stdio: ["ignore", "ignore", "ignore"],
-				detached: true,
-			}).unref();
-		} catch (error) {
-			logError(error);
-		}
+		spawnDetached([path], dirname(path));
 	});
 }

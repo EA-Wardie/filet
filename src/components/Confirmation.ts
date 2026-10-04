@@ -97,7 +97,7 @@ export class Confirmation {
 
 		this._footer?.add(
 			Button.make({
-				label: "\uf00d Cancel",
+				label: " Cancel",
 				onClick: () => {
 					this.close();
 				},
@@ -106,7 +106,7 @@ export class Confirmation {
 
 		this._footer?.add(
 			Button.make({
-				label: "\uf00c Confirm",
+				label: " Confirm",
 				variant: "danger",
 				onClick: () => {
 					this.confirm();

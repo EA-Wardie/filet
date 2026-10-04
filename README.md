@@ -28,6 +28,8 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Restore files and directories from trash, or empty it.
 - Extract `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
 - Drag and drop files and directories into other applications with `ripdrag`.
+- Open a terminal in the current folder, or in a folder from its context menu.
+- Copy the paths of files and directories to the system clipboard.
 - Move through the explorer with the arrow keys or `H`, `J`, `K` and `L`, and act on the selection with single letter shortcuts.
 - Nerd Font file icons and context menus.
 - Bookmarks and a themeable UI, configurable through a user config file.
@@ -75,6 +77,8 @@ logs_path = "/home/<user>/.local/state/filet/logs"
 
 double_click_timeout = 250
 
+terminal = "kitty"
+
 [theme]
 bg = "#0C0C0C"
 fg = "#fafafa"
@@ -83,6 +87,8 @@ success = "#16a34a"
 danger = "#dc2626"
 accent = "#0369a1"
 ```
+
+`terminal` is the command run by `O` and the Open in Terminal menu items, started in the current folder, or in the folder you right clicked. It can include arguments, such as `"kitty --single-instance"`, which are split on spaces. When an argument or the path to the terminal contains spaces, use a list instead, such as `["kitty", "--title", "My Terminal"]`. Without it, or when it's invalid, filet uses `$TERMINAL`, then [`xdg-terminal-exec`](https://gitlab.freedesktop.org/terminal-wg/specifications). If the folder can't be opened, or the terminal can't be started or quits with an error within 2 seconds, the footer says so and the error is logged.
 
 ## Logs
 
@@ -126,6 +132,8 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `Ctrl+X`      | Cut the marked items, or the selected file or folder.                                            |
 | `Ctrl+C`      | Copy the marked items, or the selected file or folder.                                           |
 | `Ctrl+V`      | Paste the cut or copied items into the current folder.                                           |
+| `Y`           | Copy the paths of the marked items, or the selected file or folder, to the system clipboard.     |
+| `Ctrl+R`      | Refresh the current folder, keeping the selection.                                               |
 | `R`           | Rename the selected file or folder.                                                              |
 | `N`           | Create a new file in the current folder.                                                         |
 | `F`           | Create a new folder in the current folder.                                                       |
@@ -133,6 +141,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `Ctrl+Z`      | Restore a file or folder from trash, after confirmation.                                         |
 | `D`           | Permanently delete the marked items, or the selected file or folder, after confirmation.         |
 | `E`           | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
+| `O`           | Open a terminal in the current folder. See [Configuration](#configuration).                      |
 | `A`           | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements).   |
 | `Q`           | Quit the application, after confirmation.                                                        |
 

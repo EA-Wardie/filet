@@ -34,7 +34,7 @@ export class DirectorySearch {
 
 	private addButton(): void {
 		this._button = IconButton.make({
-			icon: "\uf002",
+			icon: "",
 			onClick: (): void => {
 				if (this._input?.visible) {
 					this.clearSearch();

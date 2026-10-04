@@ -62,6 +62,7 @@ interface ConfigFile {
 	trash_path?: string;
 	logs_path?: string;
 	double_click_timeout?: number;
+	terminal?: unknown;
 	theme?: unknown;
 }
 
@@ -116,6 +117,40 @@ if (userConfig.logs_path) {
 
 export const doubleClickTimeout: number =
 	userConfig.double_click_timeout ?? 250;
+
+function splitCommand(command: string): string[] | undefined {
+	const parts: string[] = command.split(/\s+/).filter(Boolean);
+
+	return parts.length ? parts : undefined;
+}
+
+function isCommand(value: unknown): value is string[] {
+	return (
+		Array.isArray(value) &&
+		value.length > 0 &&
+		value.every((part: unknown): boolean => typeof part === "string")
+	);
+}
+
+function parseTerminal(value: unknown): string[] | undefined {
+	if (value === undefined) {
+		return undefined;
+	}
+
+	const command: unknown =
+		typeof value === "string" ? splitCommand(value) : value;
+
+	if (isCommand(command)) {
+		return command;
+	}
+
+	logError(new Error(`Invalid terminal: ${JSON.stringify(value)}`));
+
+	return undefined;
+}
+
+export const terminalCommand: string[] = parseTerminal(userConfig.terminal) ??
+	splitCommand(Bun.env.TERMINAL ?? "") ?? ["xdg-terminal-exec"];
 
 const COLOR_PATTERN: RegExp =
 	/^#?([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
