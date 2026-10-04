@@ -136,7 +136,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `A`           | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements).   |
 | `Q`           | Quit the application, after confirmation.                                                        |
 
-Letter shortcuts also work with Shift or Caps Lock, and are ignored while typing in the path bar, the search or a modal, and while a context menu is open. After a paste, rename or create, the new file or folder is selected. Marked items are highlighted in the accent colour, and cut, copy, trash, delete and drag and drop act on all of them. Other actions still use the selected entry. Marks are cleared when you change folder, and right clicking an unmarked entry clears them before opening its menu. In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open, so you can type straight away. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
+In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
 
 ## Theming
 
@@ -219,20 +219,6 @@ bun run build
 
 This produces a binary at `dist/filet`.
 
-### Screenshots
-
-The screenshots in `assets/` are generated with [VHS](https://github.com/charmbracelet/vhs), and need [bubblewrap](https://github.com/containers/bubblewrap) (`bwrap`) and a JetBrainsMono Nerd Font:
-
-```
-bun run screenshots
-```
-
-This runs filet in a sandbox with a fake `/home/demo` home folder, so the screenshots don't show your username, files or config. To try the same sandbox yourself, run it with one of the `dark`, `ivory`, `sky` or `fuchsia` themes:
-
-```
-bun run demo ivory
-```
-
 ## Installing
 
 After building, install the binary and desktop entry with:
@@ -241,12 +227,21 @@ After building, install the binary and desktop entry with:
 bun run install:app
 ```
 
-This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/application/filet` for application launcher. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
+This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/applications/filet` for application launchers. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
 
 ### From a release
 
-You can also skip building and download the latest release from the [Releases](../../releases) page on GitHub. Extract the archive and run the included install script:
+You can also skip building and download the latest release from the [Releases](../../releases) page on GitHub.
 
+Extract the archive.
+```
+tar -xvJf "Release 0.2.8.tar.xz" --one-top-level
+```
+cd Into the extracted directory.
+```
+cd "Release 0.2.8"
+```
+Run the install script.
 ```
 ./install.sh
 ```
@@ -261,6 +256,7 @@ This installs filet the same way as `bun run install:app`.
 - [x] Hide the sidebar when the viewport reaches a small enough size.
 - [x] Option to restore a file from trash.
 - [x] Add option to extract archives.
+- [x] Improve overall theming support.
 - [ ] Add option to compress files/folders.
 - [ ] Virtualize the explorer list so directories with more than ~16,000 entries (e.g. `/nix/store`) load fully.
 - [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
