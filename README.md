@@ -235,11 +235,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.2.8.tar.xz" --one-top-level
+tar -xvJf "Release 0.2.9.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.2.8"
+cd "Release 0.2.9"
 ```
 Run the install script.
 ```
@@ -257,6 +257,6 @@ This installs filet the same way as `bun run install:app`.
 - [x] Option to restore a file from trash.
 - [x] Add option to extract archives.
 - [x] Improve overall theming support.
+- [x] Virtualize the explorer list so directories with more than ~16,000 entries (e.g. `/nix/store`) load fully.
 - [ ] Add option to compress files/folders.
-- [ ] Virtualize the explorer list so directories with more than ~16,000 entries (e.g. `/nix/store`) load fully.
 - [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
