@@ -108,7 +108,7 @@ export class Prompt {
 
 		this._footer?.add(
 			Button.make({
-				label: "\uf00d Cancel",
+				label: " Cancel",
 				onClick: () => {
 					this.close();
 				},
@@ -117,7 +117,7 @@ export class Prompt {
 
 		this._footer?.add(
 			Button.make({
-				label: "\uf00c Submit",
+				label: " Submit",
 				variant: "success",
 				onClick: () => {
 					this.submit();

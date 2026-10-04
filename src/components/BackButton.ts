@@ -11,7 +11,7 @@ export class BackButton {
 		this._options = options;
 
 		this._component = IconButton.make({
-			icon: "\uf060",
+			icon: "",
 			opacity: 0.4,
 			disabled: (): boolean => !$backHistory.get().length,
 			onClick: back,

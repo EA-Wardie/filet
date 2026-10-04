@@ -3,6 +3,7 @@ import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
 import { Prompt } from "../components/Prompt";
 import { extract, isArchive } from "./archive";
+import { copyPaths } from "./clipboard";
 import { trashFilesPath } from "./config";
 import { ctx } from "./context";
 import {
@@ -22,6 +23,8 @@ import {
 	isFolder,
 	isTrashPath,
 	openInDefault,
+	openTerminal,
+	refresh,
 } from "./navigation";
 import { dragOut } from "./ripdrag";
 import {
@@ -241,6 +244,19 @@ export const SHORTCUTS = {
 					createFolder(folderName);
 				},
 			});
+		},
+	},
+	copyPath: { key: "y", run: withTargets(copyPaths) },
+	refresh: {
+		key: "ctrl+r",
+		run: (): void => {
+			refresh();
+		},
+	},
+	openTerminal: {
+		key: "o",
+		run: (): void => {
+			openTerminal();
 		},
 	},
 	dragOut: { key: "a", run: withTargets(dragOut) },

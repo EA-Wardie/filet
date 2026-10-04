@@ -32,7 +32,7 @@ export class CurrentPathInput {
 
 	private addIcon(): void {
 		this._icon = new core.TextRenderable(ctx, {
-			content: "\uf015",
+			content: "",
 			fg: theme.fg,
 			flexShrink: 1,
 			marginRight: 1,

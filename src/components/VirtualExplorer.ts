@@ -85,6 +85,21 @@ export class VirtualExplorer {
 						SHORTCUTS.newFolder.run();
 					},
 				}),
+				Divider.make(),
+				MenuButton.make({
+					label: " Open in Terminal",
+					shortcut: shortcutLabel(SHORTCUTS.openTerminal),
+					onClick: (): void => {
+						SHORTCUTS.openTerminal.run();
+					},
+				}),
+				MenuButton.make({
+					label: " Refresh",
+					shortcut: shortcutLabel(SHORTCUTS.refresh),
+					onClick: (): void => {
+						SHORTCUTS.refresh.run();
+					},
+				}),
 				Divider.make({
 					visible: canPaste,
 				}),

@@ -70,7 +70,7 @@ export class Preview {
 	}
 
 	private addNoPreview(): void {
-		this.addMessage("\uf05e  --No Preview--");
+		this.addMessage("  --No Preview--");
 	}
 
 	private addMessage(content: string): void {

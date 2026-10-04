@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 (2026-10-04)
+
+### Added
+
+- `O` opens a terminal in the current folder, also available as Open in Terminal in the explorer context menu. The new `terminal` config option sets the command, as a string split on spaces or a list of arguments, falling back to `$TERMINAL`, then `xdg-terminal-exec`. An invalid `terminal` is written to the error log. A folder that can't be opened, or a terminal that can't be started or quits with an error within 2 seconds, is reported in the footer and logged.
+- Open in Terminal in a folder's context menu opens the terminal in that folder.
+- `Y` copies the paths of the marked items, or the selected entry, to the system clipboard, one per line, also available as Copy Path in the entry context menu. It uses the host clipboard where available, and OSC 52 otherwise, so it works over SSH.
+- `Ctrl+R` refreshes the current folder, also available as Refresh in the explorer context menu.
+- Drag Out in the entry context menu, the same as `A`.
+
 ## 0.2.9 (2026-10-04)
 
 ### Changed

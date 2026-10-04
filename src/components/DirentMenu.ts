@@ -1,6 +1,7 @@
 import type { Dirent } from "node:fs";
 import type * as core from "@opentui/core";
 import { TRASH_FULL_ICON } from "../lib/consts";
+import { getDirentPath, isFolder, openTerminal } from "../lib/navigation";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import { $previewOpen } from "../lib/store";
 import { Divider } from "./Divider";
@@ -35,6 +36,13 @@ export class DirentMenu {
 					},
 				}),
 				MenuButton.make({
+					label: " Open in Terminal",
+					visible: isFolder(dirent),
+					onClick: (): void => {
+						openTerminal(getDirentPath(dirent));
+					},
+				}),
+				MenuButton.make({
 					label: " Preview",
 					shortcut: shortcutLabel(SHORTCUTS.preview),
 					visible: canPreview,
@@ -64,6 +72,20 @@ export class DirentMenu {
 					shortcut: shortcutLabel(SHORTCUTS.cut),
 					onClick: (): void => {
 						SHORTCUTS.cut.run(dirent);
+					},
+				}),
+				MenuButton.make({
+					label: " Copy Path",
+					shortcut: shortcutLabel(SHORTCUTS.copyPath),
+					onClick: (): void => {
+						SHORTCUTS.copyPath.run(dirent);
+					},
+				}),
+				MenuButton.make({
+					label: " Drag Out",
+					shortcut: shortcutLabel(SHORTCUTS.dragOut),
+					onClick: (): void => {
+						SHORTCUTS.dragOut.run(dirent);
 					},
 				}),
 				Divider.make(),
