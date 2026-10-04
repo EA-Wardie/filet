@@ -5,10 +5,15 @@
 ### Changed
 
 - The file list only draws the entries on screen, so folders with more than about 16,000 entries, such as `/nix/store`, load fully and scroll smoothly.
+- Refreshing after a file operation keeps the current list on screen until the new scan arrives, instead of clearing it first.
+- Long names end with `…` where they're cut off.
+
 ### Internal
 
-- `ListExplorer` and `DirentLink` are replaced by `VirtualExplorer` and `DirentList`. `DirentList` is a custom `Renderable` that draws the visible rows from `$dirents` in `renderSelf()`, handles clicks, hover and wheel scrolling itself, and drives a standalone `ScrollBarRenderable`. `VirtualExplorer` keeps the folder scanning, sorting, search filtering and explorer menu.
+- `ListExplorer` and `DirentLink` are replaced by `VirtualExplorer` and `DirentList`. `DirentList` is a custom `Renderable` that draws the visible rows from `$dirents` in `renderSelf()`, handles clicks, hover and wheel scrolling itself, and owns its `ScrollBarRenderable` as a child. `VirtualExplorer` keeps the folder scanning, sorting, search filtering and explorer menu, and only builds lowercase names for search when a search starts.
+- The entry context menu moved from `DirentLink` into its own `DirentMenu` component.
 - Right clicking an entry stops the event there, instead of relying on `Menu` to ignore the explorer's menu.
+- `DirentList` writes `slider.viewPortSize` after updating the scrollbar, because `ScrollBarRenderable.viewportSize` clamps it against the slider's old range and skips unchanged heights, which left the thumb the wrong size.
 - `@opentui/core` is updated to 0.5.14.
 
 ## 0.2.8 (2026-10-03)
