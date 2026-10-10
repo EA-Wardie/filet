@@ -14,6 +14,8 @@ interface PermissionClass {
 	symbol: string;
 }
 
+type Update = (label: string, value: string) => void;
+
 const PENDING: string = "Calculating…";
 
 const UNKNOWN: string = "Unknown";
@@ -33,27 +35,11 @@ const PERMISSION_CLASSES: PermissionClass[] = [
 	{ shift: 0, special: 0o1000, symbol: "t" },
 ];
 
-function lookupName(database: "passwd" | "group", id: number): Promise<string> {
-	return Bun.$`getent ${database} ${id}`
-		.nothrow()
-		.quiet()
-		.then(({ exitCode, stdout }: $.ShellOutput): string => {
-			const name: string | undefined = stdout.toString().split(":")[0];
-
-			return exitCode === 0 && name ? `${name} (${id})` : String(id);
-		})
-		.catch((error: unknown): string => {
-			logError(error);
-
-			return String(id);
-		});
-}
-
 function plural(count: number, noun: string): string {
 	return `${NUMBER_FORMAT.format(count)} ${noun}${count === 1 ? "" : "s"}`;
 }
 
-export function formatSize(bytes: number): string {
+function formatSize(bytes: number): string {
 	const exact: string = plural(bytes, "byte");
 
 	if (bytes < 1024) {
@@ -127,14 +113,20 @@ function describe(
 	path: string,
 	stats: Stats,
 	folder: boolean,
-	owner: string,
-	group: string,
+	target: string | null,
 ): Property[] {
 	const properties: Property[] = [
 		{ label: "Type", value: describeType(path, stats, folder) },
+	];
+
+	if (target !== null) {
+		properties.push({ label: "Target", value: target });
+	}
+
+	properties.push(
 		{ label: "Path", value: path },
 		{ label: "Size", value: folder ? PENDING : formatSize(stats.size) },
-	];
+	);
 
 	if (folder) {
 		properties.push({ label: "Contents", value: PENDING });
@@ -142,8 +134,8 @@ function describe(
 
 	properties.push(
 		{ label: "Permissions", value: formatPermissions(stats.mode) },
-		{ label: "Owner", value: owner },
-		{ label: "Group", value: group },
+		{ label: "Owner", value: String(stats.uid) },
+		{ label: "Group", value: String(stats.gid) },
 		{ label: "Modified", value: formatDate(stats.mtimeMs) },
 		{ label: "Accessed", value: formatDate(stats.atimeMs) },
 	);
@@ -155,24 +147,51 @@ function describe(
 	return properties;
 }
 
-function setProperty(
-	properties: Property[],
-	label: string,
-	value: string,
+function readName(
+	database: "passwd" | "group",
+	id: number,
+	callback: (name: string) => void,
 ): void {
-	const property: Property | undefined = properties.find(
-		(candidate: Property): boolean => candidate.label === label,
-	);
+	Bun.$`getent ${database} ${id}`
+		.nothrow()
+		.quiet()
+		.then(({ exitCode, stdout }: $.ShellOutput): void => {
+			const name: string | undefined = stdout.toString().split(":")[0];
 
-	if (property) {
-		property.value = value;
-	}
+			if (exitCode === 0 && name) {
+				callback(`${name} (${id})`);
+			}
+		})
+		.catch(logError);
+}
+
+function readContents(path: string, callback: (value: string) => void): void {
+	readdir(
+		path,
+		(error: NodeJS.ErrnoException | null, names: string[]): void => {
+			if (error) {
+				logError(error);
+			}
+
+			callback(error ? UNKNOWN : plural(names.length, "item"));
+		},
+	);
 }
 
 function readFolderSize(
 	path: string,
-	callback: (size: number | null, complete: boolean) => void,
-): Subprocess | null {
+	signal: AbortSignal,
+	callback: (value: string) => void,
+): void {
+	function fail(error: unknown): void {
+		if (signal.aborted) {
+			return;
+		}
+
+		logError(error);
+		callback(UNKNOWN);
+	}
+
 	try {
 		const du: Subprocess<"ignore", "pipe", "ignore"> = Bun.spawn(
 			["du", "-sbD", path],
@@ -180,6 +199,7 @@ function readFolderSize(
 				stdin: "ignore",
 				stdout: "pipe",
 				stderr: "ignore",
+				signal: signal,
 			},
 		);
 
@@ -187,148 +207,95 @@ function readFolderSize(
 			.then(([output, exitCode]: [string, number]): void => {
 				const size: number = Number.parseInt(output, 10);
 
-				callback(Number.isNaN(size) ? null : size, exitCode === 0);
+				if (signal.aborted) {
+					return;
+				}
+
+				if (Number.isNaN(size)) {
+					fail(new Error(`du could not size ${path}`));
+				} else if (exitCode === 0) {
+					callback(formatSize(size));
+				} else {
+					callback(`${formatSize(size)}, some folders unreadable`);
+				}
 			})
-			.catch((error: unknown): void => {
-				logError(error);
-				callback(null, false);
-			});
-
-		return du;
+			.catch(fail);
 	} catch (error) {
-		logError(error);
-		callback(null, false);
-
-		return null;
+		fail(error);
 	}
+}
+
+function readTarget(
+	path: string,
+	stats: Stats,
+	callback: (target: string | null) => void,
+): void {
+	if (!stats.isSymbolicLink()) {
+		callback(null);
+
+		return;
+	}
+
+	readlink(
+		path,
+		(error: NodeJS.ErrnoException | null, target: string): void => {
+			if (error) {
+				logError(error);
+			}
+
+			callback(error ? UNKNOWN : target);
+		},
+	);
 }
 
 export function readProperties(
 	dirent: Dirent,
-	onChange: (
-		error: NodeJS.ErrnoException | null,
-		properties: Property[],
-	) => void,
-): () => void {
+	signal: AbortSignal,
+	onLoad: (properties: Property[] | null) => void,
+	onUpdate: Update,
+): void {
 	const path: string = getDirentPath(dirent);
 	const folder: boolean = isFolder(dirent);
-	let cancelled: boolean = false;
-	let du: Subprocess | null = null;
 
-	function update(
-		error: NodeJS.ErrnoException | null,
-		properties: Property[],
-	): void {
-		if (!cancelled) {
-			onChange(error, properties);
+	const update: Update = (label: string, value: string): void => {
+		if (!signal.aborted) {
+			onUpdate(label, value);
 		}
-	}
-
-	function readFolder(properties: Property[]): void {
-		readdir(
-			path,
-			(error: NodeJS.ErrnoException | null, names: string[]): void => {
-				if (error) {
-					logError(error);
-				}
-
-				setProperty(
-					properties,
-					"Contents",
-					error ? UNKNOWN : plural(names.length, "item"),
-				);
-				update(null, properties);
-			},
-		);
-
-		du = readFolderSize(
-			path,
-			(size: number | null, complete: boolean): void => {
-				du = null;
-
-				if (cancelled) {
-					return;
-				}
-
-				if (size === null) {
-					logError(new Error(`du could not size ${path}`));
-				}
-
-				let value: string = size === null ? UNKNOWN : formatSize(size);
-
-				if (size !== null && !complete) {
-					value = `${value}, some folders unreadable`;
-				}
-
-				setProperty(properties, "Size", value);
-				update(null, properties);
-			},
-		);
-	}
-
-	function show(properties: Property[]): void {
-		if (cancelled) {
-			return;
-		}
-
-		update(null, properties);
-
-		if (folder) {
-			readFolder(properties);
-		}
-	}
-
-	function readTarget(properties: Property[]): void {
-		readlink(
-			path,
-			(error: NodeJS.ErrnoException | null, target: string): void => {
-				if (error) {
-					logError(error);
-				}
-
-				properties.splice(1, 0, {
-					label: "Target",
-					value: error ? UNKNOWN : target,
-				});
-				show(properties);
-			},
-		);
-	}
+	};
 
 	lstat(path, (error: NodeJS.ErrnoException | null, stats: Stats): void => {
 		if (error) {
-			update(error, []);
+			logError(error);
+
+			if (!signal.aborted) {
+				onLoad(null);
+			}
 
 			return;
 		}
 
-		Promise.all([
-			lookupName("passwd", stats.uid),
-			lookupName("group", stats.gid),
-		]).then(([owner, group]: [string, string]): void => {
-			if (cancelled) {
+		readTarget(path, stats, (target: string | null): void => {
+			if (signal.aborted) {
 				return;
 			}
 
-			const properties: Property[] = describe(
-				path,
-				stats,
-				folder,
-				owner,
-				group,
-			);
+			onLoad(describe(path, stats, folder, target));
 
-			if (stats.isSymbolicLink()) {
-				readTarget(properties);
-			} else {
-				show(properties);
+			readName("passwd", stats.uid, (name: string): void => {
+				update("Owner", name);
+			});
+			readName("group", stats.gid, (name: string): void => {
+				update("Group", name);
+			});
+
+			if (folder) {
+				readContents(path, (value: string): void => {
+					update("Contents", value);
+				});
+				readFolderSize(path, signal, (value: string): void => {
+					update("Size", value);
+				});
 			}
 		});
 	});
-
-	return (): void => {
-		cancelled = true;
-
-		du?.kill();
-	};
 }

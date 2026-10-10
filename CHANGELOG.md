@@ -8,8 +8,8 @@
 
 ### Internal
 
-- New `readProperties()` in `lib/properties.ts` collects an entry's details with callback `node:fs` calls and reports them as label and value rows. It reports again as late folder values arrive, and returns a cancel function that kills `du` and stops any reads that haven't started yet. `getent` looks up the owner and group in parallel.
-- New `Properties` component, built like `Confirmation`, that matches rows by label, updating values it already shows and adding rows it doesn't.
+- New `readProperties()` in `lib/properties.ts` collects an entry's details with callback `node:fs` calls. It loads the rows once, as soon as `lstat` (and `readlink` for links) returns, with numeric owner and group, then sends single label and value updates as the `getent` names, item count and `du` size arrive in parallel. It takes an `AbortSignal`, which kills `du` through `Bun.spawn`'s `signal` and drops any later results.
+- New `Properties` component, built like `Confirmation`, that aborts `readProperties()` when it closes and updates each row's value by label.
 
 ## 0.3.0 (2026-10-04)
 

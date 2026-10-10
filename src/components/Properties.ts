@@ -3,12 +3,12 @@ import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { getFileIcon } from "../lib/icons";
-import { logError } from "../lib/log";
 import { type Property, readProperties } from "../lib/properties";
 import { $dialogOpen } from "../lib/store";
 import { Button } from "./Button";
+import { Message } from "./Message";
 
-interface Options extends core.BoxOptions {
+interface Options {
 	dirent: Dirent;
 }
 
@@ -23,7 +23,7 @@ export class Properties {
 		core.TextRenderable
 	>();
 	private _footer: core.BoxRenderable | null = null;
-	private _cancel: () => void;
+	private _abort: AbortController = new AbortController();
 
 	constructor(options: Options) {
 		this._options = options;
@@ -49,10 +49,14 @@ export class Properties {
 
 		$dialogOpen.set(true);
 
-		this._cancel = readProperties(
+		readProperties(
 			this._options.dirent,
-			(error: NodeJS.ErrnoException | null, properties: Property[]): void => {
-				this.show(error, properties);
+			this._abort.signal,
+			(properties: Property[] | null): void => {
+				this.load(properties);
+			},
+			(label: string, value: string): void => {
+				this.update(label, value);
 			},
 		);
 	}
@@ -73,7 +77,6 @@ export class Properties {
 			borderColor: theme.border,
 			paddingX: 1,
 			zIndex: 101,
-			...this._options,
 		});
 
 		this._component.add(this._dialog);
@@ -131,33 +134,23 @@ export class Properties {
 		this._body?.add(row);
 	}
 
-	private show(
-		error: NodeJS.ErrnoException | null,
-		properties: Property[],
-	): void {
-		if (error) {
-			logError(error);
-
-			this._body?.add(
-				new core.TextRenderable(ctx, {
-					content: "Can't read properties",
-					fg: theme.fg,
-				}),
-			);
+	private load(properties: Property[] | null): void {
+		if (!properties) {
+			this._body?.add(Message.make({ content: "Can't read properties" }));
 
 			return;
 		}
 
 		for (const property of properties) {
-			const text: core.TextRenderable | undefined = this._values.get(
-				property.label,
-			);
+			this.addRow(property);
+		}
+	}
 
-			if (text) {
-				text.content = property.value;
-			} else {
-				this.addRow(property);
-			}
+	private update(label: string, value: string): void {
+		const text: core.TextRenderable | undefined = this._values.get(label);
+
+		if (text) {
+			text.content = value;
 		}
 	}
 
@@ -187,7 +180,7 @@ export class Properties {
 	};
 
 	private close(): void {
-		this._cancel();
+		this._abort.abort();
 
 		ctx.keyInput.off("keypress", this.onKeypress);
 		this._component.destroyRecursively();
