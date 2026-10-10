@@ -1,6 +1,7 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
+import { type Control, Controls } from "../components/Controls";
 import { Prompt } from "../components/Prompt";
 import { Properties } from "../components/Properties";
 import { extract, isArchive } from "./archive";
@@ -49,6 +50,7 @@ type When = (dirent: Dirent) => boolean;
 interface Shortcut {
 	key: string;
 	alias?: string;
+	description: string;
 	run: Run;
 	when?: When;
 }
@@ -153,6 +155,7 @@ export const SHORTCUTS = {
 	up: {
 		key: "up",
 		alias: "k",
+		description: "Select the entry above",
 		run: (): void => {
 			moveSelection(-1);
 		},
@@ -160,14 +163,21 @@ export const SHORTCUTS = {
 	down: {
 		key: "down",
 		alias: "j",
+		description: "Select the entry below",
 		run: (): void => {
 			moveSelection(1);
 		},
 	},
-	parent: { key: "left", alias: "h", run: goToParent },
+	parent: {
+		key: "left",
+		alias: "h",
+		description: "Go up to the parent folder",
+		run: goToParent,
+	},
 	openFolder: {
 		key: "right",
 		alias: "l",
+		description: "Open the selected folder",
 		...guard(
 			(dirent: Dirent): boolean => outsideTrash() && isFolder(dirent),
 			(dirent: Dirent): void => {
@@ -177,6 +187,7 @@ export const SHORTCUTS = {
 	},
 	mark: {
 		key: "space",
+		description: "Mark or unmark, then select the next entry",
 		run: withDirent((dirent: Dirent): void => {
 			toggleMark(dirent);
 			moveSelection(1);
@@ -184,6 +195,7 @@ export const SHORTCUTS = {
 	},
 	deselect: {
 		key: "escape",
+		description: "Clear the marks, or the selection",
 		run: (): void => {
 			if ($markedNames.get().size) {
 				clearMarks();
@@ -194,9 +206,14 @@ export const SHORTCUTS = {
 			$selectedDirent.set(null);
 		},
 	},
-	open: { key: "return", run: withDirent(openInDefault) },
+	open: {
+		key: "return",
+		description: "Open the selected file or folder",
+		run: withDirent(openInDefault),
+	},
 	preview: {
 		key: "p",
+		description: "Open or close the preview sidebar",
 		when: canPreview,
 		run: (): void => {
 			$previewOpen.set(!$previewOpen.get());
@@ -204,20 +221,31 @@ export const SHORTCUTS = {
 	},
 	properties: {
 		key: "i",
+		description: "Show the properties of the selection",
 		run: withDirent((dirent: Dirent): void => {
 			Properties.make({ dirent: dirent });
 		}),
 	},
-	cut: { key: "ctrl+x", run: withTargets(cut) },
-	copy: { key: "ctrl+c", run: withTargets(copy) },
+	cut: {
+		key: "ctrl+x",
+		description: "Cut the marked items or selection",
+		run: withTargets(cut),
+	},
+	copy: {
+		key: "ctrl+c",
+		description: "Copy the marked items or selection",
+		run: withTargets(copy),
+	},
 	paste: {
 		key: "ctrl+v",
+		description: "Paste into the current folder",
 		run: (): void => {
 			paste();
 		},
 	},
 	rename: {
 		key: "r",
+		description: "Rename the selection",
 		run: withDirent((dirent: Dirent): void => {
 			Prompt.make({
 				heading: isFolder(dirent) ? "Rename folder" : "Rename file",
@@ -231,6 +259,7 @@ export const SHORTCUTS = {
 	},
 	newFile: {
 		key: "n",
+		description: "Create a new file",
 		run: (): void => {
 			Prompt.make({
 				heading: "Create a new file",
@@ -243,6 +272,7 @@ export const SHORTCUTS = {
 	},
 	newFolder: {
 		key: "f",
+		description: "Create a new folder",
 		run: (): void => {
 			Prompt.make({
 				heading: "Create a new folder",
@@ -253,22 +283,33 @@ export const SHORTCUTS = {
 			});
 		},
 	},
-	copyPath: { key: "y", run: withTargets(copyPaths) },
+	copyPath: {
+		key: "y",
+		description: "Copy the paths of the marked items or selection",
+		run: withTargets(copyPaths),
+	},
 	refresh: {
 		key: "ctrl+r",
+		description: "Refresh the current folder",
 		run: (): void => {
 			refresh();
 		},
 	},
 	openTerminal: {
 		key: "o",
+		description: "Open a terminal in the current folder",
 		run: (): void => {
 			openTerminal();
 		},
 	},
-	dragOut: { key: "a", run: withTargets(dragOut) },
+	dragOut: {
+		key: "a",
+		description: "Drag and drop the marked items or selection",
+		run: withTargets(dragOut),
+	},
 	extract: {
 		key: "e",
+		description: "Extract the selected archive",
 		...guard(
 			(dirent: Dirent): boolean => outsideTrash() && isArchive(dirent),
 			extract,
@@ -276,6 +317,7 @@ export const SHORTCUTS = {
 	},
 	trash: {
 		key: "t",
+		description: "Move the marked items or selection to trash",
 		...confirmOutsideTrash(
 			"Move to trash?",
 			(targets: string): string =>
@@ -285,6 +327,7 @@ export const SHORTCUTS = {
 	},
 	restore: {
 		key: "ctrl+z",
+		description: "Restore the selection from trash",
 		...guard(isTrashed, (dirent: Dirent): void => {
 			Confirmation.make({
 				heading: "Restore?",
@@ -297,6 +340,7 @@ export const SHORTCUTS = {
 	},
 	delete: {
 		key: "d",
+		description: "Permanently delete the marked items or selection",
 		...confirmOutsideTrash(
 			"Permanently delete?",
 			(targets: string): string =>
@@ -306,6 +350,7 @@ export const SHORTCUTS = {
 	},
 	quit: {
 		key: "q",
+		description: "Quit the application",
 		run: (): void => {
 			Confirmation.make({
 				heading: "Quit?",
@@ -316,11 +361,27 @@ export const SHORTCUTS = {
 			});
 		},
 	},
+	controls: {
+		key: "?",
+		description: "Show the keyboard and mouse controls",
+		run: (): void => {
+			Controls.make({
+				keyboard: SHORTCUT_LIST.map(
+					(shortcut: Shortcut): Control => ({
+						input: shortcutKeys(shortcut),
+						action: shortcut.description,
+					}),
+				),
+			});
+		},
+	},
 } satisfies Record<string, Shortcut>;
+
+const SHORTCUT_LIST: Shortcut[] = Object.values(SHORTCUTS);
 
 const KEYMAP: Map<string, Run> = new Map<string, Run>();
 
-for (const { key, alias, run } of Object.values(SHORTCUTS) as Shortcut[]) {
+for (const { key, alias, run } of SHORTCUT_LIST) {
 	KEYMAP.set(key, run);
 
 	if (alias) {
@@ -328,14 +389,26 @@ for (const { key, alias, run } of Object.values(SHORTCUTS) as Shortcut[]) {
 	}
 }
 
-export function shortcutLabel({ key }: Shortcut): string {
+export function shortcutLabel({ key }: Pick<Shortcut, "key">): string {
 	return key
 		.split("+")
 		.map((part: string): string => part[0]?.toUpperCase() + part.slice(1))
 		.join("+");
 }
 
+function shortcutKeys({ key, alias }: Shortcut): string {
+	const label: string = shortcutLabel({ key: key });
+
+	return alias ? `${label} / ${shortcutLabel({ key: alias })}` : label;
+}
+
 export function registerKeyboardShortcuts(): void {
+	$dialogOpen.listen((open: boolean): void => {
+		if (open) {
+			ctx.currentFocusedRenderable?.blur();
+		}
+	});
+
 	ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
 		if (
 			$dialogOpen.get() ||

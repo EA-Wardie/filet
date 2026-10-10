@@ -1,9 +1,10 @@
 import * as core from "@opentui/core";
 import { theme } from "../lib/config";
+import { MENU_WIDTH } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { $menuOpen } from "../lib/store";
 
-interface Options extends core.BoxOptions {
+interface Options {
 	items: core.BoxRenderable[];
 	x: number;
 	y: number;
@@ -45,16 +46,21 @@ export class Menu {
 	}
 
 	private addMenu(): void {
+		const { items, x, y } = this._options;
+		const height: number =
+			items.filter((item: core.BoxRenderable): boolean => item.visible).length +
+			2;
+		const below: boolean = y + 1 + height <= ctx.height;
+
 		this._menu = new core.BoxRenderable(ctx, {
-			minWidth: 26,
+			width: MENU_WIDTH,
 			backgroundColor: theme.surface,
 			border: true,
 			borderColor: theme.border,
 			position: "absolute",
-			left: this._options.x,
-			top: this._options.y + 1,
+			left: Math.max(0, Math.min(x, ctx.width - MENU_WIDTH)),
+			top: Math.max(0, below ? y + 1 : y - height),
 			zIndex: 101,
-			...this._options,
 		});
 
 		this._component?.add(this._menu);

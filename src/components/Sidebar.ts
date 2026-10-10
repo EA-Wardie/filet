@@ -1,9 +1,15 @@
 import * as core from "@opentui/core";
 import { bookmarks, theme } from "../lib/config";
-import { HOME_DIRECTORY, SIDEBAR_MIN_WIDTH } from "../lib/consts";
+import {
+	CONTROLS_ICON,
+	HOME_DIRECTORY,
+	SIDEBAR_MIN_WIDTH,
+} from "../lib/consts";
 import { ctx } from "../lib/context";
+import { SHORTCUTS } from "../lib/shortcuts";
 import { $tasksCount } from "../lib/store";
 import { Divider } from "./Divider";
+import { IconButton } from "./IconButton";
 import { SidebarLink } from "./SidebarLink";
 import { Spacer } from "./Spacer";
 import { TrashSidebarLink } from "./TrashSidebarLink";
@@ -45,7 +51,7 @@ export class Sidebar {
 			border: ["top", "bottom"],
 			borderColor: theme.border,
 			flexDirection: "row",
-			justifyContent: "center",
+			justifyContent: "space-between",
 			paddingX: 1,
 		});
 
@@ -53,6 +59,14 @@ export class Sidebar {
 			new core.TextRenderable(ctx, {
 				content: "📁 Filet",
 				fg: theme.fg,
+			}),
+		);
+
+		this._header.add(
+			IconButton.make({
+				icon: CONTROLS_ICON,
+				flexShrink: 0,
+				onClick: SHORTCUTS.controls.run,
 			}),
 		);
 

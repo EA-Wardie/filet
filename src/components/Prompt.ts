@@ -40,9 +40,10 @@ export class Prompt {
 
 		ctx.keyInput.on("keypress", this.onKeypress);
 		ctx.root.add(this._component);
-		this._input?.focus();
 
 		$dialogOpen.set(true);
+
+		this._input?.focus();
 	}
 
 	public static make(options: Options): core.BoxRenderable | null {

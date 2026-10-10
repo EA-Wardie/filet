@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.2 (2026-10-10)
+
+### Added
+
+- `?` opens a Controls dialog listing every keyboard shortcut and mouse control, also available from the keyboard button in the sidebar header. It scrolls with the arrow keys, `J`, `K`, `PageUp`, `PageDown`, `Home`, `End` and the mouse wheel when the terminal is too short to show it all, narrows to fit small terminals, and closes with Close, `Return` or `Escape`.
+### Changed
+
+- Context menus are a fixed 30 columns wide, instead of at least 26, so every menu is the same width.
+
+### Fixed
+
+- Context menus stay inside the window near the right and bottom edges, opening above the cursor when there's no room below.
+- Dialogs take focus from the path bar or search when they open, so keys pressed in a dialog opened with the mouse, such as `Return` in a Trash confirmation from the context menu, no longer also reach them.
+- Pressing `Escape` in a dialog no longer also clears the search.
+
+### Internal
+
+- Every `SHORTCUTS` entry has a `description`. The `controls` shortcut builds the dialog's keyboard rows from the table, formatting each key and alias with `shortcutLabel()`, such as `Up / K`, so new shortcuts appear there automatically. `Controls` takes the rows as an option and doesn't import `lib/shortcuts.ts`, so there's no import cycle.
+- The Controls dialog focuses its scroll box and uses its built-in scrolling keys.
+- `registerKeyboardShortcuts()` blurs the focused renderable whenever `$dialogOpen` turns on. `Prompt` and `Controls` set `$dialogOpen` before focusing their own input or scroll box.
+
 ## 0.3.1 (2026-10-10)
 
 ### Added

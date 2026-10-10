@@ -2,7 +2,7 @@ import * as core from "@opentui/core";
 import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { isTrashPath } from "../lib/navigation";
-import { $currentPath, $searchTerm } from "../lib/store";
+import { $currentPath, $dialogOpen, $searchTerm } from "../lib/store";
 import { IconButton } from "./IconButton";
 
 export class DirectorySearch {
@@ -106,7 +106,7 @@ export class DirectorySearch {
 
 	private registerKeyboardEvents(): void {
 		ctx.keyInput.on("keypress", (key: core.KeyEvent): void => {
-			if (key.name === "escape" && this._input?.visible) {
+			if (key.name === "escape" && this._input?.visible && !$dialogOpen.get()) {
 				this.clearSearch();
 			}
 		});

@@ -24,6 +24,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Search the current directory by name.
 - Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
 - Show the properties of a file or folder with `I` or the Properties context menu item: type, path, size, permissions, owner, group, and modified, accessed and created dates. Symbolic links show their target, and folders, including linked folders, show their item count and total size, calculated with `du`.
+- List every keyboard shortcut and mouse control with `?` or the keyboard button in the sidebar header.
 - Open files in their default application, or run them if they are executable.
 - Create, copy, cut, paste, rename, trash and delete files and directories.
 - Restore files and directories from trash, or empty it.
@@ -146,8 +147,9 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `O`           | Open a terminal in the current folder. See [Configuration](#configuration).                      |
 | `A`           | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements).   |
 | `Q`           | Quit the application, after confirmation.                                                        |
+| `?`           | Show the keyboard shortcuts and mouse controls.                                                  |
 
-In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open. In confirmation and prompt modals, `Return` confirms and `Escape` cancels. The properties modal closes with `Return` or `Escape`.
+In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open. In confirmation and prompt modals, `Return` confirms and `Escape` cancels. The properties modal closes with `Return` or `Escape`. The controls modal closes the same way, and scrolls with the arrow keys, `J`, `K`, `PageUp`, `PageDown`, `Home` and `End`.
 
 ## Theming
 
