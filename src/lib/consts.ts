@@ -41,6 +41,10 @@ export const SIDEBAR_MIN_WIDTH: number = 100;
 
 export const PREVIEW_MIN_WIDTH: number = 140;
 
+export const MENU_WIDTH: number = 30;
+
+export const CONTROLS_ICON: string = "󰌌";
+
 export const IMAGE_FILETYPES: Set<string> = new Set([
 	".png",
 	".jpg",
