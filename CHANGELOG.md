@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.1 (2026-10-10)
+
+### Added
+
+- `I` opens a Properties dialog for the selected entry, also available as Properties at the bottom of the entry context menu. It shows the type (the MIME type for files), path, size, permissions, owner, group, and modified, accessed and created dates. Permissions include the setuid, setgid and sticky bits, such as `rwxrwxrwt (1777)` for `/tmp`. Owner and group names come from `getent`, so network accounts such as LDAP users are named too. Symbolic links also show their target. Folders, including symbolic links to folders, show their item count and total size, which fill in once `du` finishes. A total that skipped folders `du` couldn't read is marked "some folders unreadable". Closing the dialog stops `du`. The dialog closes with Close, `Return` or `Escape`.
+
+### Internal
+
+- New `readProperties()` in `lib/properties.ts` collects an entry's details with callback `node:fs` calls. It loads the rows once, as soon as `lstat` (and `readlink` for links) returns, with numeric owner and group, then sends single label and value updates as the `getent` names, item count and `du` size arrive in parallel. It takes an `AbortSignal`, which kills `du` through `Bun.spawn`'s `signal` and drops any later results.
+- New `Properties` component, built like `Confirmation`, that aborts `readProperties()` when it closes and updates each row's value by label.
+
 ## 0.3.0 (2026-10-04)
 
 ### Added

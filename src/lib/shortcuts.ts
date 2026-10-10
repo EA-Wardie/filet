@@ -2,6 +2,7 @@ import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
 import { Prompt } from "../components/Prompt";
+import { Properties } from "../components/Properties";
 import { extract, isArchive } from "./archive";
 import { copyPaths } from "./clipboard";
 import { trashFilesPath } from "./config";
@@ -200,6 +201,12 @@ export const SHORTCUTS = {
 		run: (): void => {
 			$previewOpen.set(!$previewOpen.get());
 		},
+	},
+	properties: {
+		key: "i",
+		run: withDirent((dirent: Dirent): void => {
+			Properties.make({ dirent: dirent });
+		}),
 	},
 	cut: { key: "ctrl+x", run: withTargets(cut) },
 	copy: { key: "ctrl+c", run: withTargets(copy) },
