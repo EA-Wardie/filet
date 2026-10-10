@@ -105,7 +105,7 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".csv", ""],
 	[".xlsx", "󱎏"],
 	[".docx", ""],
-	[".pdf", "󰈦"],
+	[".pdf", ""],
 
 	// Web
 	[".html", ""],

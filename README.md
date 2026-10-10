@@ -23,6 +23,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Explore directories with back and forward navigation and an editable path bar. Entering a file path opens its folder with the file selected, relative paths such as `..` resolve against the current folder, and `~` expands to your home folder. Paths that can't be opened are reported in the footer.
 - Search the current directory by name.
 - Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
+- Show the properties of a file or folder with `I` or the Properties context menu item: type, path, size, permissions, owner, group, and modified, accessed and created dates. Symbolic links show their target, and folders, including linked folders, show their item count and total size, calculated with `du`.
 - Open files in their default application, or run them if they are executable.
 - Create, copy, cut, paste, rename, trash and delete files and directories.
 - Restore files and directories from trash, or empty it.
@@ -129,6 +130,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `Left` / `H`  | Go up to the parent folder, selecting the folder you came from. Stops at the top of the trash.   |
 | `Right` / `L` | Open the selected folder. Does nothing in the trash.                                             |
 | `P`           | Open or close the preview sidebar.                                                               |
+| `I`           | Show the properties of the selected file or folder.                                              |
 | `Ctrl+X`      | Cut the marked items, or the selected file or folder.                                            |
 | `Ctrl+C`      | Copy the marked items, or the selected file or folder.                                           |
 | `Ctrl+V`      | Paste the cut or copied items into the current folder.                                           |
@@ -145,7 +147,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `A`           | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements).   |
 | `Q`           | Quit the application, after confirmation.                                                        |
 
-In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open. In confirmation and prompt modals, `Return` confirms and `Escape` cancels.
+In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open. In confirmation and prompt modals, `Return` confirms and `Escape` cancels. The properties modal closes with `Return` or `Escape`.
 
 ## Theming
 

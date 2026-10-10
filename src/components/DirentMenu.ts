@@ -122,6 +122,14 @@ export class DirentMenu {
 						SHORTCUTS.restore.run(dirent);
 					},
 				}),
+				Divider.make(),
+				MenuButton.make({
+					label: "󰋽 Properties",
+					shortcut: shortcutLabel(SHORTCUTS.properties),
+					onClick: (): void => {
+						SHORTCUTS.properties.run(dirent);
+					},
+				}),
 			],
 		});
 	}
