@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.3.3 (2026-10-13)
+
+### Added
+
+- `A` compresses the marked items, or the selected file or folder, into a new archive next to them, also available as Compress in the entry context menu. It asks for the archive's name, prefilled with the folder or file name (without its extension, such as `photos` for `photos.tar.gz`) and `.zip`, or the current folder's name when several items are marked, falling back to `archive.zip`. A suggested name that's taken gets a number, such as `photos-2.zip`. The extension picks the format, in any case: `.zip`, `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst` or `.tzst`, listed under the name field. Spaces around the name are trimmed. An unsupported extension, a name containing `/` or an existing file is reported in the footer, and nothing is overwritten. The marks are cleared when the archive starts. A failed archive is removed and reported in the footer, and a new one is selected. An archive that `zip` finished despite files it couldn't read, or that `tar` finished although files changed while being read, is kept and reported in the footer as compressed with warnings, which are logged. Compress does nothing in the trash. Creating `.zip` archives needs `zip`.
+
+### Changed
+
+- Drag Out is now `W`, instead of `A`.
+- Delete is now `Delete`, with `D` kept as an alias.
+- A failed extract is reported in the footer, as well as logged. When a file or folder named like the archive without its extension already exists, that's reported and nothing is extracted.
+- An extract that `unzip` or `tar` finished with warnings keeps the extracted files and is reported in the footer as extracted with warnings, instead of being removed.
+
+### Fixed
+
+- Rename no longer replaces an existing file or folder of the same name, and New File no longer empties an existing file. Rename, New File, New Folder and Compress report a name that is empty, `.`, `..`, contains `/` or already exists in the footer instead of acting on it. A broken symbolic link counts as existing, so it's never replaced or written through. Names may start or end with spaces, and renaming to the current name does nothing.
+
+### Internal
+
+- New `compress()` and `archiveName()` in `lib/archive.ts`. `compress()` runs `zip -qry` or `tar -c` from the items' folder with `./` prefixed names, so names starting with `-` aren't read as options. `tar` gets its compression flag, such as `--zstd`, from `ARCHIVE_FORMATS` rather than guessing it with `-a`, which only recognises lowercase suffixes. `findArchiveExtension()` matches a name against `ARCHIVE_EXTENSIONS` for both extracting and compressing. `runArchiver()` runs the `zip`, `unzip` or `tar` command for both. On the tool's warning exit code (18 for `zip`, 1 otherwise) it keeps the output, sets the footer notice and logs `stderr`. On any other failure it sets the footer notice, removes the partial output (logging, not throwing, if that fails) and throws `stderr`.
+- `ARCHIVE_FORMATS` in `lib/consts.ts` maps each archive extension to its `tar` compression flag, starting with `.zip`. `ARCHIVE_EXTENSIONS` is derived from its keys, so a format is only listed once. No extension ends with another, so the order doesn't affect matching.
+- `Prompt` takes an optional `hint`, shown in the muted colour under its input. The gap above the buttons is now a top margin on the footer.
+- New `canUseName()` in `lib/filesystem.ts` checks a name for `rename()`, `createFile()`, `createFolder()`, `extract()` and `compress()`, setting the footer notice and returning `false` when it can't be used. It uses the new `pathExists()`, which checks with `lstatSync`, so broken symbolic links count, and treats errors other than `ENOENT` as existing.
+- `createFile()` writes with `writeFile` and the `wx` flag, so it fails rather than truncating a file created after the check.
+- `extract()` builds its folder name with the same `stripExtension()` that `archiveName()` uses.
+- New `targetsOutsideTrash()` helper in `lib/shortcuts.ts` for shortcuts that act on the marked items or selection outside the trash. `confirmOutsideTrash()` builds on it.
+
 ## 0.3.2 (2026-10-10)
 
 ### Added

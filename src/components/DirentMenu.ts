@@ -21,6 +21,7 @@ export class DirentMenu {
 		const canPreview: boolean =
 			SHORTCUTS.preview.when(dirent) && !$previewOpen.get();
 		const canExtract: boolean = SHORTCUTS.extract.when(dirent);
+		const canCompress: boolean = SHORTCUTS.compress.when(dirent);
 		const canTrash: boolean = SHORTCUTS.trash.when(dirent);
 		const canRestore: boolean = SHORTCUTS.restore.when(dirent);
 
@@ -50,13 +51,21 @@ export class DirentMenu {
 						SHORTCUTS.preview.run();
 					},
 				}),
-				Divider.make({ visible: canExtract }),
+				Divider.make({ visible: canExtract || canCompress }),
 				MenuButton.make({
 					label: " Extract",
 					shortcut: shortcutLabel(SHORTCUTS.extract),
 					visible: canExtract,
 					onClick: (): void => {
 						SHORTCUTS.extract.run(dirent);
+					},
+				}),
+				MenuButton.make({
+					label: "󰗄 Compress",
+					shortcut: shortcutLabel(SHORTCUTS.compress),
+					visible: canCompress,
+					onClick: (): void => {
+						SHORTCUTS.compress.run(dirent);
 					},
 				}),
 				Divider.make(),

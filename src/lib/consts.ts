@@ -8,18 +8,20 @@ export const TRASH_EMPTY_ICON: string = "";
 
 export const COLLATOR: Intl.Collator = new Intl.Collator();
 
-export const ARCHIVE_EXTENSIONS: string[] = [
-	".tar.gz",
-	".tar.xz",
-	".tar.bz2",
-	".tar.zst",
-	".tgz",
-	".txz",
-	".tbz2",
-	".tzst",
-	".tar",
-	".zip",
-];
+export const ARCHIVE_FORMATS: Record<string, string[]> = {
+	".zip": [],
+	".tar": [],
+	".tar.gz": ["--gzip"],
+	".tgz": ["--gzip"],
+	".tar.xz": ["--xz"],
+	".txz": ["--xz"],
+	".tar.bz2": ["--bzip2"],
+	".tbz2": ["--bzip2"],
+	".tar.zst": ["--zstd"],
+	".tzst": ["--zstd"],
+};
+
+export const ARCHIVE_EXTENSIONS: string[] = Object.keys(ARCHIVE_FORMATS);
 
 export const USER_CONFIG_PATH: string = `${HOME_DIRECTORY}/.config/filet/config.toml`;
 

@@ -1,5 +1,11 @@
-import { type Dirent, existsSync } from "node:fs";
-import { cp, mkdir, rename as renameEntry, rm } from "node:fs/promises";
+import { type Dirent, existsSync, lstatSync } from "node:fs";
+import {
+	cp,
+	mkdir,
+	rename as renameEntry,
+	rm,
+	writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import type { WritableAtom } from "nanostores";
 import { ctx } from "./context";
@@ -146,26 +152,61 @@ export async function paste(): Promise<void> {
 	}, dirents[0]?.name);
 }
 
-export function createFile(name: string): Promise<void> {
-	return runTask(
-		(): Promise<number> => Bun.write(join($currentPath.get(), name), ""),
-		name,
-	);
+export function pathExists(path: string): boolean {
+	try {
+		lstatSync(path);
+
+		return true;
+	} catch (error) {
+		return (error as NodeJS.ErrnoException).code !== "ENOENT";
+	}
 }
 
-export function createFolder(name: string): Promise<void> {
-	return runTask(
-		(): Promise<void> => mkdir(join($currentPath.get(), name)),
-		name,
-	);
+export function canUseName(
+	folder: string,
+	name: string,
+	verb: string,
+): boolean {
+	if (!name || name === "." || name === "..") {
+		$notice.set(`Couldn't ${verb}, '${name}' isn't a valid name`);
+	} else if (name.includes("/")) {
+		$notice.set(`Couldn't ${verb}, names can't contain '/'`);
+	} else if (pathExists(join(folder, name))) {
+		$notice.set(`Couldn't ${verb}, '${name}' already exists`);
+	} else {
+		return true;
+	}
+
+	return false;
 }
 
-export function rename(dirent: Dirent, name: string): Promise<void> {
-	return runTask(
-		(): Promise<void> =>
-			renameEntry(getDirentPath(dirent), join(dirent.parentPath, name)),
-		name,
-	);
+export async function createFile(name: string): Promise<void> {
+	const folder: string = $currentPath.get();
+
+	if (canUseName(folder, name, "create file")) {
+		await runTask(
+			(): Promise<void> => writeFile(join(folder, name), "", { flag: "wx" }),
+			name,
+		);
+	}
+}
+
+export async function createFolder(name: string): Promise<void> {
+	const folder: string = $currentPath.get();
+
+	if (canUseName(folder, name, "create folder")) {
+		await runTask((): Promise<void> => mkdir(join(folder, name)), name);
+	}
+}
+
+export async function rename(dirent: Dirent, name: string): Promise<void> {
+	if (name !== dirent.name && canUseName(dirent.parentPath, name, "rename")) {
+		await runTask(
+			(): Promise<void> =>
+				renameEntry(getDirentPath(dirent), join(dirent.parentPath, name)),
+			name,
+		);
+	}
 }
 
 export function remove(dirents: Dirent[]): Promise<void> {
