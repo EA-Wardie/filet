@@ -20,7 +20,7 @@
 		"typescript": "^7.0.2"
 	},
 	"dependencies": {
-		"@opentui/core": "^0.5.14",
-		"nanostores": "^1.5.4"
+		"@opentui/core": "^0.5.17",
+		"nanostores": "^1.5.5"
 	}
 }
