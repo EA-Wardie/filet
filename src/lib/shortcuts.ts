@@ -4,9 +4,10 @@ import { Confirmation } from "../components/Confirmation";
 import { type Control, Controls } from "../components/Controls";
 import { Prompt } from "../components/Prompt";
 import { Properties } from "../components/Properties";
-import { extract, isArchive } from "./archive";
+import { archiveName, compress, extract, isArchive } from "./archive";
 import { copyPaths } from "./clipboard";
 import { trashFilesPath } from "./config";
+import { ARCHIVE_EXTENSIONS } from "./consts";
 import { ctx } from "./context";
 import {
 	copy,
@@ -89,27 +90,34 @@ function guard(
 	};
 }
 
+function targetsOutsideTrash(action: (dirents: Dirent[]) => void): {
+	run: Run;
+	when: When;
+} {
+	return {
+		when: outsideTrash,
+		run: withTargets((dirents: Dirent[]): void => {
+			if (outsideTrash()) {
+				action(dirents);
+			}
+		}),
+	};
+}
+
 function confirmOutsideTrash(
 	heading: string,
 	question: (targets: string) => string,
 	action: (dirents: Dirent[]) => void,
 ): { run: Run; when: When } {
-	return {
-		when: outsideTrash,
-		run: withTargets((dirents: Dirent[]): void => {
-			if (!outsideTrash()) {
-				return;
-			}
-
-			Confirmation.make({
-				heading: heading,
-				description: question(describeDirents(dirents, "'")),
-				onConfirm: (): void => {
-					action(dirents);
-				},
-			});
-		}),
-	};
+	return targetsOutsideTrash((dirents: Dirent[]): void => {
+		Confirmation.make({
+			heading: heading,
+			description: question(describeDirents(dirents, "'")),
+			onConfirm: (): void => {
+				action(dirents);
+			},
+		});
+	});
 }
 
 export function toggleMark(dirent: Dirent): void {
@@ -303,7 +311,7 @@ export const SHORTCUTS = {
 		},
 	},
 	dragOut: {
-		key: "a",
+		key: "w",
 		description: "Drag and drop the marked items or selection",
 		run: withTargets(dragOut),
 	},
@@ -314,6 +322,21 @@ export const SHORTCUTS = {
 			(dirent: Dirent): boolean => outsideTrash() && isArchive(dirent),
 			extract,
 		),
+	},
+	compress: {
+		key: "a",
+		description: "Compress the marked items or selection into an archive",
+		...targetsOutsideTrash((dirents: Dirent[]): void => {
+			Prompt.make({
+				heading: "Compress",
+				label: "Archive name",
+				value: archiveName(dirents),
+				hint: `Formats: ${ARCHIVE_EXTENSIONS.join(", ")}`,
+				onSubmit: (name: string): void => {
+					compress(dirents, name);
+				},
+			});
+		}),
 	},
 	trash: {
 		key: "t",
@@ -339,7 +362,8 @@ export const SHORTCUTS = {
 		}),
 	},
 	delete: {
-		key: "d",
+		key: "delete",
+		alias: "d",
 		description: "Permanently delete the marked items or selection",
 		...confirmOutsideTrash(
 			"Permanently delete?",

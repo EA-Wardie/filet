@@ -8,6 +8,7 @@ interface Options extends core.BoxOptions {
 	heading: string;
 	label: string;
 	value?: string;
+	hint?: string;
 	onSubmit: (value: string) => void;
 }
 
@@ -93,10 +94,19 @@ export class Prompt {
 			textColor: theme.fg,
 			cursorColor: theme.fg,
 			flexGrow: 1,
-			marginBottom: 1,
 		});
 
 		this._dialog?.add(this._input);
+
+		if (this._options.hint) {
+			this._dialog?.add(
+				new core.TextRenderable(ctx, {
+					content: this._options.hint,
+					fg: theme.muted,
+					wrapMode: "word",
+				}),
+			);
+		}
 	}
 
 	private addFooter(): void {
@@ -105,6 +115,7 @@ export class Prompt {
 			flexDirection: "row",
 			justifyContent: "flex-end",
 			columnGap: 1,
+			marginTop: 1,
 		});
 
 		this._footer?.add(

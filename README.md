@@ -14,9 +14,9 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Requirements
 
-- `tar` and `unzip` for extracting archives. Supported formats are `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst`, `.tzst` and `.zip`.
-- `xz`, `bzip2` and `zstd` for `.tar.xz`, `.tar.bz2` and `.tar.zst` archives respectively.
-- [ripdrag](https://github.com/nik012003/ripdrag) for drag and drop with `A`.
+- `tar` for extracting and creating tar archives, `unzip` for extracting `.zip` archives and `zip` for creating them. Supported formats are `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst`, `.tzst` and `.zip`.
+- `gzip`, `xz`, `bzip2` and `zstd` for `.tar.gz`, `.tar.xz`, `.tar.bz2` and `.tar.zst` archives respectively.
+- [ripdrag](https://github.com/nik012003/ripdrag) for drag and drop with `W`.
 
 ## Features
 
@@ -29,6 +29,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Create, copy, cut, paste, rename, trash and delete files and directories.
 - Restore files and directories from trash, or empty it.
 - Extract `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
+- Compress files and directories into any of the same formats. The archive's name defaults to `.zip`, and its extension picks the format.
 - Drag and drop files and directories into other applications with `ripdrag`.
 - Open a terminal in the current folder, or in a folder from its context menu.
 - Copy the paths of files and directories to the system clipboard.
@@ -121,33 +122,34 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 
 ### Keyboard
 
-| Key           | Action                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------ |
-| `Return`      | Open the selected file or folder, the same as a double click.                                    |
-| `Space`       | Mark or unmark the selected file or folder, then select the entry below.                         |
-| `Escape`      | Clear the marks, or the selection when nothing is marked.                                        |
-| `Up` / `K`    | Select the entry above, scrolling it into view. With nothing selected, select the last entry.    |
-| `Down` / `J`  | Select the entry below, scrolling it into view. With nothing selected, select the first entry.   |
-| `Left` / `H`  | Go up to the parent folder, selecting the folder you came from. Stops at the top of the trash.   |
-| `Right` / `L` | Open the selected folder. Does nothing in the trash.                                             |
-| `P`           | Open or close the preview sidebar.                                                               |
-| `I`           | Show the properties of the selected file or folder.                                              |
-| `Ctrl+X`      | Cut the marked items, or the selected file or folder.                                            |
-| `Ctrl+C`      | Copy the marked items, or the selected file or folder.                                           |
-| `Ctrl+V`      | Paste the cut or copied items into the current folder.                                           |
-| `Y`           | Copy the paths of the marked items, or the selected file or folder, to the system clipboard.     |
-| `Ctrl+R`      | Refresh the current folder, keeping the selection.                                               |
-| `R`           | Rename the selected file or folder.                                                              |
-| `N`           | Create a new file in the current folder.                                                         |
-| `F`           | Create a new folder in the current folder.                                                       |
-| `T`           | Move the marked items, or the selected file or folder, to trash, after confirmation.             |
-| `Ctrl+Z`      | Restore a file or folder from trash, after confirmation.                                         |
-| `D`           | Permanently delete the marked items, or the selected file or folder, after confirmation.         |
-| `E`           | Extract the selected archive into a folder next to it. See [Requirements](#requirements).        |
-| `O`           | Open a terminal in the current folder. See [Configuration](#configuration).                      |
-| `A`           | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements).   |
-| `Q`           | Quit the application, after confirmation.                                                        |
-| `?`           | Show the keyboard shortcuts and mouse controls.                                                  |
+| Key            | Action                                                                                         |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| `Return`       | Open the selected file or folder, the same as a double click.                                  |
+| `Space`        | Mark or unmark the selected file or folder, then select the entry below.                       |
+| `Escape`       | Clear the marks, or the selection when nothing is marked.                                      |
+| `Up` / `K`     | Select the entry above, scrolling it into view. With nothing selected, select the last entry.  |
+| `Down` / `J`   | Select the entry below, scrolling it into view. With nothing selected, select the first entry. |
+| `Left` / `H`   | Go up to the parent folder, selecting the folder you came from. Stops at the top of the trash. |
+| `Right` / `L`  | Open the selected folder. Does nothing in the trash.                                           |
+| `P`            | Open or close the preview sidebar.                                                             |
+| `I`            | Show the properties of the selected file or folder.                                            |
+| `Ctrl+X`       | Cut the marked items, or the selected file or folder.                                          |
+| `Ctrl+C`       | Copy the marked items, or the selected file or folder.                                         |
+| `Ctrl+V`       | Paste the cut or copied items into the current folder.                                         |
+| `Y`            | Copy the paths of the marked items, or the selected file or folder, to the system clipboard.   |
+| `Ctrl+R`       | Refresh the current folder, keeping the selection.                                             |
+| `R`            | Rename the selected file or folder.                                                            |
+| `N`            | Create a new file in the current folder.                                                       |
+| `F`            | Create a new folder in the current folder.                                                     |
+| `T`            | Move the marked items, or the selected file or folder, to trash, after confirmation.           |
+| `Ctrl+Z`       | Restore a file or folder from trash, after confirmation.                                       |
+| `Delete` / `D` | Permanently delete the marked items, or the selected file or folder, after confirmation.       |
+| `E`            | Extract the selected archive into a folder next to it. See [Requirements](#requirements).      |
+| `A`            | Compress the marked items or selection into a new archive. See [Requirements](#requirements).  |
+| `O`            | Open a terminal in the current folder. See [Configuration](#configuration).                    |
+| `W`            | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements). |
+| `Q`            | Quit the application, after confirmation.                                                      |
+| `?`            | Show the keyboard shortcuts and mouse controls.                                                |
 
 In the path bar, `Escape` stops editing and shows the current folder again. Prompt modals focus their input when they open. In confirmation and prompt modals, `Return` confirms and `Escape` cancels. The properties modal closes with `Return` or `Escape`. The controls modal closes the same way, and scrolls with the arrow keys, `J`, `K`, `PageUp`, `PageDown`, `Home` and `End`.
 
