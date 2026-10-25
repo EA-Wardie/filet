@@ -234,6 +234,8 @@ bun run build
 
 This produces a binary at `dist/filet`.
 
+`bun run archive` then packs the binary, the install script and the icon into `dist/Release <version>.tar.xz` for a release.
+
 ## Installing
 
 After building, install the binary and desktop entry with:
@@ -250,11 +252,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.2.9.tar.xz" --one-top-level
+tar -xvJf "Release 0.3.4.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.2.9"
+cd "Release 0.3.4"
 ```
 Run the install script.
 ```

@@ -7,6 +7,7 @@ Terminal file manager with first party mouse support, built with `@opentui/core`
 
 - `bun run dev` runs the app with watch mode.
 - `bun run build` compiles a single binary to `dist/filet` and copies `install.sh` and the icon beside it.
+- `bun run archive` packs the built binary, `install.sh` and the icon into `dist/Release <version>.tar.xz` for a GitHub release. It needs `bun run build` first.
 - `bun run format` runs Biome. Run `bunx tsc --noEmit` and `bunx biome check src/` before finishing a change. There are no tests.
 
 ## Architecture

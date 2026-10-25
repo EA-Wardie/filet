@@ -3,10 +3,11 @@
 	"module": "index.ts",
 	"type": "module",
 	"private": false,
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"scripts": {
 		"dev": "bun run --watch src/main.ts",
 		"build": "bun run src/build.ts",
+		"archive": "bun run src/archive.ts",
 		"install:app": "bash dist/install.sh",
 		"demo": "bash scripts/demo.sh",
 		"screenshots": "vhs scripts/screenshots.tape",
@@ -20,7 +21,7 @@
 		"typescript": "^7.0.2"
 	},
 	"dependencies": {
-		"@opentui/core": "^0.5.14",
-		"nanostores": "^1.5.4"
+		"@opentui/core": "^0.5.17",
+		"nanostores": "^1.5.5"
 	}
 }
