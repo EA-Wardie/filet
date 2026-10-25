@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.4 (2026-10-25)
+
+### Changed
+
+- The README's From a release commands name the current release, instead of 0.2.9.
+
+### Internal
+
+- New `bun run archive`, from `src/archive.ts`, packs the built `dist/filet`, `install.sh` and `icon.png` into `dist/Release <version>.tar.xz` for a GitHub release, instead of packing it by hand. It stops with an error naming any file missing from `dist/`, so run `bun run build` first.
+- `@opentui/core` is updated to 0.5.17 and `nanostores` to 1.5.5.
+
 ## 0.3.3 (2026-10-13)
 
 ### Added
