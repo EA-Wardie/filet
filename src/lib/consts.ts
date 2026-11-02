@@ -37,6 +37,10 @@ export const SYMLINK_TIMEOUT: number = 100;
 
 export const TERMINAL_STARTUP_TIMEOUT: number = 2000;
 
+export const DRIVES_POLL_INTERVAL: number = 1000;
+
+export const DRIVES_SETTLE_DELAY: number = 1000;
+
 export const BINARY_CHECK_SIZE: number = 8000;
 
 export const SIDEBAR_MIN_WIDTH: number = 100;
@@ -46,6 +50,10 @@ export const PREVIEW_MIN_WIDTH: number = 140;
 export const MENU_WIDTH: number = 30;
 
 export const CONTROLS_ICON: string = "󰌌";
+
+export const DRIVE_ICON: string = "󰋊";
+
+export const REMOVABLE_DRIVE_ICON: string = "󰕓";
 
 export const IMAGE_FILETYPES: Set<string> = new Set([
 	".png",

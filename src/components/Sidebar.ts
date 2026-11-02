@@ -2,13 +2,16 @@ import * as core from "@opentui/core";
 import { bookmarks, theme } from "../lib/config";
 import {
 	CONTROLS_ICON,
+	DRIVE_ICON,
 	HOME_DIRECTORY,
 	SIDEBAR_MIN_WIDTH,
 } from "../lib/consts";
 import { ctx } from "../lib/context";
+import { osName } from "../lib/os";
 import { SHORTCUTS } from "../lib/shortcuts";
-import { $tasksCount } from "../lib/store";
+import { $drives, $tasksCount, type Drive } from "../lib/store";
 import { Divider } from "./Divider";
+import { DriveSidebarLink } from "./DriveSidebarLink";
 import { IconButton } from "./IconButton";
 import { SidebarLink } from "./SidebarLink";
 import { Spacer } from "./Spacer";
@@ -18,6 +21,7 @@ export class Sidebar {
 	private _options: core.BoxOptions;
 	private _component: core.BoxRenderable;
 	private _header: core.BoxRenderable | null = null;
+	private _drives: core.BoxRenderable | null = null;
 	private _footer: core.BoxRenderable | null = null;
 	private _taskCount: core.TextRenderable | null = null;
 
@@ -145,9 +149,27 @@ export class Sidebar {
 		this._component.add(
 			SidebarLink.make({
 				path: "/",
-				label: "󰋊 Root",
+				label: `${DRIVE_ICON} ${osName}`,
 			}),
 		);
+
+		this._drives = new core.BoxRenderable(ctx, {});
+
+		this._component.add(this._drives);
+	}
+
+	private showDrives(drives: readonly Drive[]): void {
+		if (!this._drives) {
+			return;
+		}
+
+		for (const child of this._drives.getChildren()) {
+			child.destroyRecursively();
+		}
+
+		for (const drive of drives) {
+			this._drives.add(DriveSidebarLink.make({ drive: drive }));
+		}
 	}
 
 	private addFooter(): void {
@@ -181,6 +203,10 @@ export class Sidebar {
 	}
 
 	private registerStoreEvents(): void {
+		$drives.subscribe((drives: readonly Drive[]): void => {
+			this.showDrives(drives);
+		});
+
 		$tasksCount.listen((count: number): void => {
 			if (this._taskCount) {
 				this._taskCount.content = `[${count}]`;

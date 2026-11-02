@@ -2,25 +2,31 @@ import { logError } from "./log";
 import { refresh } from "./navigation";
 import { $tasksCount } from "./store";
 
-export async function runTask(
+export async function trackTask(
 	task: () => Promise<unknown>,
-	select?: string,
-): Promise<void> {
-	let selectName: string | undefined;
-
+): Promise<boolean> {
 	$tasksCount.set($tasksCount.get() + 1);
 
 	try {
 		await task();
 
-		selectName = select;
+		return true;
 	} catch (error) {
 		logError(error);
-	} finally {
-		refresh(selectName);
 
+		return false;
+	} finally {
 		setTimeout((): void => {
 			$tasksCount.set($tasksCount.get() - 1);
 		}, 1000);
 	}
+}
+
+export async function runTask(
+	task: () => Promise<unknown>,
+	select?: string,
+): Promise<void> {
+	const succeeded: boolean = await trackTask(task);
+
+	refresh(succeeded ? select : undefined);
 }

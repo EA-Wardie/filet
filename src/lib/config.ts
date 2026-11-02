@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { parseColor, RGBA } from "@opentui/core";
+import type { BunFile } from "bun";
 import { HOME_DIRECTORY, TRASH_PATH, USER_CONFIG_PATH } from "./consts";
 import { logError, setLogsPath } from "./log";
 
@@ -67,7 +68,7 @@ interface ConfigFile {
 }
 
 async function loadUserConfig(): Promise<ConfigFile> {
-	const file = Bun.file(USER_CONFIG_PATH);
+	const file: BunFile = Bun.file(USER_CONFIG_PATH);
 
 	if (!(await file.exists())) {
 		return {};

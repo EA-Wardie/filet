@@ -166,8 +166,12 @@ export function refresh(select?: string): void {
 	$refresh.set($refresh.get() + 1);
 }
 
+export function isInsidePath(path: string, root: string): boolean {
+	return path === root || path.startsWith(`${root}/`);
+}
+
 export function isTrashPath(path: string): boolean {
-	return path === trashPath || path.startsWith(`${trashPath}/`);
+	return isInsidePath(path, trashPath);
 }
 
 export function getDirentPath(dirent: Dirent): string {

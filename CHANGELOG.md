@@ -5,9 +5,11 @@
 ### Added
 
 - filet takes a start path, such as `filet ~/Downloads`, and opens in that folder instead of your home folder. A file path opens its folder with the file selected. Relative paths resolve against the folder filet was run from, and `~` expands to your home folder. A path that doesn't exist, or can't be opened, opens your home folder and is reported in the footer, the same as in the path bar. Only the first argument is used.
+- The sidebar lists drives below the `/` link: drives mounted under `/run/media/$USER` or `/media/$USER`, and drives that aren't mounted, which are dimmed: plugged-in drives with a filesystem, and drives seen mounted since filet started, so an internal drive unmounted from the sidebar can be mounted again. LVM, RAID, ZFS, bcache, swap and LUKS members are left out. Clicking a drive again while it is mounting or ejecting does nothing. Clicking an unmounted drive mounts it with `udisksctl` and opens it. A right-click menu opens or mounts a drive, ejects a removable drive or unmounts any other. Ejecting unmounts the drive, then leaves it if you're browsing it, so a busy drive that can't be unmounted keeps your place. It then powers the drive off, unless another of its partitions is still mounted. If a drive you're browsing is unmounted or unplugged elsewhere, filet returns to your home folder and the footer says it is no longer mounted.
 
 ### Changed
 
+- The sidebar's link to `/` is named after your distro, such as CachyOS Linux, from `NAME` in `/etc/os-release` or `/usr/lib/os-release`. It falls back to Root when neither has a name.
 - The desktop entry written by `install.sh` passes a path to filet with `%f` and declares `MimeType=inode/directory`, so filet can be picked to open folders from other applications.
 - The README names the desktop entry's file as `filet.desktop`, and its From a release commands name 0.3.5.
 
@@ -16,6 +18,11 @@
 - New `openStartPath()` in `lib/navigation.ts` sets `$currentPath` and `selectName` from the start path before the UI is built, without adding to the back history. `main.ts` passes it `process.argv[2]`, which is the first argument both under `bun run` and in the compiled binary.
 - New `reportPathError()` in `lib/navigation.ts` sets the footer notice for a path that can't be opened, used by `goToPath()` and `openStartPath()`.
 - `VirtualExplorer` takes `selectName` for its first scan, so the start file is selected.
+- New `lib/drives.ts` reads drives from `lsblk -J` into the new `$drives` atom. Every second it checks `/proc/self/mounts` and `/proc/partitions`, runs `lsblk` only when either changes, and rescans a second later so it picks up labels udev probes late. Settle rescans are debounced and skipped at startup. Mount, unmount and power-off run `udisksctl` inside `trackTask`, then rescan. The rescan is the only place that leaves a drive that's gone, and a new mount opens at the mount point it finds.
+- New `trackTask()` in `lib/tasks.ts` counts a task and logs its error without refreshing the folder. `runTask()` is built on it.
+- New `isInsidePath()` in `lib/navigation.ts`, which `isTrashPath()` now uses.
+- New `lib/os.ts` reads `osName` from os-release with top level await.
+- New `DriveSidebarLink` component. `SidebarLink` takes a `null` path for a link with nowhere to go, and optional `muted`, `onClick` and `onMenu` options, and unbinds its `$currentPath` listener when it is destroyed.
 
 ## 0.3.4 (2026-10-25)
 

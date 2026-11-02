@@ -36,6 +36,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Copy the paths of files and directories to the system clipboard.
 - Move through the explorer with the arrow keys or `H`, `J`, `K` and `L`, and act on the selection with single letter shortcuts.
 - Nerd Font file icons and context menus.
+- Drives in the sidebar. The link to `/` is named after your distro, from `NAME` in `/etc/os-release`, or Root if it has none. Below it, the sidebar lists drives mounted under `/run/media/$USER` or `/media/$USER`, and drives that aren't mounted, which are dimmed: plugged-in drives, and drives you've unmounted since filet started. Clicking an unmounted drive mounts and opens it. Right-click a drive to mount it, or to eject a removable drive or unmount any other. Ejecting unmounts the drive, then leaves it if you're browsing it, and powers it off unless another of its partitions is still mounted. If a drive you're browsing is unmounted or unplugged elsewhere, filet returns to your home folder. Mounting and ejecting need `udisksctl` from udisks2, and listing drives needs `lsblk`.
 - Bookmarks and a themeable UI, configurable through a user config file.
 - First party mouse support.
 
@@ -120,6 +121,8 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `Right click`  | File or folder | Open its context menu.                                                                                      |
 | `Right click`  | Explorer       | Open the explorer context menu.                                                                             |
 | `Left click`   | Sidebar link   | Select and navigate to it.                                                                                  |
+| `Left click`   | Sidebar drive  | Open it, mounting it first if it isn't mounted.                                                             |
+| `Right click`  | Sidebar drive  | Open its menu to open, mount, eject or unmount it.                                                          |
 
 ### Keyboard
 
