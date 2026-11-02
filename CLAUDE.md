@@ -14,12 +14,13 @@ Terminal file manager with first party mouse support, built with `@opentui/core`
 
 - `src/main.ts` creates the renderer via `makeApp` and lays out `Sidebar | ExplorerHeader, VirtualExplorer, ExplorerFooter | PreviewSidebar`.
 - `lib/context.ts` exports the renderer as `ctx`, which every component imports.
-- `lib/store.ts` holds all shared state as nanostores atoms: `$currentPath`, `$dirents`, `$selectedDirent`, `$markedNames`, `$copyDirents`, `$cutDirents`, history, `$menuOpen`, `$dialogOpen`, `$refresh` and `$notice` for footer messages. Components subscribe to atoms directly.
+- `lib/store.ts` holds all shared state as nanostores atoms: `$currentPath`, `$dirents`, `$selectedDirent`, `$markedNames`, `$copyDirents`, `$cutDirents`, history, `$drives`, `$menuOpen`, `$dialogOpen`, `$refresh` and `$notice` for footer messages. Components subscribe to atoms directly.
 - Components are classes with a static `make()` returning an OpenTUI renderable, built imperatively. `DirentList` instead extends `core.Renderable` and draws only the visible rows in `renderSelf`, so large directories stay fast. `VirtualExplorer` reads, sorts and filters entries and feeds `$dirents`.
-- `lib/shortcuts.ts` has one `SHORTCUTS` table of keys, aliases and actions. Context menus call `SHORTCUTS.x.run()` and `shortcutLabel()`, so new actions belong in this table. Shortcuts are ignored while a dialog, menu or input is focused.
+- `lib/shortcuts.ts` has one `SHORTCUTS` table of keys, aliases and actions. The explorer and entry context menus call `SHORTCUTS.x.run()` and `shortcutLabel()`, so new actions on the current folder or selection belong in this table. Menus elsewhere, such as the drive menu in `DriveSidebarLink`, act on their own target and may call their actions directly when they have no key. Shortcuts are ignored while a dialog, menu or input is focused.
 - `lib/navigation.ts` handles history, `readFolder` (resolves symlinked folders), opening files and terminals. After a navigation or `refresh(name)`, a module-level `selectName` tells the explorer which entry to select.
-- File operations in `lib/filesystem.ts`, `lib/trash.ts` and `lib/archive.ts` run inside `runTask` from `lib/tasks.ts`, which logs errors and refreshes the folder afterwards. The trash uses the freedesktop layout of `files/` and `info/*.trashinfo`.
+- File operations in `lib/filesystem.ts`, `lib/trash.ts` and `lib/archive.ts` run inside `runTask` from `lib/tasks.ts`, which logs errors and refreshes the folder afterwards. Work that doesn't change the current folder, such as drive actions, uses `trackTask`, which only counts the task and logs errors. The trash uses the freedesktop layout of `files/` and `info/*.trashinfo`.
 - `lib/config.ts` loads `~/.config/filet/config.toml` with top level await and derives the whole theme from a few base colours.
+- `lib/drives.ts` polls `/proc/self/mounts` and `/proc/partitions`, reads drives from `lsblk` into `$drives`, and mounts, unmounts and powers off with `udisksctl`. `lib/os.ts` reads the distro name for the sidebar's `/` link.
 - `lib/log.ts` writes errors as JSONL, one file per day. Use `logError` and set `$notice` for user facing failures.
 
 ## Conventions
@@ -57,4 +58,5 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 - When reviewing, simplifying or writing TypeScript in `src/`, load the `typescript-expert` skill, and `typescript-advanced-types` for type-level work.
 - When working with `@opentui/core`, such as components in `src/components/`, rendering, layout, input, colours or the renderer in `src/lib/context.ts`, load the `opentui` skill.
+- When working with Bun APIs, such as `Bun.$`, `Bun.spawn`, `Bun.file`, `Bun.TOML`, the build in `src/build.ts`, the release archive in `src/archive.ts` or package management, load the `bun-runtime` skill.
 - This includes `/code-review` and `/simplify`. Tell any subagents they start to load these skills too.

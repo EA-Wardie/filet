@@ -46,6 +46,16 @@ export const $refresh = nanostores.atom<number>(0);
 
 export const $notice = nanostores.atom<string>("");
 
+export interface Drive {
+	device: string;
+	disk: string;
+	label: string;
+	mount: string | null;
+	removable: boolean;
+}
+
+export const $drives = nanostores.atom<Drive[]>([]);
+
 export function describeDirents(dirents: Dirent[], quote: string = ""): string {
 	return dirents.length === 1
 		? `${quote}${dirents[0]?.name}${quote}`

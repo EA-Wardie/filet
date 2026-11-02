@@ -23,7 +23,7 @@ const MOUSE_CONTROLS: Control[] = [
 	{ input: "Ctrl+click", action: "Mark or unmark the entry, and select it" },
 	{
 		input: "Right click",
-		action: "Open the entry's context menu, or the explorer's",
+		action: "Open the context menu of an entry, the explorer or a drive",
 	},
 	{ input: "Scroll", action: "Scroll the explorer, preview and lists" },
 ];

@@ -48,7 +48,8 @@ EXEC_PATH="${BIN_DEST//%/%%}"
   echo "Type=Application"
   echo "Name=Filet"
   echo "Comment=Terminal file explorer"
-  echo "Exec=\"$EXEC_PATH\""
+  echo "Exec=\"$EXEC_PATH\" %f"
+  echo "MimeType=inode/directory;"
   if [[ -f "$ICON_DEST" ]]; then
     echo "Icon=$ICON_DEST"
   fi

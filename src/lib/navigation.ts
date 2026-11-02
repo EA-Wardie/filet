@@ -51,21 +51,52 @@ export function go(path: string): void {
 	setPath(path);
 }
 
+function reportPathError(input: string, error: NodeJS.ErrnoException): void {
+	if (error.code === "ENOENT") {
+		$notice.set(`${input} does not exist`);
+
+		return;
+	}
+
+	logError(error);
+	$notice.set(`Can't open ${input}`);
+}
+
+export function openStartPath(
+	input: string | undefined,
+	done: () => void,
+): void {
+	if (!input) {
+		done();
+
+		return;
+	}
+
+	const path: string = resolve(expandHome(input));
+
+	stat(path, (error: NodeJS.ErrnoException | null, stats: Stats): void => {
+		if (error) {
+			reportPathError(input, error);
+		} else if (stats.isDirectory()) {
+			$currentPath.set(path);
+		} else {
+			selectName = basename(path);
+
+			$currentPath.set(dirname(path));
+		}
+
+		done();
+	});
+}
+
 export function goToPath(input: string): void {
 	const path: string = resolve($currentPath.get(), expandHome(input));
 
 	$notice.set("");
 
 	stat(path, (error: NodeJS.ErrnoException | null, stats: Stats): void => {
-		if (error?.code === "ENOENT") {
-			$notice.set(`${input} does not exist`);
-
-			return;
-		}
-
 		if (error) {
-			logError(error);
-			$notice.set(`Can't open ${input}`);
+			reportPathError(input, error);
 
 			return;
 		}
@@ -135,8 +166,12 @@ export function refresh(select?: string): void {
 	$refresh.set($refresh.get() + 1);
 }
 
+export function isInsidePath(path: string, root: string): boolean {
+	return path === root || path.startsWith(`${root}/`);
+}
+
 export function isTrashPath(path: string): boolean {
-	return path === trashPath || path.startsWith(`${trashPath}/`);
+	return isInsidePath(path, trashPath);
 }
 
 export function getDirentPath(dirent: Dirent): string {

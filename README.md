@@ -21,6 +21,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 ## Features
 
 - Explore directories with back and forward navigation and an editable path bar. Entering a file path opens its folder with the file selected, relative paths such as `..` resolve against the current folder, and `~` expands to your home folder. Paths that can't be opened are reported in the footer.
+- Start filet in a folder with `filet <path>`, such as `filet ~/Downloads`. A file path opens its folder with the file selected. Relative paths resolve against the folder you ran it from, and `~` expands to your home folder. A path that can't be opened falls back to your home folder and is reported in the footer.
 - Search the current directory by name.
 - Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
 - Show the properties of a file or folder with `I` or the Properties context menu item: type, path, size, permissions, owner, group, and modified, accessed and created dates. Symbolic links show their target, and folders, including linked folders, show their item count and total size, calculated with `du`.
@@ -35,6 +36,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Copy the paths of files and directories to the system clipboard.
 - Move through the explorer with the arrow keys or `H`, `J`, `K` and `L`, and act on the selection with single letter shortcuts.
 - Nerd Font file icons and context menus.
+- Drives in the sidebar. The link to `/` is named after your distro, from `NAME` in `/etc/os-release`, or Root if it has none. Below it, the sidebar lists drives mounted under `/run/media/$USER` or `/media/$USER`, and drives that aren't mounted, which are dimmed: plugged-in drives, and drives you've unmounted since filet started. Clicking an unmounted drive mounts and opens it. Right-click a drive to mount it, or to eject a removable drive or unmount any other. Ejecting unmounts the drive, then leaves it if you're browsing it, and powers it off unless another of its partitions is still mounted. If a drive you're browsing is unmounted or unplugged elsewhere, filet returns to your home folder. Mounting and ejecting need `udisksctl` from udisks2, and listing drives needs `lsblk`.
 - Bookmarks and a themeable UI, configurable through a user config file.
 - First party mouse support.
 
@@ -119,6 +121,8 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `Right click`  | File or folder | Open its context menu.                                                                                      |
 | `Right click`  | Explorer       | Open the explorer context menu.                                                                             |
 | `Left click`   | Sidebar link   | Select and navigate to it.                                                                                  |
+| `Left click`   | Sidebar drive  | Open it, mounting it first if it isn't mounted.                                                             |
+| `Right click`  | Sidebar drive  | Open its menu to open, mount, eject or unmount it.                                                          |
 
 ### Keyboard
 
@@ -244,7 +248,7 @@ After building, install the binary and desktop entry with:
 bun run install:app
 ```
 
-This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/applications/filet` for application launchers. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
+This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/applications/filet.desktop` for application launchers. The entry accepts a path and registers filet for folders, so it can be chosen with Open With in other applications. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
 
 ### From a release
 
@@ -252,11 +256,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.3.4.tar.xz" --one-top-level
+tar -xvJf "Release 0.3.5.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.3.4"
+cd "Release 0.3.5"
 ```
 Run the install script.
 ```

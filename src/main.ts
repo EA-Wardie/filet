@@ -6,26 +6,31 @@ import { PreviewSidebar } from "./components/PreviewSidebar";
 import { Sidebar } from "./components/Sidebar";
 import { VirtualExplorer } from "./components/VirtualExplorer";
 import { makeApp } from "./lib/context";
+import { watchDrives } from "./lib/drives";
+import { openStartPath } from "./lib/navigation";
 import { registerKeyboardShortcuts } from "./lib/shortcuts";
 import { checkTrash } from "./lib/trash";
 
 function main() {
 	makeApp((): void => {
-		checkTrash();
-		registerKeyboardShortcuts();
+		openStartPath(process.argv[2], (): void => {
+			checkTrash();
+			watchDrives();
+			registerKeyboardShortcuts();
 
-		App.make({
-			components: [
-				Sidebar.make(),
-				Flex.make({
-					components: [
-						ExplorerHeader.make(),
-						VirtualExplorer.make(),
-						ExplorerFooter.make(),
-					],
-				}),
-				PreviewSidebar.make(),
-			],
+			App.make({
+				components: [
+					Sidebar.make(),
+					Flex.make({
+						components: [
+							ExplorerHeader.make(),
+							VirtualExplorer.make(),
+							ExplorerFooter.make(),
+						],
+					}),
+					PreviewSidebar.make(),
+				],
+			});
 		});
 	});
 }

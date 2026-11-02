@@ -56,7 +56,7 @@ export class VirtualExplorer {
 		this._component.add(DirentList.make({ flexGrow: 1 }));
 
 		this.registerStoreEvents();
-		this.scanAndShowDirents($currentPath.get());
+		this.scanAndShowDirents($currentPath.get(), takeSelectName());
 	}
 
 	public static make(options: core.BoxOptions = {}): core.BoxRenderable {

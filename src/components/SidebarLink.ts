@@ -6,8 +6,11 @@ import { goToPath } from "../lib/navigation";
 import { $currentPath } from "../lib/store";
 
 interface Options extends core.BoxOptions {
-	path: string;
+	path: string | null;
 	label: string;
+	muted?: boolean;
+	onClick?: () => void;
+	onMenu?: (event: core.MouseEvent) => void;
 }
 
 export class SidebarLink {
@@ -19,20 +22,19 @@ export class SidebarLink {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			backgroundColor:
-				$currentPath.get() === this._options.path
-					? theme.selected
-					: theme.transparent,
+			backgroundColor: this.isCurrent($currentPath.get())
+				? theme.selected
+				: theme.transparent,
 			paddingX: 1,
 			onMouseOver: (): void => {
-				if ($currentPath.get() === this._options.path) {
+				if (this.isCurrent($currentPath.get())) {
 					return;
 				}
 
 				this._component.backgroundColor = theme.hover;
 			},
 			onMouseOut: (): void => {
-				if ($currentPath.get() === this._options.path) {
+				if (this.isCurrent($currentPath.get())) {
 					return;
 				}
 
@@ -40,7 +42,9 @@ export class SidebarLink {
 			},
 			onMouseDown: (event: core.MouseEvent): void => {
 				if (event.button === MouseButtons.LEFT) {
-					goToPath(this._options.path);
+					this.click();
+				} else if (event.button === MouseButtons.RIGHT) {
+					this._options.onMenu?.(event);
 				}
 			},
 			...this._options,
@@ -54,11 +58,34 @@ export class SidebarLink {
 		return new this(options)._component;
 	}
 
+	private isCurrent(path: string): boolean {
+		return this._options.path === path;
+	}
+
+	private labelColor(path: string): core.RGBA {
+		if (this.isCurrent(path)) {
+			return theme.fg_inverse;
+		}
+
+		return this._options.muted ? theme.muted : theme.fg;
+	}
+
+	private click(): void {
+		if (this._options.onClick) {
+			this._options.onClick();
+
+			return;
+		}
+
+		if (this._options.path !== null) {
+			goToPath(this._options.path);
+		}
+	}
+
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
 			content: this._options.label,
-			fg:
-				$currentPath.get() === this._options.path ? theme.fg_inverse : theme.fg,
+			fg: this.labelColor($currentPath.get()),
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});
@@ -67,20 +94,18 @@ export class SidebarLink {
 	}
 
 	private registerStoreEvents(): void {
-		$currentPath.listen((path: string): void => {
-			if (this._options.path === path) {
-				this._component.backgroundColor = theme.selected;
+		const unbindCurrentPath: () => void = $currentPath.listen(
+			(path: string): void => {
+				this._component.backgroundColor = this.isCurrent(path)
+					? theme.selected
+					: theme.transparent;
 
 				if (this._label) {
-					this._label.fg = theme.fg_inverse;
+					this._label.fg = this.labelColor(path);
 				}
-			} else {
-				this._component.backgroundColor = theme.transparent;
+			},
+		);
 
-				if (this._label) {
-					this._label.fg = theme.fg;
-				}
-			}
-		});
+		this._component.once(core.RenderableEvents.DESTROYED, unbindCurrentPath);
 	}
 }
