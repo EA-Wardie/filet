@@ -35,3 +35,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 .fallow
 .zed
+
+# Agent skills, installed per machine
+.agents
+.claude
+skills-lock.json

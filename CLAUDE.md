@@ -57,4 +57,5 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 - When reviewing, simplifying or writing TypeScript in `src/`, load the `typescript-expert` skill, and `typescript-advanced-types` for type-level work.
 - When working with `@opentui/core`, such as components in `src/components/`, rendering, layout, input, colours or the renderer in `src/lib/context.ts`, load the `opentui` skill.
+- When working with Bun APIs, such as `Bun.$`, `Bun.spawn`, `Bun.file`, `Bun.TOML`, the build in `src/build.ts`, the release archive in `src/archive.ts` or package management, load the `bun-runtime` skill.
 - This includes `/code-review` and `/simplify`. Tell any subagents they start to load these skills too.

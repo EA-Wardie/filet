@@ -21,6 +21,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 ## Features
 
 - Explore directories with back and forward navigation and an editable path bar. Entering a file path opens its folder with the file selected, relative paths such as `..` resolve against the current folder, and `~` expands to your home folder. Paths that can't be opened are reported in the footer.
+- Start filet in a folder with `filet <path>`, such as `filet ~/Downloads`. A file path opens its folder with the file selected. Relative paths resolve against the folder you ran it from, and `~` expands to your home folder. A path that can't be opened falls back to your home folder and is reported in the footer.
 - Search the current directory by name.
 - Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
 - Show the properties of a file or folder with `I` or the Properties context menu item: type, path, size, permissions, owner, group, and modified, accessed and created dates. Symbolic links show their target, and folders, including linked folders, show their item count and total size, calculated with `du`.
@@ -244,7 +245,7 @@ After building, install the binary and desktop entry with:
 bun run install:app
 ```
 
-This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/applications/filet` for application launchers. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
+This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/applications/filet.desktop` for application launchers. The entry accepts a path and registers filet for folders, so it can be chosen with Open With in other applications. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
 
 ### From a release
 
@@ -252,11 +253,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.3.4.tar.xz" --one-top-level
+tar -xvJf "Release 0.3.5.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.3.4"
+cd "Release 0.3.5"
 ```
 Run the install script.
 ```
