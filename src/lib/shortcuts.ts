@@ -217,7 +217,10 @@ export const SHORTCUTS = {
 	open: {
 		key: "return",
 		description: "Open the selected file or folder",
-		run: withDirent(openInDefault),
+		...guard(
+			(dirent: Dirent): boolean => outsideTrash() || !isFolder(dirent),
+			openInDefault,
+		),
 	},
 	preview: {
 		key: "p",

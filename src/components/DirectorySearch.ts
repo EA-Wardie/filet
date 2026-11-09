@@ -87,9 +87,11 @@ export class DirectorySearch {
 			visible: false,
 		});
 
-		this._input.on(core.InputRenderableEvents.ENTER, (value: string) => {
+		this._input.on(core.InputRenderableEvents.INPUT, (value: string): void => {
 			$searchTerm.set(value);
+		});
 
+		this._input.on(core.InputRenderableEvents.ENTER, (): void => {
 			this._input?.blur();
 		});
 

@@ -51,7 +51,10 @@ export function go(path: string): void {
 	setPath(path);
 }
 
-function reportPathError(input: string, error: NodeJS.ErrnoException): void {
+export function reportPathError(
+	input: string,
+	error: NodeJS.ErrnoException,
+): void {
 	if (error.code === "ENOENT") {
 		$notice.set(`${input} does not exist`);
 

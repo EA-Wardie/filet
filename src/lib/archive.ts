@@ -3,7 +3,7 @@ import { mkdir, rm } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 import type { $ } from "bun";
 import { ARCHIVE_EXTENSIONS, ARCHIVE_FORMATS } from "./consts";
-import { canUseName, pathExists } from "./filesystem";
+import { canUseName, entryExists } from "./filesystem";
 import { logError } from "./log";
 import { getDirentPath, isFolder } from "./navigation";
 import { $notice, clearMarks, describeDirents } from "./store";
@@ -113,7 +113,7 @@ export function archiveName(dirents: Dirent[]): string {
 			: basename(folder)) || "archive";
 	let archive: string = `${name}.zip`;
 
-	for (let count: number = 2; pathExists(join(folder, archive)); count++) {
+	for (let count: number = 2; entryExists(join(folder, archive)); count++) {
 		archive = `${name}-${count}.zip`;
 	}
 

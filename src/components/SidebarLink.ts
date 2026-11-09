@@ -1,9 +1,51 @@
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
+import * as nanostores from "nanostores";
 import { theme } from "../lib/config";
+import { HOME_DIRECTORY } from "../lib/consts";
 import { ctx } from "../lib/context";
-import { goToPath } from "../lib/navigation";
+import { goToPath, isInsidePath } from "../lib/navigation";
 import { $currentPath } from "../lib/store";
+
+const EXACT_PATHS: ReadonlySet<string> = new Set<string>([HOME_DIRECTORY, "/"]);
+
+const $linkPaths = nanostores.atom<string[]>([]);
+
+const $activePath = nanostores.computed(
+	[$currentPath, $linkPaths],
+	(current: string, paths: string[]): string | null => {
+		let active: string | null = null;
+
+		for (const path of paths) {
+			const matches: boolean =
+				path === current ||
+				(!EXACT_PATHS.has(path) && isInsidePath(current, path));
+
+			if (matches && (active === null || path.length > active.length)) {
+				active = path;
+			}
+		}
+
+		return active;
+	},
+);
+
+export function registerSidebarPath(path: string): () => void {
+	$linkPaths.set([...$linkPaths.get(), path]);
+
+	return (): void => {
+		const paths: string[] = [...$linkPaths.get()];
+		const index: number = paths.indexOf(path);
+
+		if (index < 0) {
+			return;
+		}
+
+		paths.splice(index, 1);
+
+		$linkPaths.set(paths);
+	};
+}
 
 interface Options extends core.BoxOptions {
 	path: string | null;
@@ -22,19 +64,19 @@ export class SidebarLink {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			backgroundColor: this.isCurrent($currentPath.get())
+			backgroundColor: this.isCurrent($activePath.get())
 				? theme.selected
 				: theme.transparent,
 			paddingX: 1,
 			onMouseOver: (): void => {
-				if (this.isCurrent($currentPath.get())) {
+				if (this.isCurrent($activePath.get())) {
 					return;
 				}
 
 				this._component.backgroundColor = theme.hover;
 			},
 			onMouseOut: (): void => {
-				if (this.isCurrent($currentPath.get())) {
+				if (this.isCurrent($activePath.get())) {
 					return;
 				}
 
@@ -58,12 +100,12 @@ export class SidebarLink {
 		return new this(options)._component;
 	}
 
-	private isCurrent(path: string): boolean {
-		return this._options.path === path;
+	private isCurrent(active: string | null): boolean {
+		return active !== null && this._options.path === active;
 	}
 
-	private labelColor(path: string): core.RGBA {
-		if (this.isCurrent(path)) {
+	private labelColor(active: string | null): core.RGBA {
+		if (this.isCurrent(active)) {
 			return theme.fg_inverse;
 		}
 
@@ -85,7 +127,7 @@ export class SidebarLink {
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
 			content: this._options.label,
-			fg: this.labelColor($currentPath.get()),
+			fg: this.labelColor($activePath.get()),
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});
@@ -94,18 +136,25 @@ export class SidebarLink {
 	}
 
 	private registerStoreEvents(): void {
-		const unbindCurrentPath: () => void = $currentPath.listen(
-			(path: string): void => {
-				this._component.backgroundColor = this.isCurrent(path)
+		const unregister: () => void =
+			this._options.path === null
+				? (): void => {}
+				: registerSidebarPath(this._options.path);
+		const unbindActivePath: () => void = $activePath.subscribe(
+			(active: string | null): void => {
+				this._component.backgroundColor = this.isCurrent(active)
 					? theme.selected
 					: theme.transparent;
 
 				if (this._label) {
-					this._label.fg = this.labelColor(path);
+					this._label.fg = this.labelColor(active);
 				}
 			},
 		);
 
-		this._component.once(core.RenderableEvents.DESTROYED, unbindCurrentPath);
+		this._component.once(core.RenderableEvents.DESTROYED, (): void => {
+			unbindActivePath();
+			unregister();
+		});
 	}
 }

@@ -1,10 +1,11 @@
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { theme, trashFilesPath } from "../lib/config";
+import { theme, trashFilesPath, trashPath } from "../lib/config";
 import { TRASH_EMPTY_ICON, TRASH_FULL_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { go, isTrashPath } from "../lib/navigation";
 import { $currentPath, $trashFull } from "../lib/store";
+import { registerSidebarPath } from "./SidebarLink";
 
 export class TrashSidebarLink {
 	private _options: core.BoxOptions;
@@ -63,6 +64,8 @@ export class TrashSidebarLink {
 	}
 
 	private registerStoreEvents(): void {
+		registerSidebarPath(trashPath);
+
 		$currentPath.listen((path: string): void => {
 			if (isTrashPath(path)) {
 				this._component.backgroundColor = theme.selected;
