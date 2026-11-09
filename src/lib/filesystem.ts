@@ -6,12 +6,13 @@ import {
 	rm,
 	writeFile,
 } from "node:fs/promises";
-import { basename, dirname, join } from "node:path";
+import { dirname, join } from "node:path";
 import {
 	askConflict,
 	type ConflictAnswer,
 	type ConflictChoice,
 } from "../components/Conflict";
+import { ARCHIVE_EXTENSIONS } from "./consts";
 import { ctx } from "./context";
 import { logError } from "./log";
 import { getDirentPath, isFolder, isInsidePath } from "./navigation";
@@ -29,7 +30,7 @@ export async function copyDirent(
 	dirent: Dirent,
 	toPath: string,
 ): Promise<void> {
-	if (pathExists(toPath)) {
+	if (entryExists(toPath)) {
 		throw new Error(`Cannot copy, ${toPath} already exists.`);
 	}
 
@@ -42,7 +43,11 @@ export async function copyDirent(
 			errorOnExist: true,
 		});
 	} catch (error) {
-		await rm(toPath, { recursive: true, force: true });
+		const code: string | undefined = (error as NodeJS.ErrnoException).code;
+
+		if (code !== "ERR_FS_CP_EEXIST" && code !== "EEXIST") {
+			await rm(toPath, { recursive: true, force: true }).catch(logError);
+		}
 
 		throw error;
 	}
@@ -120,17 +125,27 @@ export function cut(dirents: Dirent[]): void {
 	$cutDirents.set(dirents);
 }
 
+function extensionStart(name: string): number {
+	const lowerName: string = name.toLowerCase();
+	const archive: string | undefined = ARCHIVE_EXTENSIONS.find(
+		(extension: string): boolean =>
+			lowerName.length > extension.length && lowerName.endsWith(extension),
+	);
+
+	return archive ? name.length - archive.length : name.lastIndexOf(".");
+}
+
 export function uniqueName(
 	folder: string,
 	name: string,
 	isFolderName: boolean,
 ): string {
-	const dot: number = isFolderName ? -1 : name.lastIndexOf(".");
+	const dot: number = isFolderName ? -1 : extensionStart(name);
 	const stem: string = dot > 0 ? name.slice(0, dot) : name;
 	const extension: string = dot > 0 ? name.slice(dot) : "";
 	let candidate: string = name;
 
-	for (let count: number = 2; pathExists(join(folder, candidate)); count++) {
+	for (let count: number = 2; entryExists(join(folder, candidate)); count++) {
 		candidate = `${stem} (${count})${extension}`;
 	}
 
@@ -141,10 +156,9 @@ export async function replaceEntry(
 	target: string,
 	place: () => Promise<void>,
 ): Promise<void> {
-	const folder: string = dirname(target);
 	const backup: string = join(
-		folder,
-		uniqueName(folder, `.${basename(target)}.filet-replaced`, true),
+		dirname(target),
+		`.filet-replaced-${crypto.randomUUID().slice(0, 8)}`,
 	);
 
 	await renameEntry(target, backup);
@@ -152,18 +166,16 @@ export async function replaceEntry(
 	try {
 		await place();
 	} catch (error) {
-		if (!entryExists(target)) {
+		if (entryExists(target)) {
+			logError(new Error(`Kept the replaced ${target} at ${backup}`));
+		} else {
 			await renameEntry(backup, target);
-
-			throw error;
 		}
-
-		await rm(backup, { recursive: true, force: true });
 
 		throw error;
 	}
 
-	await rm(backup, { recursive: true, force: true });
+	await rm(backup, { recursive: true, force: true }).catch(logError);
 }
 
 interface Destination {
@@ -183,7 +195,7 @@ export async function paste(): Promise<void> {
 			(dirent: Dirent): boolean => !isCutting || dirent.parentPath !== toFolder,
 		);
 	const written: string[] = [];
-	const moved: Dirent[] = [];
+	const moved: Set<Dirent> = new Set<Dirent>();
 	let refusal: string = "";
 	let always: ConflictChoice | null = null;
 	let cancelled: boolean = false;
@@ -280,7 +292,7 @@ export async function paste(): Promise<void> {
 					await (destination.replace ? replaceEntry(target, place) : place());
 
 					written.push(destination.name);
-					moved.push(dirent);
+					moved.add(dirent);
 				},
 			);
 
@@ -292,7 +304,7 @@ export async function paste(): Promise<void> {
 				$cutDirents.set(
 					$cutDirents
 						.get()
-						.filter((dirent: Dirent): boolean => !moved.includes(dirent)),
+						.filter((dirent: Dirent): boolean => !moved.has(dirent)),
 				);
 			}
 		},

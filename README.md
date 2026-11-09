@@ -282,5 +282,5 @@ This installs filet the same way as `bun run install:app`.
 - [x] Virtualize the explorer list so directories with more than ~16,000 entries (e.g. `/nix/store`) load fully.
 - [x] Directory and file preview modal.
 - [x] Shortcuts cheat-sheet modal.
-- [ ] Add option to compress files/folders.
-- [ ] Add a name resolver to allow filesystem functions for files/folders with the same names.
+- [x] Add option to compress files/folders.
+- [x] Add a name resolver to allow filesystem functions for files/folders with the same names.

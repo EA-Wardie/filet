@@ -173,6 +173,10 @@ export class Conflict {
 	}
 
 	private onKeypress = (key: core.KeyEvent): void => {
+		if (key.ctrl || key.meta || key.option) {
+			return;
+		}
+
 		if (key.name === "return") {
 			this.answer("keepBoth");
 		} else if (key.name === "escape") {

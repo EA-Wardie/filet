@@ -35,8 +35,13 @@ export function registerSidebarPath(path: string): () => void {
 
 	return (): void => {
 		const paths: string[] = [...$linkPaths.get()];
+		const index: number = paths.indexOf(path);
 
-		paths.splice(paths.indexOf(path), 1);
+		if (index < 0) {
+			return;
+		}
+
+		paths.splice(index, 1);
 
 		$linkPaths.set(paths);
 	};

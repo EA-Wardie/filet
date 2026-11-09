@@ -7,7 +7,6 @@ import {
 	eachDirent,
 	entryExists,
 	moveDirent,
-	pathExists,
 	replaceEntry,
 	uniqueName,
 } from "./filesystem";
@@ -46,7 +45,7 @@ async function claimTrashName(path: string): Promise<string> {
 	for (let count: number = 1; ; count++) {
 		const trashName: string = count === 1 ? name : `${name}.${count}`;
 
-		if (pathExists(`${trashFilesPath}/${trashName}`)) {
+		if (entryExists(`${trashFilesPath}/${trashName}`)) {
 			continue;
 		}
 
