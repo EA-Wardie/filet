@@ -24,9 +24,11 @@ export async function trackTask(
 
 export async function runTask(
 	task: () => Promise<unknown>,
-	select?: string,
+	select?: string | (() => string | undefined),
 ): Promise<void> {
 	const succeeded: boolean = await trackTask(task);
 
-	refresh(succeeded ? select : undefined);
+	refresh(
+		succeeded ? (typeof select === "function" ? select() : select) : undefined,
+	);
 }

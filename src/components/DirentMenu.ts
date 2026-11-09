@@ -32,6 +32,7 @@ export class DirentMenu {
 				MenuButton.make({
 					label: "󰏌 Open",
 					shortcut: shortcutLabel(SHORTCUTS.open),
+					visible: SHORTCUTS.open.when(dirent),
 					onClick: (): void => {
 						SHORTCUTS.open.run(dirent);
 					},

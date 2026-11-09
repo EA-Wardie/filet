@@ -3,8 +3,12 @@ import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
 import { COLLATOR } from "../lib/consts";
 import { ctx } from "../lib/context";
-import { logError } from "../lib/log";
-import { isFolder, readFolder, takeSelectName } from "../lib/navigation";
+import {
+	isFolder,
+	readFolder,
+	reportPathError,
+	takeSelectName,
+} from "../lib/navigation";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import {
 	$copyDirents,
@@ -226,9 +230,9 @@ export class VirtualExplorer {
 				}
 
 				if (error) {
-					logError(error);
-
 					this.clearDirents();
+
+					reportPathError(path, error);
 
 					return;
 				}

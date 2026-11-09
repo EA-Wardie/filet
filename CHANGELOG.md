@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.3.6 (2026-11-09)
+
+### Added
+
+- Pasting onto a name that already exists opens a dialog with Cancel, Skip, Replace and Keep both. Keep both, the default for `Return`, names the new item `name (2).ext`, never splitting a folder's name at a dot. `S` skips, `R` replaces, and `Escape` cancels the rest of the paste. Replace moves the existing item aside until the new one is in place, and puts it back if the paste fails. When more items follow, Apply to all, toggled by clicking it or pressing `A`, reuses the answer for the rest. If another dialog is open when a conflict comes up, the conflict dialog waits for it to close.
+- Pasting a copy into its own folder keeps both without asking. Pasting a folder into itself or one of its subfolders is refused with "Can't paste a folder into itself", and replacing a folder with an item from inside it is refused too. A refusal is shown in the footer only when nothing else failed, and isn't logged.
+- A copy that fails partway, including the copy a move falls back to across filesystems, removes what it had copied.
+- Restoring from trash onto a path that's taken opens the same dialog, without Apply to all.
+
+### Changed
+
+- Search filters the list as you type. `Return` leaves the search field and keeps the filter, and `Escape` still clears it.
+- Copied items stay on the clipboard after a paste, so they can be pasted again. Cut items are still used up once moved.
+- Copies keep the permissions and modified time of files, and symbolic links are copied as links instead of as their targets' contents.
+- Restoring from trash moves the item back with a rename, copying only when it's on another filesystem, instead of always copying it.
+- The sidebar highlights the place, bookmark or drive whose path is the longest match for the current folder, so `~/Documents/notes` highlights Documents. Home and `/` are highlighted only when you're in them.
+- The sidebar leaves out Downloads, Documents, Pictures, Music and Videos when the folder doesn't exist at startup.
+- In the trash, `Return`, a double click and the context menu's Open no longer open folders, the same as `L`. Files still open.
+
+### Fixed
+
+- Pasting onto a name that already exists failed the whole paste and only logged the error.
+- Trashing an item with the same name as one already in the trash overwrote the earlier one. Trashed items now get a free name, `name`, `name.2`, `name.3` and so on, claimed by creating the `.trashinfo` file exclusively.
+- `.trashinfo` files now follow the freedesktop spec: `Path=` is percent-encoded per path segment, and `DeletionDate=` is local time as `YYYY-MM-DDThh:mm:ss` instead of ISO UTC.
+- A restore whose target existed failed and was only logged. Restore failures are now reported in the footer.
+- A folder that can't be read showed an empty list with no message. The footer now says it can't be opened, or that it doesn't exist.
+
+### Internal
+
+- New `Conflict` component and `askConflict()` in `components/Conflict.ts`, which resolves to the choice and whether it applies to all.
+- New `uniqueName()`, `entryExists()` and `replaceEntry()` in `lib/filesystem.ts`. `replaceEntry()` renames the target to a hidden `.<name>.filet-replaced` name, places the new item, then removes the backup, or renames it back when nothing was placed. `entryExists()` counts only a successful `lstat`, so a folder that can't be read doesn't show a false conflict; `pathExists()` stays strict for name validation. `copyDirent` uses `fs.cp` with `preserveTimestamps` and `verbatimSymlinks` for every entry, instead of `Bun.write` for files.
+- `runTask()` takes the name to select as a string or a function, so `paste()` can select the first name it actually wrote.
+- `reportPathError()` in `lib/navigation.ts` is exported and used by `VirtualExplorer`.
+- `SidebarLink.ts` keeps a registry of link paths, with `registerSidebarPath()`, and a computed active path that links subscribe to instead of `$currentPath`. `TrashSidebarLink` registers the trash path, so links above it aren't highlighted inside the trash.
+- `moveToTrash` creates `files/` and `info/` once if they're missing.
+- Per-mount trash folders (`$topdir/.Trash-$uid`) are still not supported. Items on other drives are moved into the home trash.
+
 ## 0.3.5 (2026-11-02)
 
 ### Added

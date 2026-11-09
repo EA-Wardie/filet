@@ -1,4 +1,4 @@
-import { type Dirent, existsSync, lstatSync } from "node:fs";
+import { type Dirent, lstatSync } from "node:fs";
 import {
 	cp,
 	mkdir,
@@ -6,11 +6,15 @@ import {
 	rm,
 	writeFile,
 } from "node:fs/promises";
-import { join } from "node:path";
-import type { WritableAtom } from "nanostores";
+import { basename, dirname, join } from "node:path";
+import {
+	askConflict,
+	type ConflictAnswer,
+	type ConflictChoice,
+} from "../components/Conflict";
 import { ctx } from "./context";
 import { logError } from "./log";
-import { getDirentPath } from "./navigation";
+import { getDirentPath, isFolder, isInsidePath } from "./navigation";
 import {
 	$copyDirents,
 	$currentPath,
@@ -25,15 +29,23 @@ export async function copyDirent(
 	dirent: Dirent,
 	toPath: string,
 ): Promise<void> {
-	const fromPath: string = getDirentPath(dirent);
-
-	if (dirent.isDirectory()) {
-		await cp(fromPath, toPath, { recursive: true });
-
-		return;
+	if (pathExists(toPath)) {
+		throw new Error(`Cannot copy, ${toPath} already exists.`);
 	}
 
-	await Bun.write(toPath, Bun.file(fromPath));
+	try {
+		await cp(getDirentPath(dirent), toPath, {
+			recursive: true,
+			preserveTimestamps: true,
+			verbatimSymlinks: true,
+			force: false,
+			errorOnExist: true,
+		});
+	} catch (error) {
+		await rm(toPath, { recursive: true, force: true });
+
+		throw error;
+	}
 }
 
 export async function removeDirent(dirent: Dirent): Promise<void> {
@@ -108,48 +120,194 @@ export function cut(dirents: Dirent[]): void {
 	$cutDirents.set(dirents);
 }
 
+export function uniqueName(
+	folder: string,
+	name: string,
+	isFolderName: boolean,
+): string {
+	const dot: number = isFolderName ? -1 : name.lastIndexOf(".");
+	const stem: string = dot > 0 ? name.slice(0, dot) : name;
+	const extension: string = dot > 0 ? name.slice(dot) : "";
+	let candidate: string = name;
+
+	for (let count: number = 2; pathExists(join(folder, candidate)); count++) {
+		candidate = `${stem} (${count})${extension}`;
+	}
+
+	return candidate;
+}
+
+export async function replaceEntry(
+	target: string,
+	place: () => Promise<void>,
+): Promise<void> {
+	const folder: string = dirname(target);
+	const backup: string = join(
+		folder,
+		uniqueName(folder, `.${basename(target)}.filet-replaced`, true),
+	);
+
+	await renameEntry(target, backup);
+
+	try {
+		await place();
+	} catch (error) {
+		if (!entryExists(target)) {
+			await renameEntry(backup, target);
+
+			throw error;
+		}
+
+		await rm(backup, { recursive: true, force: true });
+
+		throw error;
+	}
+
+	await rm(backup, { recursive: true, force: true });
+}
+
+interface Destination {
+	name: string;
+	replace: boolean;
+}
+
 export async function paste(): Promise<void> {
 	const isCutting: boolean = !$copyDirents.get().length;
-	const clipboard: WritableAtom<Dirent[]> = isCutting
-		? $cutDirents
-		: $copyDirents;
 	const transfer: (dirent: Dirent, toPath: string) => Promise<void> = isCutting
 		? moveDirent
 		: copyDirent;
 	const toFolder: string = $currentPath.get();
-	const toPath = (dirent: Dirent): string => join(toFolder, dirent.name);
-	const dirents: Dirent[] = clipboard
+	const dirents: Dirent[] = (isCutting ? $cutDirents : $copyDirents)
 		.get()
 		.filter(
-			(dirent: Dirent): boolean => toPath(dirent) !== getDirentPath(dirent),
+			(dirent: Dirent): boolean => !isCutting || dirent.parentPath !== toFolder,
 		);
+	const written: string[] = [];
+	const moved: Dirent[] = [];
+	let refusal: string = "";
+	let always: ConflictChoice | null = null;
+	let cancelled: boolean = false;
 
 	if (!dirents.length) {
 		return;
 	}
 
-	await runTask(async (): Promise<void> => {
-		for (const dirent of dirents) {
-			if (existsSync(toPath(dirent))) {
-				throw new Error(`Cannot paste, ${toPath(dirent)} already exists.`);
+	function keepBoth(dirent: Dirent): Destination {
+		return {
+			name: uniqueName(toFolder, dirent.name, isFolder(dirent)),
+			replace: false,
+		};
+	}
+
+	async function resolveDestination(
+		dirent: Dirent,
+	): Promise<Destination | string | null> {
+		const source: string = getDirentPath(dirent);
+
+		if (isInsidePath(toFolder, source)) {
+			return "Can't paste a folder into itself";
+		}
+
+		if (dirent.parentPath === toFolder) {
+			return keepBoth(dirent);
+		}
+
+		const target: string = join(toFolder, dirent.name);
+
+		if (!entryExists(target)) {
+			return { name: dirent.name, replace: false };
+		}
+
+		let choice: ConflictChoice | null = always;
+
+		if (!choice) {
+			const answer: ConflictAnswer = await askConflict(
+				dirent.name,
+				toFolder,
+				dirent !== dirents.at(-1),
+			);
+
+			choice = answer.choice;
+
+			if (answer.all) {
+				always = choice;
 			}
 		}
 
-		const failed: Dirent[] = await eachDirent(
-			dirents,
-			"paste",
-			(dirent: Dirent): Promise<void> => transfer(dirent, toPath(dirent)),
-		);
+		switch (choice) {
+			case "cancel":
+				cancelled = true;
 
-		clipboard.set(
-			clipboard
-				.get()
-				.filter(
-					(dirent: Dirent): boolean =>
-						!dirents.includes(dirent) || failed.includes(dirent),
-				),
-		);
-	}, dirents[0]?.name);
+				return null;
+			case "skip":
+				return null;
+			case "keepBoth":
+				return keepBoth(dirent);
+			case "replace":
+				return isInsidePath(source, target)
+					? "Can't replace a folder with an item from inside it"
+					: { name: dirent.name, replace: true };
+		}
+	}
+
+	await runTask(
+		async (): Promise<void> => {
+			const failed: Dirent[] = await eachDirent(
+				dirents,
+				"paste",
+				async (dirent: Dirent): Promise<void> => {
+					if (cancelled) {
+						return;
+					}
+
+					const destination: Destination | string | null =
+						await resolveDestination(dirent);
+
+					if (destination === null) {
+						return;
+					}
+
+					if (typeof destination === "string") {
+						refusal = destination;
+
+						return;
+					}
+
+					const target: string = join(toFolder, destination.name);
+					const place: () => Promise<void> = (): Promise<void> =>
+						transfer(dirent, target);
+
+					await (destination.replace ? replaceEntry(target, place) : place());
+
+					written.push(destination.name);
+					moved.push(dirent);
+				},
+			);
+
+			if (refusal && !failed.length) {
+				$notice.set(refusal);
+			}
+
+			if (isCutting) {
+				$cutDirents.set(
+					$cutDirents
+						.get()
+						.filter((dirent: Dirent): boolean => !moved.includes(dirent)),
+				);
+			}
+		},
+		(): string | undefined => written[0],
+	);
+}
+
+export function entryExists(path: string): boolean {
+	try {
+		lstatSync(path);
+
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 export function pathExists(path: string): boolean {

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import * as core from "@opentui/core";
 import { bookmarks, theme } from "../lib/config";
 import {
@@ -78,47 +79,20 @@ export class Sidebar {
 	}
 
 	private addPlaces(): void {
-		this._component.add(
-			SidebarLink.make({
-				path: HOME_DIRECTORY,
-				label: " Home",
-			}),
-		);
+		const places: { path: string; label: string }[] = [
+			{ path: HOME_DIRECTORY, label: " Home" },
+			{ path: `${HOME_DIRECTORY}/Downloads`, label: " Downloads" },
+			{ path: `${HOME_DIRECTORY}/Documents`, label: "󱔗 Documents" },
+			{ path: `${HOME_DIRECTORY}/Pictures`, label: " Pictures" },
+			{ path: `${HOME_DIRECTORY}/Music`, label: " Music" },
+			{ path: `${HOME_DIRECTORY}/Videos`, label: "󰿎 Videos" },
+		];
 
-		this._component.add(
-			SidebarLink.make({
-				path: `${HOME_DIRECTORY}/Downloads`,
-				label: " Downloads",
-			}),
-		);
-
-		this._component.add(
-			SidebarLink.make({
-				path: `${HOME_DIRECTORY}/Documents`,
-				label: "󱔗 Documents",
-			}),
-		);
-
-		this._component.add(
-			SidebarLink.make({
-				path: `${HOME_DIRECTORY}/Pictures`,
-				label: " Pictures",
-			}),
-		);
-
-		this._component.add(
-			SidebarLink.make({
-				path: `${HOME_DIRECTORY}/Music`,
-				label: " Music",
-			}),
-		);
-
-		this._component.add(
-			SidebarLink.make({
-				path: `${HOME_DIRECTORY}/Videos`,
-				label: "󰿎 Videos",
-			}),
-		);
+		for (const place of places) {
+			if (place.path === HOME_DIRECTORY || existsSync(place.path)) {
+				this._component.add(SidebarLink.make(place));
+			}
+		}
 	}
 
 	private addBookmarks(): void {

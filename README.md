@@ -20,15 +20,16 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Features
 
-- Explore directories with back and forward navigation and an editable path bar. Entering a file path opens its folder with the file selected, relative paths such as `..` resolve against the current folder, and `~` expands to your home folder. Paths that can't be opened are reported in the footer.
+- Explore directories with back and forward navigation and an editable path bar. A folder that can't be read is reported in the footer. Entering a file path opens its folder with the file selected, relative paths such as `..` resolve against the current folder, and `~` expands to your home folder. Paths that can't be opened are reported in the footer.
 - Start filet in a folder with `filet <path>`, such as `filet ~/Downloads`. A file path opens its folder with the file selected. Relative paths resolve against the folder you ran it from, and `~` expands to your home folder. A path that can't be opened falls back to your home folder and is reported in the footer.
-- Search the current directory by name.
+- Search the current directory by name. The list filters as you type, `Return` keeps the filter, and `Escape` clears it.
 - Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
 - Show the properties of a file or folder with `I` or the Properties context menu item: type, path, size, permissions, owner, group, and modified, accessed and created dates. Symbolic links show their target, and folders, including linked folders, show their item count and total size, calculated with `du`.
 - List every keyboard shortcut and mouse control with `?` or the keyboard button in the sidebar header.
 - Open files in their default application, or run them if they are executable.
-- Create, copy, cut, paste, rename, trash and delete files and directories.
-- Restore files and directories from trash, or empty it.
+- Create, copy, cut, paste, rename, trash and delete files and directories. Copies keep their permissions and modified times, and symbolic links are copied as links. Copied items stay on the clipboard, so they can be pasted again; cut items are used up once moved.
+- When a pasted item already exists, a dialog offers Replace (`R`), Skip (`S`), Keep both (`Return`) or Cancel (`Escape`), with Apply to all when more items follow. Keep both names the new item `name (2).ext`. Pasting a copy into its own folder keeps both without asking, and pasting a folder into itself is refused.
+- Restore files and directories from trash, or empty it. The trash follows the freedesktop layout: items with the same name are kept side by side as `name`, `name.2` and so on, and restoring moves the item back, asking what to do when something is already there.
 - Extract `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
 - Compress files and directories into any of the same formats. The archive's name defaults to `.zip`, and its extension picks the format.
 - Drag and drop files and directories into other applications with `ripdrag`.
@@ -37,7 +38,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Move through the explorer with the arrow keys or `H`, `J`, `K` and `L`, and act on the selection with single letter shortcuts.
 - Nerd Font file icons and context menus.
 - Drives in the sidebar. The link to `/` is named after your distro, from `NAME` in `/etc/os-release`, or Root if it has none. Below it, the sidebar lists drives mounted under `/run/media/$USER` or `/media/$USER`, and drives that aren't mounted, which are dimmed: plugged-in drives, and drives you've unmounted since filet started. Clicking an unmounted drive mounts and opens it. Right-click a drive to mount it, or to eject a removable drive or unmount any other. Ejecting unmounts the drive, then leaves it if you're browsing it, and powers it off unless another of its partitions is still mounted. If a drive you're browsing is unmounted or unplugged elsewhere, filet returns to your home folder. Mounting and ejecting need `udisksctl` from udisks2, and listing drives needs `lsblk`.
-- Bookmarks and a themeable UI, configurable through a user config file.
+- Bookmarks and a themeable UI, configurable through a user config file. The sidebar highlights the place, bookmark or drive you're browsing inside, and hides places like `~/Music` that don't exist. Home and `/` are highlighted only when you're in them.
 - First party mouse support.
 
 ## Screenshots
@@ -116,7 +117,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | Action         | Target         | Result                                                                                                      |
 | -------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |
 | `Left click`   | File or folder | Select it. Files are shown in the preview sidebar while it is open.                                         |
-| `Double click` | File or folder | Open it. Folders open in the explorer, and files in their default application, or run if executable.        |
+| `Double click` | File or folder | Open it. Folders open in the explorer, and files in their default application, or run if executable. Folders in the trash don't open. |
 | `Ctrl+click`   | File or folder | Mark or unmark it, and select it.                                                                           |
 | `Right click`  | File or folder | Open its context menu.                                                                                      |
 | `Right click`  | Explorer       | Open the explorer context menu.                                                                             |
@@ -128,7 +129,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 
 | Key            | Action                                                                                         |
 | -------------- | ---------------------------------------------------------------------------------------------- |
-| `Return`       | Open the selected file or folder, the same as a double click.                                  |
+| `Return`       | Open the selected file or folder, the same as a double click. Folders in the trash don't open. |
 | `Space`        | Mark or unmark the selected file or folder, then select the entry below.                       |
 | `Escape`       | Clear the marks, or the selection when nothing is marked.                                      |
 | `Up` / `K`     | Select the entry above, scrolling it into view. With nothing selected, select the last entry.  |
@@ -139,14 +140,14 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `I`            | Show the properties of the selected file or folder.                                            |
 | `Ctrl+X`       | Cut the marked items, or the selected file or folder.                                          |
 | `Ctrl+C`       | Copy the marked items, or the selected file or folder.                                         |
-| `Ctrl+V`       | Paste the cut or copied items into the current folder.                                         |
+| `Ctrl+V`       | Paste the cut or copied items into the current folder, asking about names that already exist. |
 | `Y`            | Copy the paths of the marked items, or the selected file or folder, to the system clipboard.   |
 | `Ctrl+R`       | Refresh the current folder, keeping the selection.                                             |
 | `R`            | Rename the selected file or folder.                                                            |
 | `N`            | Create a new file in the current folder.                                                       |
 | `F`            | Create a new folder in the current folder.                                                     |
 | `T`            | Move the marked items, or the selected file or folder, to trash, after confirmation.           |
-| `Ctrl+Z`       | Restore a file or folder from trash, after confirmation.                                       |
+| `Ctrl+Z`       | Restore a file or folder from trash, after confirmation, asking if its location is taken.      |
 | `Delete` / `D` | Permanently delete the marked items, or the selected file or folder, after confirmation.       |
 | `E`            | Extract the selected archive into a folder next to it. See [Requirements](#requirements).      |
 | `A`            | Compress the marked items or selection into a new archive. See [Requirements](#requirements).  |
@@ -256,11 +257,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.3.5.tar.xz" --one-top-level
+tar -xvJf "Release 0.3.6.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.3.5"
+cd "Release 0.3.6"
 ```
 Run the install script.
 ```
