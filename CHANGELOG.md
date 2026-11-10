@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.7 (2026-11-10)
+
+### Added
+
+- `sidebar_width` and `preview_width` in the config file set the widths of the sidebar and the preview sidebar, as a number of columns, such as `40` or `"40"`, or a percentage of the terminal's width, such as `"25%"`. They default to `34` and `"30%"`. An invalid width falls back to its default and is written to the error log.
+
+### Changed
+
+- The preview sidebar is 30% of the terminal's width by default, down from 40%.
+- The README's From a release commands name 0.3.7.
+
+### Internal
+
+- New `Width` type and `parseWidth()` in `lib/config.ts`, which export `sidebarWidth` and `previewWidth`. A width is a positive integer, a string of digits that is read as one, or a string of a number greater than 0 and at most 100 followed by `%`.
+
 ## 0.3.6 (2026-11-09)
 
 ### Added

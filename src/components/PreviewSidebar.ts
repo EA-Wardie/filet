@@ -1,6 +1,6 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { previewWidth, theme } from "../lib/config";
 import { PREVIEW_DELAY, PREVIEW_MIN_WIDTH } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { canPreview, getDirentPath } from "../lib/navigation";
@@ -21,7 +21,7 @@ export class PreviewSidebar {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			width: "40%",
+			width: previewWidth,
 			height: "100%",
 			flexShrink: 0,
 			border: ["right"],

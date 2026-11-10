@@ -83,6 +83,10 @@ logs_path = "/home/<user>/.local/state/filet/logs"
 
 double_click_timeout = 250
 
+sidebar_width = 34
+
+preview_width = "30%"
+
 terminal = "kitty"
 
 [theme]
@@ -95,6 +99,8 @@ accent = "#0369a1"
 ```
 
 `terminal` is the command run by `O` and the Open in Terminal menu items, started in the current folder, or in the folder you right clicked. It can include arguments, such as `"kitty --single-instance"`, which are split on spaces. When an argument or the path to the terminal contains spaces, use a list instead, such as `["kitty", "--title", "My Terminal"]`. Without it, or when it's invalid, filet uses `$TERMINAL`, then [`xdg-terminal-exec`](https://gitlab.freedesktop.org/terminal-wg/specifications). If the folder can't be opened, or the terminal can't be started or quits with an error within 2 seconds, the footer says so and the error is logged.
+
+`sidebar_width` and `preview_width` set the widths of the sidebar and the preview sidebar. Each is either a number of columns, such as `40` or `"40"`, or a percentage of the terminal's width as a string, such as `"25%"`. They default to `34` and `"30%"`. An invalid width, such as `0`, `12.5` or `"150%"`, falls back to its default and is written to the error log. The sidebar still hides when the terminal is 100 columns wide or less, and the preview sidebar at 140 or less.
 
 ## Logs
 
@@ -257,11 +263,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.3.6.tar.xz" --one-top-level
+tar -xvJf "Release 0.3.7.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.3.6"
+cd "Release 0.3.7"
 ```
 Run the install script.
 ```
