@@ -1,12 +1,13 @@
 import { readFile } from "node:fs";
 import { userInfo } from "node:os";
-import type { $ } from "bun";
+import type { $, Subprocess } from "bun";
 import {
 	COLLATOR,
 	DRIVES_POLL_INTERVAL,
 	DRIVES_SETTLE_DELAY,
 	HOME_DIRECTORY,
 } from "./consts";
+import { ctx } from "./context";
 import { logError } from "./log";
 import { go, isInsidePath } from "./navigation";
 import { $currentPath, $drives, $notice, type Drive } from "./store";
@@ -19,6 +20,7 @@ interface BlockDevice {
 	label: string | null;
 	size: string | null;
 	type: string;
+	parttype: string | null;
 	fstype: string | null;
 	mountpoints: (string | null)[] | null;
 	hotplug: boolean;
@@ -43,6 +45,15 @@ const HIDDEN_FILESYSTEMS: Set<string> = new Set<string>([
 	"bcache",
 ]);
 
+const HIDDEN_PART_TYPES: Set<string> = new Set<string>([
+	"c12a7328-f81f-11d2-ba4b-00a0c93ec93b",
+	"0xef",
+	"de94bba4-06d1-4d40-a16a-bfd50179d6ac",
+	"0x27",
+	"e3c9e316-0b5c-4db8-817d-f92df00215ae",
+	"21686148-6449-6e6f-744e-656564454649",
+]);
+
 const WATCHED_FILES: string[] = ["/proc/self/mounts", "/proc/partitions"];
 
 let snapshot: string | null = null;
@@ -50,7 +61,6 @@ let scanCount: number = 0;
 let appliedScan: number = 0;
 let failureLogged: boolean = false;
 let settleTimer: Timer | undefined;
-const seenMounted: Set<string> = new Set<string>();
 const busy: Set<string> = new Set<string>();
 
 function mountPoints(device: BlockDevice): string[] {
@@ -69,9 +79,9 @@ function findUserMount(device: BlockDevice): string | null {
 
 function isMountable(device: BlockDevice, parents: Set<string>): boolean {
 	return (
-		(device.hotplug || seenMounted.has(device.path)) &&
 		device.fstype !== null &&
 		!HIDDEN_FILESYSTEMS.has(device.fstype) &&
+		!HIDDEN_PART_TYPES.has(device.parttype?.toLowerCase() ?? "") &&
 		(device.type === "part" ||
 			(device.type === "disk" && !parents.has(device.name))) &&
 		!mountPoints(device).length
@@ -98,10 +108,6 @@ function findDrives(devices: BlockDevice[]): Drive[] {
 
 	for (const device of devices) {
 		const mount: string | null = findUserMount(device);
-
-		if (mount !== null) {
-			seenMounted.add(device.path);
-		}
 
 		if (mount !== null || isMountable(device, parents)) {
 			drives.push(toDrive(device, mount));
@@ -152,7 +158,7 @@ function applyDrives(drives: Drive[]): void {
 function scanDrives(): Promise<void> {
 	const scan: number = ++scanCount;
 
-	return Bun.$`lsblk -J -l -o NAME,PATH,PKNAME,LABEL,SIZE,TYPE,FSTYPE,MOUNTPOINTS,HOTPLUG`
+	return Bun.$`lsblk -J -l -o NAME,PATH,PKNAME,LABEL,SIZE,TYPE,PARTTYPE,FSTYPE,MOUNTPOINTS,HOTPLUG`
 		.nothrow()
 		.quiet()
 		.then((output: $.ShellOutput): void => {
@@ -221,21 +227,70 @@ export function watchDrives(): void {
 	setInterval(checkDrives, DRIVES_POLL_INTERVAL).unref();
 }
 
+async function runUdisksInteractive(
+	action: string,
+	device: string,
+): Promise<number> {
+	const ignore: () => void = (): void => {};
+
+	ctx.suspend();
+	process.on("SIGINT", ignore);
+
+	try {
+		const subprocess: Subprocess = Bun.spawn(
+			["udisksctl", action, "-b", device],
+			{ stdio: ["inherit", "inherit", "inherit"] },
+		);
+
+		return await subprocess.exited;
+	} finally {
+		process.off("SIGINT", ignore);
+		ctx.resume();
+	}
+}
+
+async function runUdisksDetached(
+	action: string,
+	device: string,
+): Promise<string | null> {
+	const subprocess: Subprocess<"ignore", "ignore", "pipe"> = Bun.spawn(
+		["udisksctl", action, "-b", device],
+		{
+			stdin: "ignore",
+			stdout: "ignore",
+			stderr: "pipe",
+			detached: true,
+		},
+	);
+	const [error, exitCode]: [string, number] = await Promise.all([
+		new Response(subprocess.stderr).text(),
+		subprocess.exited,
+	]);
+
+	return exitCode === 0 ? null : error.trim();
+}
+
 async function runUdisks(
 	action: string,
 	device: string,
 	failure: string,
 ): Promise<void> {
-	const output: $.ShellOutput =
-		await Bun.$`udisksctl ${action} -b ${device} --no-user-interaction`
-			.nothrow()
-			.quiet();
+	const error: string | null = await runUdisksDetached(action, device);
 
-	if (output.exitCode !== 0) {
-		$notice.set(failure);
-
-		throw new Error(output.stderr.toString().trim());
+	if (error === null) {
+		return;
 	}
+
+	if (
+		error.includes("NotAuthorizedCanObtain") &&
+		(await runUdisksInteractive(action, device)) === 0
+	) {
+		return;
+	}
+
+	$notice.set(failure);
+
+	throw new Error(error);
 }
 
 function hasMountedSibling(drive: Drive): boolean {

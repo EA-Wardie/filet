@@ -5,6 +5,8 @@
 ### Added
 
 - `sidebar_width` and `preview_width` in the config file set the widths of the sidebar and the preview sidebar, as a number of columns, such as `40` or `"40"`, or a percentage of the terminal's width, such as `"25%"`. They default to `34` and `"30%"`. An invalid width falls back to its default and is written to the error log.
+- The sidebar lists every drive or partition that isn't mounted, such as a second internal SSD, not only plugged-in drives and drives unmounted since filet started. EFI system, Windows recovery, Microsoft reserved and BIOS boot partitions stay hidden.
+- When polkit wants a password to mount, unmount or power off a drive, your desktop's polkit agent asks for it while filet keeps running. Without an agent, such as over SSH or in a bare TTY, filet pauses and runs `udisksctl` in the terminal so it can ask, then resumes. Ctrl+C at that prompt cancels without closing filet.
 
 ### Changed
 
@@ -14,6 +16,7 @@
 ### Internal
 
 - New `Width` type and `parseWidth()` in `lib/config.ts`, which export `sidebarWidth` and `previewWidth`. A width is a positive integer, a string of digits that is read as one, or a string of a number greater than 0 and at most 100 followed by `%`.
+- `lib/drives.ts` reads `PARTTYPE` from `lsblk` and skips partition types in `HIDDEN_PART_TYPES`. `seenMounted` is gone. `runUdisks` runs `udisksctl` detached from the terminal without `--no-user-interaction`, so polkit can use the session's agent, and falls back to `runUdisksInteractive()` when it fails with `NotAuthorizedCanObtain`.
 
 ## 0.3.6 (2026-11-09)
 
