@@ -63,6 +63,8 @@ interface ConfigFile {
 	trash_path?: string;
 	logs_path?: string;
 	double_click_timeout?: number;
+	sidebar_width?: unknown;
+	preview_width?: unknown;
 	terminal?: unknown;
 	theme?: unknown;
 }
@@ -118,6 +120,61 @@ if (userConfig.logs_path) {
 
 export const doubleClickTimeout: number =
 	userConfig.double_click_timeout ?? 250;
+
+export type Width = number | `${number}%`;
+
+const COLUMNS_PATTERN: RegExp = /^\d+$/;
+
+const PERCENT_PATTERN: RegExp = /^(\d+(?:\.\d+)?)%$/;
+
+function isPercent(value: string): value is `${number}%` {
+	const percent: string | undefined = PERCENT_PATTERN.exec(value)?.[1];
+
+	return percent !== undefined && Number(percent) > 0 && Number(percent) <= 100;
+}
+
+function toWidth(value: unknown): Width | undefined {
+	const columns: unknown =
+		typeof value === "string" && COLUMNS_PATTERN.test(value)
+			? Number(value)
+			: value;
+
+	if (typeof columns === "number") {
+		return Number.isInteger(columns) && columns > 0 ? columns : undefined;
+	}
+
+	return typeof columns === "string" && isPercent(columns)
+		? columns
+		: undefined;
+}
+
+function parseWidth(key: string, value: unknown, fallback: Width): Width {
+	if (value === undefined) {
+		return fallback;
+	}
+
+	const width: Width | undefined = toWidth(value);
+
+	if (width !== undefined) {
+		return width;
+	}
+
+	logError(new Error(`Invalid ${key}: ${JSON.stringify(value)}`));
+
+	return fallback;
+}
+
+export const sidebarWidth: Width = parseWidth(
+	"sidebar_width",
+	userConfig.sidebar_width,
+	34,
+);
+
+export const previewWidth: Width = parseWidth(
+	"preview_width",
+	userConfig.preview_width,
+	"30%",
+);
 
 function splitCommand(command: string): string[] | undefined {
 	const parts: string[] = command.split(/\s+/).filter(Boolean);

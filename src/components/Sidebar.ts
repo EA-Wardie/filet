@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import * as core from "@opentui/core";
-import { bookmarks, theme } from "../lib/config";
+import { bookmarks, sidebarWidth, theme } from "../lib/config";
 import {
 	CONTROLS_ICON,
 	DRIVE_ICON,
@@ -30,8 +30,9 @@ export class Sidebar {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			width: 34,
+			width: sidebarWidth,
 			height: "100%",
+			flexShrink: 0,
 			border: ["left", "right"],
 			borderColor: theme.border,
 			...this._options,

@@ -1,12 +1,14 @@
+import { dlopen, type Library } from "bun:ffi";
 import { readFile } from "node:fs";
 import { userInfo } from "node:os";
-import type { $ } from "bun";
+import type { $, Subprocess } from "bun";
 import {
 	COLLATOR,
 	DRIVES_POLL_INTERVAL,
 	DRIVES_SETTLE_DELAY,
 	HOME_DIRECTORY,
 } from "./consts";
+import { ctx } from "./context";
 import { logError } from "./log";
 import { go, isInsidePath } from "./navigation";
 import { $currentPath, $drives, $notice, type Drive } from "./store";
@@ -19,6 +21,7 @@ interface BlockDevice {
 	label: string | null;
 	size: string | null;
 	type: string;
+	parttype: string | null;
 	fstype: string | null;
 	mountpoints: (string | null)[] | null;
 	hotplug: boolean;
@@ -26,6 +29,12 @@ interface BlockDevice {
 
 interface BlockDevices {
 	blockdevices: BlockDevice[];
+}
+
+interface Interaction {
+	error: string;
+	exitCode: number;
+	cancelled: boolean;
 }
 
 const USER: string = userInfo().username;
@@ -41,6 +50,17 @@ const HIDDEN_FILESYSTEMS: Set<string> = new Set<string>([
 	"ddf_raid_member",
 	"zfs_member",
 	"bcache",
+	"BitLocker",
+]);
+
+const HIDDEN_PART_TYPES: Set<string> = new Set<string>([
+	"c12a7328-f81f-11d2-ba4b-00a0c93ec93b",
+	"0xef",
+	"de94bba4-06d1-4d40-a16a-bfd50179d6ac",
+	"0x27",
+	"e3c9e316-0b5c-4db8-817d-f92df00215ae",
+	"21686148-6449-6e6f-744e-656564454649",
+	"bc13c2ff-59e6-4262-a352-b275fd6f7172",
 ]);
 
 const WATCHED_FILES: string[] = ["/proc/self/mounts", "/proc/partitions"];
@@ -50,8 +70,8 @@ let scanCount: number = 0;
 let appliedScan: number = 0;
 let failureLogged: boolean = false;
 let settleTimer: Timer | undefined;
-const seenMounted: Set<string> = new Set<string>();
 const busy: Set<string> = new Set<string>();
+let prompting: Promise<unknown> = Promise.resolve();
 
 function mountPoints(device: BlockDevice): string[] {
 	return (device.mountpoints ?? []).filter(
@@ -69,9 +89,9 @@ function findUserMount(device: BlockDevice): string | null {
 
 function isMountable(device: BlockDevice, parents: Set<string>): boolean {
 	return (
-		(device.hotplug || seenMounted.has(device.path)) &&
 		device.fstype !== null &&
 		!HIDDEN_FILESYSTEMS.has(device.fstype) &&
+		!HIDDEN_PART_TYPES.has(device.parttype?.toLowerCase() ?? "") &&
 		(device.type === "part" ||
 			(device.type === "disk" && !parents.has(device.name))) &&
 		!mountPoints(device).length
@@ -98,10 +118,6 @@ function findDrives(devices: BlockDevice[]): Drive[] {
 
 	for (const device of devices) {
 		const mount: string | null = findUserMount(device);
-
-		if (mount !== null) {
-			seenMounted.add(device.path);
-		}
 
 		if (mount !== null || isMountable(device, parents)) {
 			drives.push(toDrive(device, mount));
@@ -152,7 +168,7 @@ function applyDrives(drives: Drive[]): void {
 function scanDrives(): Promise<void> {
 	const scan: number = ++scanCount;
 
-	return Bun.$`lsblk -J -l -o NAME,PATH,PKNAME,LABEL,SIZE,TYPE,FSTYPE,MOUNTPOINTS,HOTPLUG`
+	return Bun.$`lsblk -J -l -o NAME,PATH,PKNAME,LABEL,SIZE,TYPE,PARTTYPE,FSTYPE,MOUNTPOINTS,HOTPLUG`
 		.nothrow()
 		.quiet()
 		.then((output: $.ShellOutput): void => {
@@ -221,21 +237,123 @@ export function watchDrives(): void {
 	setInterval(checkDrives, DRIVES_POLL_INTERVAL).unref();
 }
 
+function flushInput(): void {
+	try {
+		const libc: Library<{ tcflush: { args: ["i32", "i32"]; returns: "i32" } }> =
+			dlopen("libc.so.6", {
+				tcflush: { args: ["i32", "i32"], returns: "i32" },
+			});
+
+		libc.symbols.tcflush(0, 0);
+		libc.close();
+	} catch (error) {
+		logError(error);
+	}
+}
+
+function isDismissed(error: string): boolean {
+	return error.includes("NotAuthorizedDismissed");
+}
+
+async function runUdisksInteractive(
+	action: string,
+	device: string,
+): Promise<Interaction> {
+	const ignore: () => void = (): void => {};
+
+	ctx.suspend();
+	process.on("SIGINT", ignore);
+
+	try {
+		const subprocess: Subprocess<"inherit", "inherit", "pipe"> = Bun.spawn(
+			["udisksctl", action, "-b", device],
+			{ stdin: "inherit", stdout: "inherit", stderr: "pipe" },
+		);
+		const [error, exitCode]: [string, number] = await Promise.all([
+			new Response(subprocess.stderr).text(),
+			subprocess.exited,
+		]);
+
+		return {
+			error: error.trim() || `udisksctl ${action} exited with ${exitCode}`,
+			exitCode: exitCode,
+			cancelled: subprocess.signalCode === "SIGINT" || isDismissed(error),
+		};
+	} finally {
+		process.off("SIGINT", ignore);
+		flushInput();
+		ctx.resume();
+	}
+}
+
+function queueInteractive(
+	action: string,
+	device: string,
+): Promise<Interaction> {
+	const interaction: Promise<Interaction> = prompting.then(
+		(): Promise<Interaction> => runUdisksInteractive(action, device),
+	);
+
+	prompting = interaction.catch((): void => {});
+
+	return interaction;
+}
+
+async function runUdisksDetached(
+	action: string,
+	device: string,
+): Promise<string | null> {
+	const subprocess: Subprocess<"ignore", "ignore", "pipe"> = Bun.spawn(
+		["udisksctl", action, "-b", device],
+		{
+			stdin: "ignore",
+			stdout: "ignore",
+			stderr: "pipe",
+			detached: true,
+		},
+	);
+	const [error, exitCode]: [string, number] = await Promise.all([
+		new Response(subprocess.stderr).text(),
+		subprocess.exited,
+	]);
+
+	return exitCode === 0 ? null : error.trim();
+}
+
 async function runUdisks(
 	action: string,
 	device: string,
 	failure: string,
-): Promise<void> {
-	const output: $.ShellOutput =
-		await Bun.$`udisksctl ${action} -b ${device} --no-user-interaction`
-			.nothrow()
-			.quiet();
+): Promise<boolean> {
+	const error: string | null = await runUdisksDetached(action, device);
 
-	if (output.exitCode !== 0) {
+	if (error === null) {
+		return true;
+	}
+
+	if (!error.includes("NotAuthorizedCanObtain")) {
 		$notice.set(failure);
 
-		throw new Error(output.stderr.toString().trim());
+		if (isDismissed(error)) {
+			return false;
+		}
+
+		throw new Error(error);
 	}
+
+	const interaction: Interaction = await queueInteractive(action, device);
+
+	if (interaction.exitCode === 0) {
+		return true;
+	}
+
+	$notice.set(failure);
+
+	if (interaction.cancelled) {
+		return false;
+	}
+
+	throw new Error(interaction.error);
 }
 
 function hasMountedSibling(drive: Drive): boolean {
@@ -263,7 +381,12 @@ function runDriveTask(drive: Drive, task: () => Promise<void>): void {
 
 export function mountDrive(drive: Drive): void {
 	runDriveTask(drive, async (): Promise<void> => {
-		await runUdisks("mount", drive.device, `Can't mount ${drive.label}`);
+		if (
+			!(await runUdisks("mount", drive.device, `Can't mount ${drive.label}`))
+		) {
+			return;
+		}
+
 		await scanDrives();
 
 		const mount: string | null =
@@ -278,7 +401,16 @@ export function mountDrive(drive: Drive): void {
 
 export function ejectDrive(drive: Drive): void {
 	runDriveTask(drive, async (): Promise<void> => {
-		await runUdisks("unmount", drive.device, `Can't unmount ${drive.label}`);
+		if (
+			!(await runUdisks(
+				"unmount",
+				drive.device,
+				`Can't unmount ${drive.label}`,
+			))
+		) {
+			return;
+		}
+
 		await scanDrives();
 
 		if (!drive.removable) {
