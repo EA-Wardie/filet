@@ -32,6 +32,7 @@ export class Sidebar {
 		this._component = new core.BoxRenderable(ctx, {
 			width: sidebarWidth,
 			height: "100%",
+			flexShrink: 0,
 			border: ["left", "right"],
 			borderColor: theme.border,
 			...this._options,
