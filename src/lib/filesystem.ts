@@ -332,15 +332,27 @@ export function pathExists(path: string): boolean {
 	}
 }
 
+export function nameProblem(name: string): string | null {
+	if (!name || name === "." || name === "..") {
+		return `'${name}' isn't a valid name`;
+	}
+
+	if (name.includes("/")) {
+		return "names can't contain '/'";
+	}
+
+	return null;
+}
+
 export function canUseName(
 	folder: string,
 	name: string,
 	verb: string,
 ): boolean {
-	if (!name || name === "." || name === "..") {
-		$notice.set(`Couldn't ${verb}, '${name}' isn't a valid name`);
-	} else if (name.includes("/")) {
-		$notice.set(`Couldn't ${verb}, names can't contain '/'`);
+	const problem: string | null = nameProblem(name);
+
+	if (problem) {
+		$notice.set(`Couldn't ${verb}, ${problem}`);
 	} else if (pathExists(join(folder, name))) {
 		$notice.set(`Couldn't ${verb}, '${name}' already exists`);
 	} else {

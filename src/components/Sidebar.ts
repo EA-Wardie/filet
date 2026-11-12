@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import * as core from "@opentui/core";
+import { chooser } from "../lib/chooser";
 import { bookmarks, sidebarWidth, theme } from "../lib/config";
 import {
 	CONTROLS_ICON,
@@ -114,6 +115,10 @@ export class Sidebar {
 	}
 
 	private addTrash(): void {
+		if (chooser) {
+			return;
+		}
+
 		this._component.add(Divider.make());
 		this._component.add(TrashSidebarLink.make());
 	}

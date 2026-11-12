@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import type { Subprocess } from "bun";
+import { chooser } from "./chooser";
 import {
 	expandHome,
 	terminalCommand,
@@ -27,6 +28,8 @@ import {
 
 let selectName: string | undefined;
 
+const TRASH_UNAVAILABLE: string = "The trash isn't available while choosing";
+
 export function takeSelectName(): string | undefined {
 	const name: string | undefined = selectName;
 
@@ -43,6 +46,12 @@ function setPath(path: string): void {
 
 export function go(path: string): void {
 	if ($currentPath.get() === path) {
+		return;
+	}
+
+	if (chooser && isTrashPath(path)) {
+		$notice.set(TRASH_UNAVAILABLE);
+
 		return;
 	}
 
@@ -76,6 +85,13 @@ export function openStartPath(
 	}
 
 	const path: string = resolve(expandHome(input));
+
+	if (chooser && isTrashPath(path)) {
+		$notice.set(TRASH_UNAVAILABLE);
+		done();
+
+		return;
+	}
 
 	stat(path, (error: NodeJS.ErrnoException | null, stats: Stats): void => {
 		if (error) {
@@ -325,7 +341,7 @@ export function openInDefault(dirent: Dirent): void {
 		return;
 	}
 
-	access(path, constants.X_OK, (error: ErrnoException | null) => {
+	access(path, constants.X_OK, (error: NodeJS.ErrnoException | null): void => {
 		if (error) {
 			spawnDetached(["xdg-open", path]);
 

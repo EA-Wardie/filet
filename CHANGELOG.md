@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.3.8 (2026-11-12)
+
+### Added
+
+- filet works as a file chooser for other applications through [xdg-desktop-portal-termfilechooser](https://github.com/hunkyburrito/xdg-desktop-portal-termfilechooser). `filet --chooser-file <out>` writes the chosen paths to `<out>`, one per line, and quits. `--multiple`, `--directory` and `--save` match the portal's modes. `Return` or a double click on a file chooses it, and `C` chooses the marked items, the current folder or, when saving, asks for a name. When the suggested file doesn't exist, filet asks for a name straight away. Saving onto an existing file or link other than the suggested one asks first. The trash link is hidden and the trash can't be opened while choosing. `Q` cancels without a confirmation. If the command line can't be read, filet opens your home folder and says so in the footer. The footer names the mode and its keys, and the context menus gain Choose, Save, Choose This Folder, or Choose Marked Folders when folders are marked, and Save Here. The install script adds `~/.local/bin/filet-wrapper.sh` for the portal's `cmd`.
+- `install.sh --terminal <command>`, or `bun run install:app --terminal <command>`, makes the desktop entry open filet with that terminal command, such as `kitty --app-id filet`, instead of letting the launcher choose. An app id lets window manager rules match filet's window, for example to float it. The command is saved in the desktop entry as `X-Filet-Terminal` and reused by later installs, `--terminal ""` resets it, and an interactive install with nothing saved asks for one.
+- In file chooser mode, the footer has Cancel and Choose buttons on its right, or Cancel and Save when saving. Choose does the same as `C`.
+
+### Changed
+
+- The README's From a release commands name 0.3.8.
+- The README's Features section lists each feature in one sentence.
+- Trash and Delete in the context menu are drawn in the theme's `danger` colour.
+
+### Fixed
+
+- In terminals shorter than about 35 rows, the explorer's footer shrank, and its message was drawn over the footer's bottom border. The header and footer now keep their height, and only the file list gets shorter.
+- Quitting left the process running for about a second after the screen was restored, so a terminal opened just for filet, such as the file chooser's, stayed open and empty for that long.
+
+### Internal
+
+- New `lib/chooser.ts` parses the command line with `util.parseArgs` and exports `chooser`, `startPath`, `suggestedName`, `chooserHeading()` and `choose()`. `main.ts` passes `startPath` to `openStartPath`, which opens the suggested file's folder when saving to a file that doesn't exist yet. A command line that can't be parsed is logged and its first argument is used as the path.
+- `SHORTCUTS.choose` and the exported `chooseDirent()` in `lib/shortcuts.ts`. A shortcut with `enabled: false` is left out of the keymap and the controls modal.
+- `$activePath` in `SidebarLink.ts` is a plain atom, updated by listeners on `$currentPath` and `$linkPaths`, instead of a `computed` store. When the sidebar links were destroyed on quit, the computed store lost its last listener and nanostores started a 1 second unmount timer, which kept the process alive.
+- `MenuButton` takes `danger` to draw its label in `theme.danger` when it isn't highlighted.
+- `scripts/filet-wrapper.sh` is copied to `dist/` by `bun run build` and packed by `bun run archive`. It prints its usage and exits when given fewer than 6 arguments.
+- New `nameProblem()` in `lib/filesystem.ts` holds the name checks shared by `canUseName()` and the save prompt. `go()` and `openStartPath()` refuse trash paths in chooser mode, and `promptOnStart` in `lib/chooser.ts` opens the save prompt from `main.ts`.
+
 ## 0.3.7 (2026-11-10)
 
 ### Added

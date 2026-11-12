@@ -18,6 +18,7 @@ export class ExplorerHeader {
 		this._component = new core.BoxRenderable(ctx, {
 			border: ["top", "bottom"],
 			borderColor: theme.border,
+			flexShrink: 0,
 			flexDirection: "row",
 			paddingX: 1,
 			...this._options,

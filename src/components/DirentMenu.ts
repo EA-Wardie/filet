@@ -1,8 +1,9 @@
 import type { Dirent } from "node:fs";
 import type * as core from "@opentui/core";
+import { chooser } from "../lib/chooser";
 import { TRASH_FULL_ICON } from "../lib/consts";
 import { getDirentPath, isFolder, openTerminal } from "../lib/navigation";
-import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
+import { chooseDirent, SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import { $previewOpen } from "../lib/store";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
@@ -24,15 +25,26 @@ export class DirentMenu {
 		const canCompress: boolean = SHORTCUTS.compress.when(dirent);
 		const canTrash: boolean = SHORTCUTS.trash.when(dirent);
 		const canRestore: boolean = SHORTCUTS.restore.when(dirent);
+		const canChoose: boolean =
+			chooser !== null && isFolder(dirent) === chooser.directory;
 
 		this._component = Menu.make({
 			x: x,
 			y: y,
 			items: [
 				MenuButton.make({
+					label: chooser?.save ? "󰆓 Save" : "󰄬 Choose",
+					shortcut: isFolder(dirent) ? "" : shortcutLabel(SHORTCUTS.open),
+					visible: canChoose,
+					onClick: (): void => {
+						chooseDirent(dirent);
+					},
+				}),
+				MenuButton.make({
 					label: "󰏌 Open",
 					shortcut: shortcutLabel(SHORTCUTS.open),
-					visible: SHORTCUTS.open.when(dirent),
+					visible:
+						SHORTCUTS.open.when(dirent) && !(chooser && !isFolder(dirent)),
 					onClick: (): void => {
 						SHORTCUTS.open.run(dirent);
 					},
@@ -110,6 +122,7 @@ export class DirentMenu {
 				MenuButton.make({
 					label: `${TRASH_FULL_ICON} Trash`,
 					shortcut: shortcutLabel(SHORTCUTS.trash),
+					danger: true,
 					visible: canTrash,
 					onClick: (): void => {
 						SHORTCUTS.trash.run(dirent);
@@ -118,6 +131,7 @@ export class DirentMenu {
 				MenuButton.make({
 					label: "󰚑 Delete",
 					shortcut: shortcutLabel(SHORTCUTS.delete),
+					danger: true,
 					visible: SHORTCUTS.delete.when(dirent),
 					onClick: (): void => {
 						SHORTCUTS.delete.run(dirent);
