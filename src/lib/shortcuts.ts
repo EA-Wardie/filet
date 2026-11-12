@@ -1,10 +1,12 @@
-import type { Dirent } from "node:fs";
+import { type Dirent, statSync } from "node:fs";
+import { basename, join } from "node:path";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
 import { type Control, Controls } from "../components/Controls";
 import { Prompt } from "../components/Prompt";
 import { Properties } from "../components/Properties";
 import { archiveName, compress, extract, isArchive } from "./archive";
+import { choose, chooser, suggestedName } from "./chooser";
 import { copyPaths } from "./clipboard";
 import { trashFilesPath } from "./config";
 import { ARCHIVE_EXTENSIONS } from "./consts";
@@ -14,6 +16,8 @@ import {
 	createFile,
 	createFolder,
 	cut,
+	entryExists,
+	nameProblem,
 	paste,
 	remove,
 	rename,
@@ -37,6 +41,7 @@ import {
 	$markedDirents,
 	$markedNames,
 	$menuOpen,
+	$notice,
 	$previewOpen,
 	$selectedDirent,
 	clearMarks,
@@ -54,6 +59,7 @@ interface Shortcut {
 	description: string;
 	run: Run;
 	when?: When;
+	enabled?: boolean;
 }
 
 function withDirent(action: (dirent: Dirent) => void): Run {
@@ -159,6 +165,132 @@ function moveSelection(step: number): void {
 	}
 }
 
+function chooseDirents(dirents: Dirent[]): void {
+	choose(dirents.map(getDirentPath));
+}
+
+function saveTo(path: string): void {
+	if (path === chooser?.suggested || !entryExists(path)) {
+		choose([path]);
+
+		return;
+	}
+
+	Confirmation.make({
+		heading: "Replace?",
+		description: `'${basename(path)}' already exists. Are you sure you want to replace it?`,
+		onConfirm: (): void => {
+			choose([path]);
+		},
+	});
+}
+
+function isDirectoryPath(path: string): boolean {
+	try {
+		return statSync(path).isDirectory();
+	} catch {
+		return false;
+	}
+}
+
+function promptSave(): void {
+	const folder: string = $currentPath.get();
+
+	Prompt.make({
+		heading: "Save file",
+		label: "Filename",
+		value: suggestedName,
+		hint: `In ${folder}`,
+		onSubmit: (name: string): void => {
+			const problem: string | null = nameProblem(name);
+
+			if (problem) {
+				$notice.set(`Couldn't save, ${problem}`);
+
+				return;
+			}
+
+			const path: string = join(folder, name);
+
+			if (isDirectoryPath(path)) {
+				$notice.set(`Couldn't save, '${name}' is a folder`);
+
+				return;
+			}
+
+			saveTo(path);
+		},
+	});
+}
+
+export function chooseDirent(dirent: Dirent): void {
+	if (!chooser) {
+		return;
+	}
+
+	const wantsFolder: boolean = chooser.directory;
+
+	if (isFolder(dirent) !== wantsFolder) {
+		$notice.set(
+			wantsFolder ? "Only folders can be chosen" : "Only files can be chosen",
+		);
+
+		return;
+	}
+
+	if (chooser.save) {
+		saveTo(getDirentPath(dirent));
+
+		return;
+	}
+
+	const marked: Dirent[] = $markedDirents
+		.get()
+		.filter((other: Dirent): boolean => isFolder(other) === wantsFolder);
+
+	chooseDirents(chooser.multiple && marked.length ? marked : [dirent]);
+}
+
+function chooseInFolder(dirent: Dirent | null): void {
+	if (!chooser) {
+		return;
+	}
+
+	if (chooser.save) {
+		promptSave();
+
+		return;
+	}
+
+	const marked: Dirent[] = $markedDirents
+		.get()
+		.filter((other: Dirent): boolean => isFolder(other) === chooser?.directory);
+
+	if (chooser.multiple && marked.length) {
+		chooseDirents(marked);
+	} else if (chooser.directory) {
+		choose([$currentPath.get()]);
+	} else if (dirent) {
+		chooseDirent(dirent);
+	}
+}
+
+function chooseDescription(): string {
+	if (chooser?.save) {
+		return "Save in the current folder";
+	}
+
+	if (chooser?.directory) {
+		return chooser.multiple
+			? "Choose the marked folders, or the current folder"
+			: "Choose the current folder";
+	}
+
+	return chooser?.multiple
+		? "Choose the marked files, or the selected file"
+		: "Choose the selected file";
+}
+
 export const SHORTCUTS = {
 	up: {
 		key: "up",
@@ -219,8 +351,20 @@ export const SHORTCUTS = {
 		description: "Open the selected file or folder",
 		...guard(
 			(dirent: Dirent): boolean => outsideTrash() || !isFolder(dirent),
-			openInDefault,
+			(dirent: Dirent): void => {
+				if (chooser && !isFolder(dirent)) {
+					chooseDirent(dirent);
+				} else {
+					openInDefault(dirent);
+				}
+			},
 		),
+	},
+	choose: {
+		key: "c",
+		description: chooseDescription(),
+		enabled: chooser !== null,
+		run: chooseInFolder,
 	},
 	preview: {
 		key: "p",
@@ -379,6 +523,12 @@ export const SHORTCUTS = {
 		key: "q",
 		description: "Quit the application",
 		run: (): void => {
+			if (chooser) {
+				ctx.destroy();
+
+				return;
+			}
+
 			Confirmation.make({
 				heading: "Quit?",
 				description: "Are you sure you want to quit the application?",
@@ -404,7 +554,9 @@ export const SHORTCUTS = {
 	},
 } satisfies Record<string, Shortcut>;
 
-const SHORTCUT_LIST: Shortcut[] = Object.values(SHORTCUTS);
+const SHORTCUT_LIST: Shortcut[] = Object.values(SHORTCUTS).filter(
+	(shortcut: Shortcut): boolean => shortcut.enabled !== false,
+);
 
 const KEYMAP: Map<string, Run> = new Map<string, Run>();
 

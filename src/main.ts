@@ -5,15 +5,16 @@ import { Flex } from "./components/Flex";
 import { PreviewSidebar } from "./components/PreviewSidebar";
 import { Sidebar } from "./components/Sidebar";
 import { VirtualExplorer } from "./components/VirtualExplorer";
+import { promptOnStart, startPath } from "./lib/chooser";
 import { makeApp } from "./lib/context";
 import { watchDrives } from "./lib/drives";
 import { openStartPath } from "./lib/navigation";
-import { registerKeyboardShortcuts } from "./lib/shortcuts";
+import { registerKeyboardShortcuts, SHORTCUTS } from "./lib/shortcuts";
 import { checkTrash } from "./lib/trash";
 
 function main() {
 	makeApp((): void => {
-		openStartPath(process.argv[2], (): void => {
+		openStartPath(startPath, (): void => {
 			checkTrash();
 			watchDrives();
 			registerKeyboardShortcuts();
@@ -31,6 +32,10 @@ function main() {
 					PreviewSidebar.make(),
 				],
 			});
+
+			if (promptOnStart) {
+				SHORTCUTS.choose.run(null);
+			}
 		});
 	});
 }

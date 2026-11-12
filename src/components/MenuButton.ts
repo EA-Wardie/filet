@@ -5,6 +5,7 @@ import { ctx } from "../lib/context";
 interface Options extends core.BoxOptions {
 	label: string;
 	shortcut?: string;
+	danger?: boolean;
 	onClick: () => void;
 }
 
@@ -36,7 +37,7 @@ export class MenuButton {
 				this._component.backgroundColor = theme.transparent;
 
 				if (this._label) {
-					this._label.fg = theme.fg;
+					this._label.fg = this.labelColor();
 				}
 
 				if (this._shortcut) {
@@ -60,7 +61,7 @@ export class MenuButton {
 				this._component.backgroundColor = theme.transparent;
 
 				if (this._label) {
-					this._label.fg = theme.fg;
+					this._label.fg = this.labelColor();
 				}
 
 				if (this._shortcut) {
@@ -78,10 +79,14 @@ export class MenuButton {
 		return new this(options)._component;
 	}
 
+	private labelColor(): core.RGBA {
+		return this._options.danger ? theme.danger : theme.fg;
+	}
+
 	private addLabel(): void {
 		this._label = new core.TextRenderable(ctx, {
 			content: this._options.label,
-			fg: theme.fg,
+			fg: this.labelColor(),
 			attributes: core.TextAttributes.BOLD,
 			selectable: false,
 		});

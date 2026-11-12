@@ -11,24 +11,31 @@ const EXACT_PATHS: ReadonlySet<string> = new Set<string>([HOME_DIRECTORY, "/"]);
 
 const $linkPaths = nanostores.atom<string[]>([]);
 
-const $activePath = nanostores.computed(
-	[$currentPath, $linkPaths],
-	(current: string, paths: string[]): string | null => {
-		let active: string | null = null;
+const $activePath = nanostores.atom<string | null>(null);
 
-		for (const path of paths) {
-			const matches: boolean =
-				path === current ||
-				(!EXACT_PATHS.has(path) && isInsidePath(current, path));
+function findActivePath(current: string, paths: string[]): string | null {
+	let active: string | null = null;
 
-			if (matches && (active === null || path.length > active.length)) {
-				active = path;
-			}
+	for (const path of paths) {
+		const matches: boolean =
+			path === current ||
+			(!EXACT_PATHS.has(path) && isInsidePath(current, path));
+
+		if (matches && (active === null || path.length > active.length)) {
+			active = path;
 		}
+	}
 
-		return active;
-	},
-);
+	return active;
+}
+
+function updateActivePath(): void {
+	$activePath.set(findActivePath($currentPath.get(), $linkPaths.get()));
+}
+
+$currentPath.listen(updateActivePath);
+$linkPaths.listen(updateActivePath);
+updateActivePath();
 
 export function registerSidebarPath(path: string): () => void {
 	$linkPaths.set([...$linkPaths.get(), path]);

@@ -20,26 +20,26 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Features
 
-- Explore directories with back and forward navigation and an editable path bar. A folder that can't be read is reported in the footer. Entering a file path opens its folder with the file selected, relative paths such as `..` resolve against the current folder, and `~` expands to your home folder. Paths that can't be opened are reported in the footer.
-- Start filet in a folder with `filet <path>`, such as `filet ~/Downloads`. A file path opens its folder with the file selected. Relative paths resolve against the folder you ran it from, and `~` expands to your home folder. A path that can't be opened falls back to your home folder and is reported in the footer.
-- Search the current directory by name. The list filters as you type, `Return` keeps the filter, and `Escape` clears it.
-- Preview files in a sidebar, opened with `P` or the Preview context menu item. It stays open while you select other files, and shows text based files with syntax highlighting and line numbers, and PNG, JPEG, GIF and WebP images. Text files over 1 MB, binary files and images over 25 megapixels are not previewed.
-- Show the properties of a file or folder with `I` or the Properties context menu item: type, path, size, permissions, owner, group, and modified, accessed and created dates. Symbolic links show their target, and folders, including linked folders, show their item count and total size, calculated with `du`.
-- List every keyboard shortcut and mouse control with `?` or the keyboard button in the sidebar header.
-- Open files in their default application, or run them if they are executable.
-- Create, copy, cut, paste, rename, trash and delete files and directories. Copies keep their permissions and modified times, and symbolic links are copied as links. Copied items stay on the clipboard, so they can be pasted again; cut items are used up once moved.
-- When a pasted item already exists, a dialog offers Replace (`R`), Skip (`S`), Keep both (`Return`) or Cancel (`Escape`), with Apply to all when more items follow. Keep both names the new item `name (2).ext`. Pasting a copy into its own folder keeps both without asking, and pasting a folder into itself is refused.
-- Restore files and directories from trash, or empty it. The trash follows the freedesktop layout: items with the same name are kept side by side as `name`, `name.2` and so on, and restoring moves the item back, asking what to do when something is already there.
-- Extract `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
-- Compress files and directories into any of the same formats. The archive's name defaults to `.zip`, and its extension picks the format.
-- Drag and drop files and directories into other applications with `ripdrag`.
-- Open a terminal in the current folder, or in a folder from its context menu.
-- Copy the paths of files and directories to the system clipboard.
-- Move through the explorer with the arrow keys or `H`, `J`, `K` and `L`, and act on the selection with single letter shortcuts.
+- Browse folders with back and forward history and an editable path bar.
+- Open a folder, or a file's folder with the file selected, with `filet <path>`.
+- Search the current folder by name as you type.
+- Preview text files with syntax highlighting, and images, in a sidebar.
+- Show the properties of a file or folder, such as its size, permissions and dates.
+- List every keyboard shortcut and mouse control with `?`.
+- Open files in their default application, or run them if they're executable.
+- Create, copy, cut, paste, rename, trash and delete files and folders.
+- Replace, skip or keep both when a pasted item already exists.
+- Restore items from the trash, or empty it.
+- Extract and create `.tar`, `.tar.gz`, `.tar.xz`, `.tar.bz2`, `.tar.zst` and `.zip` archives.
+- Drag and drop files and folders into other applications with `ripdrag`.
+- Open a terminal in the current folder, or in any folder from its context menu.
+- Copy the paths of files and folders to the system clipboard.
+- Move with the arrow keys or `H`, `J`, `K` and `L`, and act with single letter shortcuts.
 - Nerd Font file icons and context menus.
-- Drives in the sidebar. The link to `/` is named after your distro, from `NAME` in `/etc/os-release`, or Root if it has none. Below it, the sidebar lists drives mounted under `/run/media/$USER` or `/media/$USER`, and drives and partitions that aren't mounted, which are dimmed, leaving out system partitions such as EFI. Clicking an unmounted drive mounts and opens it. If polkit wants a password to mount an internal drive, your desktop's polkit agent asks for it. Without an agent, filet steps aside and `udisksctl` asks for it in the terminal, then filet comes back. Right-click a drive to mount it, or to eject a removable drive or unmount any other. Ejecting unmounts the drive, then leaves it if you're browsing it, and powers it off unless another of its partitions is still mounted. If a drive you're browsing is unmounted or unplugged elsewhere, filet returns to your home folder. Mounting and ejecting need `udisksctl` from udisks2, and listing drives needs `lsblk`.
-- Bookmarks and a themeable UI, configurable through a user config file. The sidebar highlights the place, bookmark or drive you're browsing inside, and hides places like `~/Music` that don't exist. Home and `/` are highlighted only when you're in them.
+- Mount, unmount and eject drives from the sidebar.
+- Bookmarks and themes, set in a config file.
 - First party mouse support.
+- Pick files and folders for other applications as a [file chooser](#file-chooser).
 
 ## Screenshots
 
@@ -102,6 +102,27 @@ accent = "#0369a1"
 
 `sidebar_width` and `preview_width` set the widths of the sidebar and the preview sidebar. Each is either a number of columns, such as `40` or `"40"`, or a percentage of the terminal's width as a string, such as `"25%"`. They default to `34` and `"30%"`. An invalid width, such as `0`, `12.5` or `"150%"`, falls back to its default and is written to the error log. The sidebar still hides when the terminal is 100 columns wide or less, and the preview sidebar at 140 or less.
 
+## File chooser
+
+filet can be the Open and Save dialog for applications such as Firefox, through [xdg-desktop-portal-termfilechooser](https://github.com/hunkyburrito/xdg-desktop-portal-termfilechooser). Installing filet also installs `~/.local/bin/filet-wrapper.sh`, the script the portal runs. Set it as the portal's `cmd` in `~/.config/xdg-desktop-portal-termfilechooser/config`, with the full path, since the portal may not have `~/.local/bin` on its `PATH`:
+
+```ini
+[filechooser]
+cmd=/home/<user>/.local/bin/filet-wrapper.sh
+env=TERMCMD=kitty
+```
+
+`TERMCMD` is the terminal filet opens in, such as `kitty`, `foot` or `alacritty -e`. To float the chooser or give it its own window rules, give it an app id, such as `TERMCMD=kitty --app-id filet-chooser`. Without it, the wrapper uses `$TERMINAL`, then `xdg-terminal-exec`. Then make the portal the file chooser, for example with `org.freedesktop.impl.portal.FileChooser=termfilechooser` in `~/.config/xdg-desktop-portal/portals.conf`, and restart `xdg-desktop-portal`.
+
+The footer shows what the application asked for and the keys to answer it, with Cancel and Choose buttons, or Save when saving, on its right. Choose does the same as `C`:
+
+- **Open a file:** `Return` or a double click on a file chooses it. `C` chooses the selected file.
+- **Open files:** mark files with `Space` or `Ctrl+click`, then press `C` or `Return` to choose them. With nothing marked, the selected file is chosen.
+- **Choose a folder:** open the folder, then press `C`, or right-click a folder and choose Choose. When several folders can be chosen, `C` chooses the marked folders, or the current folder when none are marked.
+- **Save a file:** filet opens in the suggested folder. When the portal has created the suggested file, which it does unless `create_help_file=0`, that file is selected and `Return` saves to it. Otherwise filet asks for a name straight away, filled in with the suggested one. `C` asks for a name to save under in the current folder. Saving onto another file that already exists, including a broken link, asks first.
+
+The trash is hidden while choosing, and its folder can't be opened. `Q` cancels without a confirmation, and so does closing filet any other way. Run filet as a chooser yourself with `filet --chooser-file <out> [--multiple] [--directory] [--save] [path]`, which writes the chosen paths to `<out>`, one per line.
+
 ## Logs
 
 Errors are saved to a file per day at `~/.local/state/filet/logs/YYYY-MM-DD.jsonl`, or in the folder set by `logs_path`. Each line is a JSON object with a local `timestamp`, the error `message`, and the `code`, `errno`, `syscall` and `path` where available, for example:
@@ -159,6 +180,7 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `A`            | Compress the marked items or selection into a new archive. See [Requirements](#requirements).  |
 | `O`            | Open a terminal in the current folder. See [Configuration](#configuration).                    |
 | `W`            | Drag and drop the marked items or selection with `ripdrag`. See [Requirements](#requirements). |
+| `C`            | In [File chooser](#file-chooser) mode, choose the selection or current folder, or save here.  |
 | `Q`            | Quit the application, after confirmation.                                                      |
 | `?`            | Show the keyboard shortcuts and mouse controls.                                                |
 
@@ -255,7 +277,15 @@ After building, install the binary and desktop entry with:
 bun run install:app
 ```
 
-This copies the binary to `~/.local/bin/filet` and adds a desktop entry at `~/.local/share/applications/filet.desktop` for application launchers. The entry accepts a path and registers filet for folders, so it can be chosen with Open With in other applications. Add `~/.local/bin` to your your `PATH` to run `filet` directly from a terminal.
+This copies the binary to `~/.local/bin/filet`, the [file chooser](#file-chooser) wrapper to `~/.local/bin/filet-wrapper.sh`, and adds a desktop entry at `~/.local/share/applications/filet.desktop` for application launchers. The entry accepts a path and registers filet for folders, so it can be chosen with Open With in other applications. Add `~/.local/bin` to your `PATH` to run `filet` directly from a terminal.
+
+By default the launcher picks the terminal filet opens in. To choose it yourself, pass a terminal command, which filet's path is added after:
+
+```
+bun run install:app --terminal "kitty --app-id filet"
+```
+
+Giving the window its own app id, as `kitty --app-id filet` or `alacritty --class filet -e` do, lets your window manager's rules match it, for example to make filet a floating window. The choice is saved in the desktop entry and reused by later installs, and `--terminal ""` goes back to letting the launcher choose. When the install script runs in a terminal and no choice is saved yet, it asks for one. `./install.sh` takes the same option.
 
 ### From a release
 
@@ -263,11 +293,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.3.7.tar.xz" --one-top-level
+tar -xvJf "Release 0.3.8.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.3.7"
+cd "Release 0.3.8"
 ```
 Run the install script.
 ```

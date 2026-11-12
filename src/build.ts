@@ -19,7 +19,11 @@ Bun.build({
 })
 	.then(async (): Promise<void> => {
 		await Bun.write("./dist/install.sh", Bun.file("./scripts/install.sh"));
-		await Bun.$`chmod +x ./dist/install.sh`;
+		await Bun.write(
+			"./dist/filet-wrapper.sh",
+			Bun.file("./scripts/filet-wrapper.sh"),
+		);
+		await Bun.$`chmod +x ./dist/install.sh ./dist/filet-wrapper.sh`;
 
 		const icon = Bun.file("./assets/icon.png");
 

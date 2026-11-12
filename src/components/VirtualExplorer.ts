@@ -1,6 +1,7 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
+import { chooser } from "../lib/chooser";
 import { COLLATOR } from "../lib/consts";
 import { ctx } from "../lib/context";
 import {
@@ -15,6 +16,7 @@ import {
 	$currentPath,
 	$cutDirents,
 	$dirents,
+	$markedDirents,
 	$markedNames,
 	$refresh,
 	$searchTerm,
@@ -68,6 +70,12 @@ export class VirtualExplorer {
 	}
 
 	private showMenu(event: core.MouseEvent): void {
+		const canChooseHere: boolean =
+			chooser !== null && (chooser.save || chooser.directory);
+		const choosesMarked: boolean =
+			!!chooser?.directory &&
+			chooser.multiple &&
+			$markedDirents.get().some(isFolder);
 		const canPaste: boolean =
 			!!$copyDirents.get().length || !!$cutDirents.get().length;
 
@@ -75,6 +83,19 @@ export class VirtualExplorer {
 			x: event.x,
 			y: event.y,
 			items: [
+				MenuButton.make({
+					label: chooser?.save
+						? "󰆓 Save Here"
+						: choosesMarked
+							? "󰄬 Choose Marked Folders"
+							: "󰄬 Choose This Folder",
+					shortcut: shortcutLabel(SHORTCUTS.choose),
+					visible: canChooseHere,
+					onClick: (): void => {
+						SHORTCUTS.choose.run(null);
+					},
+				}),
+				Divider.make({ visible: canChooseHere }),
 				MenuButton.make({
 					label: " New File",
 					shortcut: shortcutLabel(SHORTCUTS.newFile),

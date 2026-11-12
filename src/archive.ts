@@ -1,6 +1,11 @@
 import { version } from "../package.json";
 
-const FILES: readonly string[] = ["filet", "install.sh", "icon.png"];
+const FILES: readonly string[] = [
+	"filet",
+	"install.sh",
+	"filet-wrapper.sh",
+	"icon.png",
+];
 
 async function archive(): Promise<string> {
 	const name: string = `Release ${version}.tar.xz`;
