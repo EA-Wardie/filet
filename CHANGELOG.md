@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.9 (2026-11-15)
+
+### Changed
+
+- The binary is about 97.5 MB instead of 126 MB. The build leaves out the Bun command line and the Bun features filet never uses, such as its servers, databases and test runner.
+- The README's From a release commands name 0.3.9.
+
+### Internal
+
+- `src/build.ts` sets `compile.trim` with a `remove` list of unused Bun features, because OpenTUI's dynamic `globalThis` and Worker lookups keep the compiler from trimming them itself. A removed feature throws `ERR_FEATURE_REMOVED` when called, so test the built binary after adding a Bun API. It no longer builds with `bytecode`, which added about 3.4 MB.
+- Building needs Bun 1.4.5 or later. `package.json` overrides `bun-types` to `canary` so `compile.trim` type checks, until 1.4.5 is released.
+
 ## 0.3.8 (2026-11-12)
 
 ### Added

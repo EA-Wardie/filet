@@ -1,5 +1,42 @@
 import { version } from "../package.json";
 
+const UNUSED_FEATURES: Bun.Build.TrimFeature[] = [
+	"aot",
+	"check",
+	"cookie",
+	"create",
+	"cron",
+	"csrf",
+	"dialogs",
+	"fmt",
+	"fs-router",
+	"html-rewriter",
+	"http2",
+	"http3",
+	"image",
+	"install",
+	"json5",
+	"jsonl",
+	"lint",
+	"password",
+	"process-report",
+	"redis",
+	"repl",
+	"s3",
+	"secrets",
+	"semver",
+	"serve",
+	"sql",
+	"sqlite",
+	"test",
+	"upgrade",
+	"url-pattern",
+	"webview",
+	"websocket",
+	"xml",
+	"yaml",
+];
+
 Bun.build({
 	entrypoints: ["./src/main.ts"],
 	compile: {
@@ -7,9 +44,9 @@ Bun.build({
 		outfile: "./dist/filet",
 		autoloadDotenv: false,
 		autoloadBunfig: false,
+		trim: { remove: UNUSED_FEATURES },
 	},
 	minify: true,
-	bytecode: true,
 	splitting: true,
 	format: "esm",
 	define: {

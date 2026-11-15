@@ -251,7 +251,7 @@ accent = "#0369a1"
 
 ## Building
 
-filet uses Bun as its runtime, package manager, and bundler.
+filet uses Bun as its runtime, package manager, and bundler. The build trims unused Bun features from the binary, which needs Bun 1.4.5 or later. Until 1.4.5 is released, use the canary with `bun upgrade --canary`.
 
 Install dependencies:
 
@@ -293,11 +293,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.3.8.tar.xz" --one-top-level
+tar -xvJf "Release 0.3.9.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.3.8"
+cd "Release 0.3.9"
 ```
 Run the install script.
 ```
@@ -305,18 +305,3 @@ Run the install script.
 ```
 
 This installs filet the same way as `bun run install:app`.
-
-## Roadmap
-
-- [x] Allow manually editing the current path.
-- [x] Simple search function for the current directory.
-- [x] Ability to open files marked as executables instead of previewing them.
-- [x] Hide the sidebar when the viewport reaches a small enough size.
-- [x] Option to restore a file from trash.
-- [x] Add option to extract archives.
-- [x] Improve overall theming support.
-- [x] Virtualize the explorer list so directories with more than ~16,000 entries (e.g. `/nix/store`) load fully.
-- [x] Directory and file preview modal.
-- [x] Shortcuts cheat-sheet modal.
-- [x] Add option to compress files/folders.
-- [x] Add a name resolver to allow filesystem functions for files/folders with the same names.
