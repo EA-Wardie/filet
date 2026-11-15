@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import * as core from "@opentui/core";
 import { chooser } from "../lib/chooser";
-import { bookmarks, sidebarWidth, theme } from "../lib/config";
+import { bookmarks, borderStyle, sidebarWidth, theme } from "../lib/config";
 import {
 	CONTROLS_ICON,
 	DRIVE_ICON,
@@ -34,8 +34,9 @@ export class Sidebar {
 			width: sidebarWidth,
 			height: "100%",
 			flexShrink: 0,
-			border: ["left", "right"],
+			border: ["right"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			...this._options,
 		});
 
@@ -55,8 +56,9 @@ export class Sidebar {
 
 	private addHeader(): void {
 		this._header = new core.BoxRenderable(ctx, {
-			border: ["top", "bottom"],
+			border: ["bottom"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			flexDirection: "row",
 			justifyContent: "space-between",
 			paddingX: 1,
@@ -84,6 +86,7 @@ export class Sidebar {
 		const places: { path: string; label: string }[] = [
 			{ path: HOME_DIRECTORY, label: " Home" },
 			{ path: `${HOME_DIRECTORY}/Downloads`, label: " Downloads" },
+			{ path: `${HOME_DIRECTORY}/Projects`, label: "󰐯 Projects" },
 			{ path: `${HOME_DIRECTORY}/Documents`, label: "󱔗 Documents" },
 			{ path: `${HOME_DIRECTORY}/Pictures`, label: " Pictures" },
 			{ path: `${HOME_DIRECTORY}/Music`, label: " Music" },
@@ -156,8 +159,9 @@ export class Sidebar {
 		this._component.add(Spacer.make());
 
 		this._footer = new core.BoxRenderable(ctx, {
-			border: ["top", "bottom"],
+			border: ["top"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			flexDirection: "row",
 			justifyContent: "space-between",
 			paddingX: 1,

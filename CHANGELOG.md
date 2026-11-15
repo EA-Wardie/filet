@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0 (2026-11-15)
+
+### Added
+
+- Open With… in a file's context menu, below Open, lists the applications that open the file and opens it in the one you click. It reads the desktop entries in the XDG data folders, including Flatpak's, for the file's type from `xdg-mime` and the types it belongs to, such as `text/plain` for source code. The default application from `xdg-mime`, the one Open uses, comes first, marked Default, followed by those added in `mimeapps.list` and then the rest by name. Applications removed in `mimeapps.list` are left out unless a higher priority `mimeapps.list` adds them, and so are deleted entries (`Hidden=true`) and those whose `TryExec` program isn't installed. Terminal applications open in the terminal set by `terminal`, with `-e`, `-x`, `--` or `start --` added for terminals that need it. File names are quoted when they're put in the command, so a name can't run commands through an entry that uses `sh -c`. When the type can't be found, or no application opens it, the footer says so.
+- Menu items that are too long for the menu are cut short instead of wrapping.
+- The sidebar links to `~/Projects`, under Downloads, when that folder exists.
+- `border_style` in the config file sets the style of every border, including the window, the lines between panels, menus and dialogs: `single`, `double`, `rounded` or `heavy`. It defaults to `single`, and an invalid value falls back to it and is written to the error log.
+
+### Changed
+
+- The window has one border around it, and the sidebar, explorer and preview draw only the lines between them. The version is shown in the window's bottom right corner.
+- Lines join where they meet, with `├`, `┤`, `┬`, `┴` and `┼`, where the panels meet the window border and at the headers, footers, sidebar dividers and menu dividers. Before, a gap showed between a line and the border it ended at.
+- The README's From a release commands name 0.4.0, and its example bookmark is `~/Work` instead of `~/Projects`, which the sidebar now shows itself.
+
 ## 0.3.9 (2026-11-15)
 
 ### Changed

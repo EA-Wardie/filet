@@ -1,6 +1,8 @@
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { version } from "../../package.json";
+import { borderStyle, theme } from "../lib/config";
 import { ctx } from "../lib/context";
+import { BorderJoints } from "./BorderJoints";
 
 interface Options extends core.BoxOptions {
 	components: core.Renderable[];
@@ -15,6 +17,11 @@ export class App {
 			width: "100%",
 			height: "100%",
 			backgroundColor: theme.bg,
+			border: true,
+			borderColor: theme.border,
+			borderStyle: borderStyle,
+			bottomTitle: ` v${version} `,
+			bottomTitleAlignment: "right",
 			flexDirection: "row",
 			...options,
 		});
@@ -31,6 +38,8 @@ export class App {
 		for (const component of components) {
 			this._component.add(component);
 		}
+
+		this._component.add(BorderJoints.make());
 	}
 
 	public addToContext(): void {

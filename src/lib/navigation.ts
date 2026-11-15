@@ -273,7 +273,7 @@ export function readFolder(
 	);
 }
 
-function spawnDetached(
+export function spawnDetached(
 	command: string[],
 	cwd: string = process.cwd(),
 ): Subprocess | null {

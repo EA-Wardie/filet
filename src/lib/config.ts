@@ -1,5 +1,10 @@
 import { resolve } from "node:path";
-import { parseColor, RGBA } from "@opentui/core";
+import {
+	type BorderStyle,
+	isValidBorderStyle,
+	parseColor,
+	RGBA,
+} from "@opentui/core";
 import type { BunFile } from "bun";
 import { HOME_DIRECTORY, TRASH_PATH, USER_CONFIG_PATH } from "./consts";
 import { logError, setLogsPath } from "./log";
@@ -65,6 +70,7 @@ interface ConfigFile {
 	double_click_timeout?: number;
 	sidebar_width?: unknown;
 	preview_width?: unknown;
+	border_style?: unknown;
 	terminal?: unknown;
 	theme?: unknown;
 }
@@ -121,6 +127,27 @@ if (userConfig.logs_path) {
 export const doubleClickTimeout: number =
 	userConfig.double_click_timeout ?? 250;
 
+function parseSetting<T>(
+	key: string,
+	value: unknown,
+	fallback: T,
+	parse: (value: unknown) => T | undefined,
+): T {
+	if (value === undefined) {
+		return fallback;
+	}
+
+	const parsed: T | undefined = parse(value);
+
+	if (parsed !== undefined) {
+		return parsed;
+	}
+
+	logError(new Error(`Invalid ${key}: ${JSON.stringify(value)}`));
+
+	return fallback;
+}
+
 export type Width = number | `${number}%`;
 
 const COLUMNS_PATTERN: RegExp = /^\d+$/;
@@ -148,32 +175,29 @@ function toWidth(value: unknown): Width | undefined {
 		: undefined;
 }
 
-function parseWidth(key: string, value: unknown, fallback: Width): Width {
-	if (value === undefined) {
-		return fallback;
-	}
-
-	const width: Width | undefined = toWidth(value);
-
-	if (width !== undefined) {
-		return width;
-	}
-
-	logError(new Error(`Invalid ${key}: ${JSON.stringify(value)}`));
-
-	return fallback;
-}
-
-export const sidebarWidth: Width = parseWidth(
+export const sidebarWidth: Width = parseSetting(
 	"sidebar_width",
 	userConfig.sidebar_width,
 	34,
+	toWidth,
 );
 
-export const previewWidth: Width = parseWidth(
+export const previewWidth: Width = parseSetting(
 	"preview_width",
 	userConfig.preview_width,
 	"30%",
+	toWidth,
+);
+
+function toBorderStyle(value: unknown): BorderStyle | undefined {
+	return isValidBorderStyle(value) ? value : undefined;
+}
+
+export const borderStyle: BorderStyle = parseSetting(
+	"border_style",
+	userConfig.border_style,
+	"single",
+	toBorderStyle,
 );
 
 function splitCommand(command: string): string[] | undefined {
@@ -190,24 +214,19 @@ function isCommand(value: unknown): value is string[] {
 	);
 }
 
-function parseTerminal(value: unknown): string[] | undefined {
-	if (value === undefined) {
-		return undefined;
-	}
-
+function toTerminal(value: unknown): string[] | undefined {
 	const command: unknown =
 		typeof value === "string" ? splitCommand(value) : value;
 
-	if (isCommand(command)) {
-		return command;
-	}
-
-	logError(new Error(`Invalid terminal: ${JSON.stringify(value)}`));
-
-	return undefined;
+	return isCommand(command) ? command : undefined;
 }
 
-export const terminalCommand: string[] = parseTerminal(userConfig.terminal) ??
+export const terminalCommand: string[] = parseSetting<string[] | undefined>(
+	"terminal",
+	userConfig.terminal,
+	undefined,
+	toTerminal,
+) ??
 	splitCommand(Bun.env.TERMINAL ?? "") ?? ["xdg-terminal-exec"];
 
 const COLOR_PATTERN: RegExp =

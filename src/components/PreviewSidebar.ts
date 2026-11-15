@@ -1,6 +1,6 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
-import { previewWidth, theme } from "../lib/config";
+import { borderStyle, previewWidth, theme } from "../lib/config";
 import { PREVIEW_DELAY, PREVIEW_MIN_WIDTH } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { canPreview, getDirentPath } from "../lib/navigation";
@@ -24,8 +24,9 @@ export class PreviewSidebar {
 			width: previewWidth,
 			height: "100%",
 			flexShrink: 0,
-			border: ["right"],
+			border: ["left"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			...this._options,
 		});
 
@@ -42,9 +43,10 @@ export class PreviewSidebar {
 
 	private addHeader(): void {
 		const header: core.BoxRenderable = new core.BoxRenderable(ctx, {
-			height: 3,
-			border: ["top", "bottom"],
+			height: 2,
+			border: ["bottom"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			flexDirection: "row",
 			justifyContent: "space-between",
 			paddingX: 1,

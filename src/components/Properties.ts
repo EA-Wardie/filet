@@ -1,6 +1,6 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { borderStyle, theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { getFileIcon } from "../lib/icons";
 import { type Property, readProperties } from "../lib/properties";
@@ -75,6 +75,7 @@ export class Properties {
 			backgroundColor: theme.surface,
 			border: true,
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			paddingX: 1,
 			zIndex: 101,
 		});

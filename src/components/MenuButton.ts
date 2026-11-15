@@ -88,6 +88,8 @@ export class MenuButton {
 			content: this._options.label,
 			fg: this.labelColor(),
 			attributes: core.TextAttributes.BOLD,
+			truncate: true,
+			flexShrink: 1,
 			selectable: false,
 		});
 
@@ -103,6 +105,7 @@ export class MenuButton {
 			content: this._options.shortcut,
 			fg: theme.fg,
 			attributes: core.TextAttributes.ITALIC,
+			flexShrink: 0,
 			selectable: false,
 		});
 
