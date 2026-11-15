@@ -1,8 +1,9 @@
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { borderStyle, theme } from "../lib/config";
 import { MENU_WIDTH } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { $menuOpen } from "../lib/store";
+import { BorderJoints } from "./BorderJoints";
 
 interface Options {
 	items: core.BoxRenderable[];
@@ -50,16 +51,17 @@ export class Menu {
 		const height: number =
 			items.filter((item: core.BoxRenderable): boolean => item.visible).length +
 			2;
-		const below: boolean = y + 1 + height <= ctx.height;
+		const below: boolean = y + 1 + height <= ctx.height - 1;
 
 		this._menu = new core.BoxRenderable(ctx, {
 			width: MENU_WIDTH,
 			backgroundColor: theme.surface,
 			border: true,
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			position: "absolute",
-			left: Math.max(0, Math.min(x, ctx.width - MENU_WIDTH)),
-			top: Math.max(0, below ? y + 1 : y - height),
+			left: Math.max(1, Math.min(x, ctx.width - 1 - MENU_WIDTH)),
+			top: Math.max(1, below ? y + 1 : y - height),
 			zIndex: 101,
 		});
 
@@ -71,6 +73,8 @@ export class Menu {
 			for (const item of this._options.items) {
 				this._menu.add(item);
 			}
+
+			this._menu.add(BorderJoints.make());
 		}
 	}
 

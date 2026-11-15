@@ -1,7 +1,6 @@
 import * as core from "@opentui/core";
-import { version } from "../../package.json";
 import { chooser, chooserHeading } from "../lib/chooser";
-import { theme } from "../lib/config";
+import { borderStyle, theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
 import { $footerText, $selectedDirent } from "../lib/store";
@@ -16,11 +15,10 @@ export class ExplorerFooter {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			border: ["top", "bottom"],
+			border: ["top"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			flexShrink: 0,
-			bottomTitle: ` v${version} `,
-			bottomTitleAlignment: "right",
 			...(chooser
 				? {
 						title: ` ${chooserHeading()} · ${shortcutLabel(SHORTCUTS.choose)} ${chooser.save ? "save here" : "choose"} · ${shortcutLabel(SHORTCUTS.quit)} cancel `,

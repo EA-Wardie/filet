@@ -1,5 +1,4 @@
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
 import { ctx } from "../lib/context";
 
 interface Options extends core.BoxOptions {
@@ -16,8 +15,6 @@ export class Flex {
 		this._component = new core.BoxRenderable(ctx, {
 			width: "100%",
 			height: "100%",
-			border: ["right"],
-			borderColor: theme.border,
 			flexDirection: "column",
 			justifyContent: "space-between",
 			...this._options,

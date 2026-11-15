@@ -1,5 +1,5 @@
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { borderStyle, theme } from "../lib/config";
 import { CONTROLS_ICON } from "../lib/consts";
 import { ctx } from "../lib/context";
 import { $dialogOpen } from "../lib/store";
@@ -80,6 +80,7 @@ export class Controls {
 			backgroundColor: theme.surface,
 			border: true,
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			paddingX: 1,
 			zIndex: 101,
 		});

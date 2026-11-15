@@ -14,6 +14,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 
 ## Requirements
 
+- `xdg-utils` for opening files with `xdg-open`, and for finding a file's type and default application for Open With… with `xdg-mime`.
 - `tar` for extracting and creating tar archives, `unzip` for extracting `.zip` archives and `zip` for creating them. Supported formats are `.tar`, `.tar.gz`, `.tgz`, `.tar.xz`, `.txz`, `.tar.bz2`, `.tbz2`, `.tar.zst`, `.tzst` and `.zip`.
 - `gzip`, `xz`, `bzip2` and `zstd` for `.tar.gz`, `.tar.xz`, `.tar.bz2` and `.tar.zst` archives respectively.
 - [ripdrag](https://github.com/nik012003/ripdrag) for drag and drop with `W`.
@@ -26,7 +27,7 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Preview text files with syntax highlighting, and images, in a sidebar.
 - Show the properties of a file or folder, such as its size, permissions and dates.
 - List every keyboard shortcut and mouse control with `?`.
-- Open files in their default application, or run them if they're executable.
+- Open files in their default application, or another one with Open With…, or run them if they're executable.
 - Create, copy, cut, paste, rename, trash and delete files and folders.
 - Replace, skip or keep both when a pasted item already exists.
 - Restore items from the trash, or empty it.
@@ -74,7 +75,7 @@ Values in your user config take priority over the defaults, and any values you l
 
 ```toml
 bookmarks = [
-    {label = "Projects", mount = "/home/<user>/Projects"},
+    {label = "Work", mount = "/home/<user>/Work"},
 ]
 
 trash_path = "/home/<user>/.local/share/Trash"
@@ -86,6 +87,8 @@ double_click_timeout = 250
 sidebar_width = 34
 
 preview_width = "30%"
+
+border_style = "single"
 
 terminal = "kitty"
 
@@ -101,6 +104,8 @@ accent = "#0369a1"
 `terminal` is the command run by `O` and the Open in Terminal menu items, started in the current folder, or in the folder you right clicked. It can include arguments, such as `"kitty --single-instance"`, which are split on spaces. When an argument or the path to the terminal contains spaces, use a list instead, such as `["kitty", "--title", "My Terminal"]`. Without it, or when it's invalid, filet uses `$TERMINAL`, then [`xdg-terminal-exec`](https://gitlab.freedesktop.org/terminal-wg/specifications). If the folder can't be opened, or the terminal can't be started or quits with an error within 2 seconds, the footer says so and the error is logged.
 
 `sidebar_width` and `preview_width` set the widths of the sidebar and the preview sidebar. Each is either a number of columns, such as `40` or `"40"`, or a percentage of the terminal's width as a string, such as `"25%"`. They default to `34` and `"30%"`. An invalid width, such as `0`, `12.5` or `"150%"`, falls back to its default and is written to the error log. The sidebar still hides when the terminal is 100 columns wide or less, and the preview sidebar at 140 or less.
+
+`border_style` sets the style of every border, from the one around the window and the lines between its panels to menus and dialogs: `"single"`, `"double"`, `"rounded"` or `"heavy"`. It defaults to `"single"`. Any other value falls back to `"single"` and is written to the error log. Lines join where they meet, with `├`, `┤`, `┬`, `┴` and `┼` in the chosen style.
 
 ## File chooser
 
@@ -151,6 +156,8 @@ jq . ~/.local/state/filet/logs/2026-09-29.jsonl
 | `Left click`   | Sidebar link   | Select and navigate to it.                                                                                  |
 | `Left click`   | Sidebar drive  | Open it, mounting it first if it isn't mounted.                                                             |
 | `Right click`  | Sidebar drive  | Open its menu to open, mount, eject or unmount it.                                                          |
+
+A file's context menu has Open With… below Open. It lists the applications whose desktop entries open the file's type, or a type it belongs to, such as `text/plain` for source code. The default application comes first, marked Default, then those added in `mimeapps.list`, then the rest by name. Applications that run in a terminal, such as Vim, open in the terminal set by `terminal`, with the option that terminal needs before a command, such as `-e` for Alacritty, xterm, Konsole and Ghostty, `-x` for Xfce Terminal and Terminator, `--` for GNOME Terminal and `start --` for WezTerm. kitty, foot and `xdg-terminal-exec` take the command as it is. When no application opens the file, the footer says so.
 
 ### Keyboard
 
@@ -293,11 +300,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.3.9.tar.xz" --one-top-level
+tar -xvJf "Release 0.4.0.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.3.9"
+cd "Release 0.4.0"
 ```
 Run the install script.
 ```

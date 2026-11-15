@@ -1,13 +1,60 @@
 import type { Dirent } from "node:fs";
 import type * as core from "@opentui/core";
+import {
+	type Application,
+	type Applications,
+	findApplications,
+	launchApplication,
+} from "../lib/applications";
 import { chooser } from "../lib/chooser";
 import { TRASH_FULL_ICON } from "../lib/consts";
+import { ctx } from "../lib/context";
+import { logError } from "../lib/log";
 import { getDirentPath, isFolder, openTerminal } from "../lib/navigation";
 import { chooseDirent, SHORTCUTS, shortcutLabel } from "../lib/shortcuts";
-import { $previewOpen } from "../lib/store";
+import { $dialogOpen, $notice, $previewOpen } from "../lib/store";
 import { Divider } from "./Divider";
 import { Menu } from "./Menu";
 import { MenuButton } from "./MenuButton";
+
+function openWith(dirent: Dirent, x: number, y: number): void {
+	const path: string = getDirentPath(dirent);
+
+	findApplications(path)
+		.then(({ type, defaultId, apps }: Applications): void => {
+			if ($dialogOpen.get()) {
+				return;
+			}
+
+			if (!type) {
+				$notice.set(`Can't tell the type of ${dirent.name}`);
+
+				return;
+			}
+
+			if (!apps.length) {
+				$notice.set(`No applications open ${type}`);
+
+				return;
+			}
+
+			Menu.make({
+				x: x,
+				y: y,
+				items: apps.slice(0, Math.max(1, ctx.height - 4)).map(
+					(app: Application): core.BoxRenderable =>
+						MenuButton.make({
+							label: app.name,
+							shortcut: app.id === defaultId ? "Default" : "",
+							onClick: (): void => {
+								launchApplication(app, path);
+							},
+						}),
+				),
+			});
+		})
+		.catch(logError);
+}
 
 interface Options {
 	x: number;
@@ -47,6 +94,13 @@ export class DirentMenu {
 						SHORTCUTS.open.when(dirent) && !(chooser && !isFolder(dirent)),
 					onClick: (): void => {
 						SHORTCUTS.open.run(dirent);
+					},
+				}),
+				MenuButton.make({
+					label: "󰘔 Open With…",
+					visible: !isFolder(dirent) && !chooser,
+					onClick: (): void => {
+						openWith(dirent, x, y);
 					},
 				}),
 				MenuButton.make({

@@ -1,5 +1,5 @@
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { borderStyle, theme } from "../lib/config";
 import { ctx } from "../lib/context";
 import { BackButton } from "./BackButton";
 import { CurrentPathInput } from "./CurrentPathInput";
@@ -16,8 +16,9 @@ export class ExplorerHeader {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			border: ["top", "bottom"],
+			border: ["bottom"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			flexShrink: 0,
 			flexDirection: "row",
 			paddingX: 1,

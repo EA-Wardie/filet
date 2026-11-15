@@ -1,5 +1,5 @@
 import * as core from "@opentui/core";
-import { theme } from "../lib/config";
+import { borderStyle, theme } from "../lib/config";
 import { ctx } from "../lib/context";
 
 interface Options extends core.BoxOptions {
@@ -16,6 +16,7 @@ export class Divider {
 		this._component = new core.BoxRenderable(ctx, {
 			border: this._options.vertical ? ["left"] : ["top"],
 			borderColor: theme.border,
+			borderStyle: borderStyle,
 			...this._options,
 		});
 	}
