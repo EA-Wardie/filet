@@ -27,6 +27,7 @@ Terminal file manager with first party mouse support, built with `@opentui/core`
 
 - Explicit type annotations on variables, parameters and return types, including callbacks.
 - Tabs and double quotes, as enforced by Biome. `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess` are on.
+- Use the `fs` API that suits the feature. One-off reads in UI and navigation code use callback `node:fs` (`stat`, `readdir`, `readFile`) with a staleness check. Step-by-step task bodies passed to `runTask` use `node:fs/promises`, since they await answers from dialogs, roll back with try/catch and must return a Promise. Use `Bun.file` where it's simpler. Don't convert existing code from one style to the other just to make it consistent.
 - When behaviour changes, update the README and `CHANGELOG.md`. Version lives in `package.json`.
 - Work happens on `dev` and is merged into `main` by PR.
 

@@ -124,7 +124,7 @@ The footer shows what the application asked for and the keys to answer it, with 
 - **Open a file:** `Return` or a double click on a file chooses it. `C` chooses the selected file.
 - **Open files:** mark files with `Space` or `Ctrl+click`, then press `C` or `Return` to choose them. With nothing marked, the selected file is chosen.
 - **Choose a folder:** open the folder, then press `C`, or right-click a folder and choose Choose. When several folders can be chosen, `C` chooses the marked folders, or the current folder when none are marked.
-- **Save a file:** filet opens in the suggested folder. When the portal has created the suggested file, which it does unless `create_help_file=0`, that file is selected and `Return` saves to it. Otherwise filet asks for a name straight away, filled in with the suggested one. `C` asks for a name to save under in the current folder. Saving onto another file that already exists, including a broken link, asks first.
+- **Save a file:** filet opens in the suggested folder. Move to the folder you want, then press `C` or Save, which asks for a name filled in with the suggested one. The portal writes a help file at the suggested path unless `create_help_file=0`, and filet hides it, since it's only a placeholder. When the suggested file already exists and isn't the help file, filet selects it, and `Return` saves to it. Saving under a new name creates that file empty, since the portal only accepts a file that exists. The portal then removes its help file, and the application writes into the new file. Saving onto another file that already exists, including a broken link, asks first.
 
 The trash is hidden while choosing, and its folder can't be opened. `Q` cancels without a confirmation, and so does closing filet any other way. Run filet as a chooser yourself with `filet --chooser-file <out> [--multiple] [--directory] [--save] [path]`, which writes the chosen paths to `<out>`, one per line.
 
@@ -300,11 +300,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.4.0.tar.xz" --one-top-level
+tar -xvJf "Release 0.4.1.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.4.0"
+cd "Release 0.4.1"
 ```
 Run the install script.
 ```
