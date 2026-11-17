@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { basename, dirname, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { expandHome } from "./config";
 import { ctx } from "./context";
@@ -71,16 +71,40 @@ const commandLine: CommandLine = parseCommandLine();
 
 export const chooser: Chooser | null = commandLine.chooser;
 
+const HELP_FILE_MARKER: string = "xdg-desktop-portal-termfilechooser";
+
+async function isHelpFile(path: string): Promise<boolean> {
+	try {
+		const start: string = await Bun.file(path).slice(0, 256).text();
+		const firstLine: string = start.split("\n", 1)[0] ?? "";
+
+		return firstLine.includes(HELP_FILE_MARKER);
+	} catch {
+		return false;
+	}
+}
+
 const suggestedMissing: boolean =
 	!!chooser?.suggested && !existsSync(chooser.suggested);
 
+const helpFile: string | null =
+	chooser?.save &&
+	chooser.suggested &&
+	!suggestedMissing &&
+	(await isHelpFile(chooser.suggested))
+		? chooser.suggested
+		: null;
+
+const suggestedNew: boolean = suggestedMissing || helpFile !== null;
+
 export const startPath: string | undefined =
-	chooser?.save && chooser.suggested && suggestedMissing
+	chooser?.save && chooser.suggested && suggestedNew
 		? dirname(chooser.suggested)
 		: commandLine.path;
 
-export const promptOnStart: boolean =
-	!!chooser?.save && (!chooser.suggested || suggestedMissing);
+export function isHelpFileEntry(folder: string, name: string): boolean {
+	return helpFile !== null && join(folder, name) === helpFile;
+}
 
 export const suggestedName: string = chooser?.suggested
 	? basename(chooser.suggested)
@@ -102,7 +126,7 @@ export function chooserHeading(): string {
 	return chooser.multiple ? "Open files" : "Open file";
 }
 
-export function choose(paths: string[]): void {
+export function choose(paths: string[], onFailed?: () => void): void {
 	if (!chooser || !paths.length) {
 		return;
 	}
@@ -114,5 +138,6 @@ export function choose(paths: string[]): void {
 		.catch((error: unknown): void => {
 			logError(error);
 			$notice.set("Couldn't write the chosen paths");
+			onFailed?.();
 		});
 }

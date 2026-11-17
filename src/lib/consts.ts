@@ -164,7 +164,6 @@ export const FILETYPE_ICONS: Map<string, string> = new Map<string, string>([
 	[".ex", ""],
 	[".exs", ""],
 	[".erl", ""],
-	[".rs", ""],
 	[".rlib", ""],
 	[".sh", ""],
 	[".bash", ""],

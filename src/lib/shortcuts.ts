@@ -1,4 +1,4 @@
-import { type Dirent, statSync } from "node:fs";
+import { type Dirent, statSync, unlink, writeFile } from "node:fs";
 import { basename, join } from "node:path";
 import * as core from "@opentui/core";
 import { Confirmation } from "../components/Confirmation";
@@ -22,6 +22,7 @@ import {
 	remove,
 	rename,
 } from "./filesystem";
+import { logError } from "./log";
 import {
 	canPreview,
 	getDirentPath,
@@ -169,13 +170,57 @@ function chooseDirents(dirents: Dirent[]): void {
 	choose(dirents.map(getDirentPath));
 }
 
+function removeSaveFile(path: string): void {
+	unlink(path, (error: NodeJS.ErrnoException | null): void => {
+		if (error) {
+			logError(error);
+		}
+	});
+}
+
+function createSaveFile(path: string): void {
+	writeFile(
+		path,
+		"",
+		{ flag: "wx" },
+		(error: NodeJS.ErrnoException | null): void => {
+			if (error?.code === "EEXIST") {
+				confirmReplace(path);
+
+				return;
+			}
+
+			if (error) {
+				logError(error);
+				$notice.set(`Couldn't save, couldn't create '${basename(path)}'`);
+
+				return;
+			}
+
+			choose([path], (): void => {
+				removeSaveFile(path);
+			});
+		},
+	);
+}
+
 function saveTo(path: string): void {
-	if (path === chooser?.suggested || !entryExists(path)) {
+	if (!entryExists(path)) {
+		createSaveFile(path);
+
+		return;
+	}
+
+	if (path === chooser?.suggested) {
 		choose([path]);
 
 		return;
 	}
 
+	confirmReplace(path);
+}
+
+function confirmReplace(path: string): void {
 	Confirmation.make({
 		heading: "Replace?",
 		description: `'${basename(path)}' already exists. Are you sure you want to replace it?`,

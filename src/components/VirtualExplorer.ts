@@ -1,7 +1,7 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
 import { MouseButtons } from "@opentui/core/testing";
-import { chooser } from "../lib/chooser";
+import { chooser, isHelpFileEntry } from "../lib/chooser";
 import { COLLATOR } from "../lib/consts";
 import { ctx } from "../lib/context";
 import {
@@ -258,9 +258,13 @@ export class VirtualExplorer {
 					return;
 				}
 
-				this.pruneMarks(dirents);
-				this.sortDirents(dirents);
-				this.showDirents(dirents, true, selectName);
+				const shown: Dirent[] = dirents.filter(
+					(dirent: Dirent): boolean => !isHelpFileEntry(path, dirent.name),
+				);
+
+				this.pruneMarks(shown);
+				this.sortDirents(shown);
+				this.showDirents(shown, true, selectName);
 			},
 		);
 	}

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.1 (2026-11-17)
+
+### Fixed
+
+- Rust files (`.rs`) show the Rust icon instead of a registered trademark sign. `.rs` was listed twice in the icon table, and the second entry had the wrong icon.
+- Saving through the file chooser under a new name, or into another folder, did nothing. xdg-desktop-portal-termfilechooser rejects a path that doesn't exist, so the application got no file, and the portal's help file stayed at the suggested path, usually in the home folder. filet now creates the new file empty before handing its path back, and removes it again if the path can't be handed back. The portal then removes its help file and the application writes into the new file.
+- While saving, the portal's help file at the suggested path showed in the folder as if it had already been saved, and stayed selected. filet now recognises the help file by the portal's name in its first line and hides it.
+
+### Changed
+
+- Saving through the file chooser no longer asks for a name as soon as filet opens, which had to be cancelled before choosing another folder. Move to the folder, then press `C` or Save to name the file.
+- The README's From a release commands name 0.4.1.
+
 ## 0.4.0 (2026-11-15)
 
 ### Added
