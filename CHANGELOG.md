@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.2
+
+### Added
+
+- The footer shows how many folders and files the current folder holds on its right, such as `3 folders · 12 files`, or how many match while searching. Symlinked folders count as folders. On a narrow footer, including beside the file chooser's buttons, it hides while a message is showing, so the two don't overlap.
+
+### Changed
+
+- The preview sidebar opens over the right of the file list instead of narrowing it, between the path bar and the footer, which stay fully visible. Its width is capped so at least 20 columns of the list stay visible, and it hides when that would leave it under 20 columns. The list's names are shortened with `…` and its scrollbar moves left so both stop at the preview's edge.
+- The preview sidebar hides when the terminal is 60 columns wide or less, down from 140.
+- The version moved from the window's bottom right corner to its bottom left, below the sidebar, so it sits away from the footer's count.
+- The README's From a release commands name 0.4.2.
+
+### Internal
+
+- `main.ts` wraps `VirtualExplorer` and `PreviewSidebar` in a `Flex`, and `PreviewSidebar` is positioned absolutely inside it. It resizes when that box resizes, using the new `resolveWidth()` in `lib/config.ts` and `PREVIEW_MIN_LIST` and `PREVIEW_MIN_PANEL` in `lib/consts.ts`. It first sizes itself once it has been added to that box. The columns it covers are published in `$previewInset`, which `DirentList` subtracts from its row width and uses to place its scrollbar.
+
 ## 0.4.1 (2026-11-17)
 
 ### Fixed

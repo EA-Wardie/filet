@@ -24,7 +24,8 @@ Simple terminal file manager with first party mouse support. Built with OpenTUI 
 - Browse folders with back and forward history and an editable path bar.
 - Open a folder, or a file's folder with the file selected, with `filet <path>`.
 - Search the current folder by name as you type.
-- Preview text files with syntax highlighting, and images, in a sidebar.
+- See how many folders and files the current folder holds, or how many match a search, on the right of the footer.
+- Preview text files with syntax highlighting, and images, in a panel that opens over the right of the file list.
 - Show the properties of a file or folder, such as its size, permissions and dates.
 - List every keyboard shortcut and mouse control with `?`.
 - Open files in their default application, or another one with Open With…, or run them if they're executable.
@@ -103,7 +104,7 @@ accent = "#0369a1"
 
 `terminal` is the command run by `O` and the Open in Terminal menu items, started in the current folder, or in the folder you right clicked. It can include arguments, such as `"kitty --single-instance"`, which are split on spaces. When an argument or the path to the terminal contains spaces, use a list instead, such as `["kitty", "--title", "My Terminal"]`. Without it, or when it's invalid, filet uses `$TERMINAL`, then [`xdg-terminal-exec`](https://gitlab.freedesktop.org/terminal-wg/specifications). If the folder can't be opened, or the terminal can't be started or quits with an error within 2 seconds, the footer says so and the error is logged.
 
-`sidebar_width` and `preview_width` set the widths of the sidebar and the preview sidebar. Each is either a number of columns, such as `40` or `"40"`, or a percentage of the terminal's width as a string, such as `"25%"`. They default to `34` and `"30%"`. An invalid width, such as `0`, `12.5` or `"150%"`, falls back to its default and is written to the error log. The sidebar still hides when the terminal is 100 columns wide or less, and the preview sidebar at 140 or less.
+`sidebar_width` and `preview_width` set the widths of the sidebar and the preview sidebar. Each is either a number of columns, such as `40` or `"40"`, or a percentage of the terminal's width as a string, such as `"25%"`. They default to `34` and `"30%"`. An invalid width, such as `0`, `12.5` or `"150%"`, falls back to its default and is written to the error log. The preview opens over the right of the file list without narrowing it, and its width is capped so at least 20 columns of the list stay visible. The list's names and scrollbar stop at the preview's edge. When the cap would leave the preview under 20 columns, it hides instead. The sidebar still hides when the terminal is 100 columns wide or less, and the preview at 60 or less.
 
 `border_style` sets the style of every border, from the one around the window and the lines between its panels to menus and dialogs: `"single"`, `"double"`, `"rounded"` or `"heavy"`. It defaults to `"single"`. Any other value falls back to `"single"` and is written to the error log. Lines join where they meet, with `├`, `┤`, `┬`, `┴` and `┼` in the chosen style.
 
@@ -119,7 +120,7 @@ env=TERMCMD=kitty
 
 `TERMCMD` is the terminal filet opens in, such as `kitty`, `foot` or `alacritty -e`. To float the chooser or give it its own window rules, give it an app id, such as `TERMCMD=kitty --app-id filet-chooser`. Without it, the wrapper uses `$TERMINAL`, then `xdg-terminal-exec`. Then make the portal the file chooser, for example with `org.freedesktop.impl.portal.FileChooser=termfilechooser` in `~/.config/xdg-desktop-portal/portals.conf`, and restart `xdg-desktop-portal`.
 
-The footer shows what the application asked for and the keys to answer it, with Cancel and Choose buttons, or Save when saving, on its right. Choose does the same as `C`:
+The footer shows what the application asked for and the keys to answer it, with Cancel and Choose buttons, or Save when saving, on its right, after the folder and file count. Choose does the same as `C`:
 
 - **Open a file:** `Return` or a double click on a file chooses it. `C` chooses the selected file.
 - **Open files:** mark files with `Space` or `Ctrl+click`, then press `C` or `Return` to choose them. With nothing marked, the selected file is chosen.
@@ -300,11 +301,11 @@ You can also skip building and download the latest release from the [Releases](.
 
 Extract the archive.
 ```
-tar -xvJf "Release 0.4.1.tar.xz" --one-top-level
+tar -xvJf "Release 0.4.2.tar.xz" --one-top-level
 ```
 cd Into the extracted directory.
 ```
-cd "Release 0.4.1"
+cd "Release 0.4.2"
 ```
 Run the install script.
 ```

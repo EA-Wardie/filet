@@ -25,11 +25,16 @@ function main() {
 					Flex.make({
 						components: [
 							ExplorerHeader.make(),
-							VirtualExplorer.make(),
+							Flex.make({
+								components: [VirtualExplorer.make(), PreviewSidebar.make()],
+								height: "auto",
+								flexGrow: 1,
+								flexShrink: 1,
+								minHeight: 0,
+							}),
 							ExplorerFooter.make(),
 						],
 					}),
-					PreviewSidebar.make(),
 				],
 			});
 		});

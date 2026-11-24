@@ -45,7 +45,11 @@ export const BINARY_CHECK_SIZE: number = 8000;
 
 export const SIDEBAR_MIN_WIDTH: number = 100;
 
-export const PREVIEW_MIN_WIDTH: number = 140;
+export const PREVIEW_MIN_WIDTH: number = 60;
+
+export const PREVIEW_MIN_LIST: number = 20;
+
+export const PREVIEW_MIN_PANEL: number = 20;
 
 export const MENU_WIDTH: number = 30;
 
