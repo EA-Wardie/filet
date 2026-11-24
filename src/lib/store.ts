@@ -12,6 +12,8 @@ export const $searchTerm = nanostores.atom<string>("");
 
 export const $previewOpen = nanostores.atom<boolean>(false);
 
+export const $previewInset = nanostores.atom<number>(0);
+
 export const $trashFull = nanostores.atom<boolean>(false);
 
 export const $markedNames = nanostores.atom<ReadonlySet<string>>(new Set());

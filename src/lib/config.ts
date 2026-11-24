@@ -175,6 +175,12 @@ function toWidth(value: unknown): Width | undefined {
 		: undefined;
 }
 
+export function resolveWidth(width: Width, total: number): number {
+	return typeof width === "number"
+		? width
+		: Math.floor((total * Number.parseFloat(width)) / 100);
+}
+
 export const sidebarWidth: Width = parseSetting(
 	"sidebar_width",
 	userConfig.sidebar_width,

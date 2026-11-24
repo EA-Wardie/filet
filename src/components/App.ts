@@ -21,7 +21,7 @@ export class App {
 			borderColor: theme.border,
 			borderStyle: borderStyle,
 			bottomTitle: ` v${version} `,
-			bottomTitleAlignment: "right",
+			bottomTitleAlignment: "left",
 			flexDirection: "row",
 			...options,
 		});

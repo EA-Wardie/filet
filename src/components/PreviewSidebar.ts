@@ -1,10 +1,15 @@
 import type { Dirent } from "node:fs";
 import * as core from "@opentui/core";
-import { borderStyle, previewWidth, theme } from "../lib/config";
-import { PREVIEW_DELAY, PREVIEW_MIN_WIDTH } from "../lib/consts";
+import { borderStyle, previewWidth, resolveWidth, theme } from "../lib/config";
+import {
+	PREVIEW_DELAY,
+	PREVIEW_MIN_LIST,
+	PREVIEW_MIN_PANEL,
+	PREVIEW_MIN_WIDTH,
+} from "../lib/consts";
 import { ctx } from "../lib/context";
 import { canPreview, getDirentPath } from "../lib/navigation";
-import { $previewOpen, $selectedDirent } from "../lib/store";
+import { $previewInset, $previewOpen, $selectedDirent } from "../lib/store";
 import { IconButton } from "./IconButton";
 import { Message } from "./Message";
 import { Preview } from "./Preview";
@@ -16,14 +21,34 @@ export class PreviewSidebar {
 	private _content: core.ScrollBoxRenderable | null = null;
 	private _path: string | null | undefined;
 	private _timeout: Timer | undefined;
+	private _parent: core.Renderable | null = null;
 
 	constructor(options: core.BoxOptions) {
 		this._options = options;
 
 		this._component = new core.BoxRenderable(ctx, {
-			width: previewWidth,
+			position: "absolute",
+			top: 0,
+			right: 0,
+			width: resolveWidth(previewWidth, ctx.width),
 			height: "100%",
-			flexShrink: 0,
+			zIndex: 10,
+			renderBefore: function (
+				this: core.BoxRenderable,
+				buffer: core.OptimizedBuffer,
+			): void {
+				for (let y: number = 0; y < this.height; y++) {
+					for (let x: number = 0; x < this.width; x++) {
+						buffer.setCell(
+							this.screenX + x,
+							this.screenY + y,
+							" ",
+							theme.fg,
+							theme.bg,
+						);
+					}
+				}
+			},
 			border: ["left"],
 			borderColor: theme.border,
 			borderStyle: borderStyle,
@@ -32,9 +57,12 @@ export class PreviewSidebar {
 
 		this.addHeader();
 		this.addContent();
-		this.update();
 		this.registerStoreEvents();
 		this.registerContextEvents();
+
+		queueMicrotask((): void => {
+			this.update();
+		});
 	}
 
 	public static make(options: core.BoxOptions = {}): core.BoxRenderable {
@@ -98,9 +126,33 @@ export class PreviewSidebar {
 		}
 	}
 
+	private watchParent(): void {
+		const parent: core.Renderable | null = this._component.parent;
+
+		if (!parent || parent === this._parent) {
+			return;
+		}
+
+		this._parent = parent;
+
+		parent.on(core.LayoutEvents.RESIZED, (): void => {
+			this.update();
+		});
+	}
+
 	private update(): void {
+		this.watchParent();
+
+		const room: number = (this._parent?.width ?? ctx.width) - PREVIEW_MIN_LIST;
+		const width: number = Math.min(resolveWidth(previewWidth, ctx.width), room);
+
+		this._component.width = Math.max(1, width);
 		this._component.visible =
-			$previewOpen.get() && ctx.width > PREVIEW_MIN_WIDTH;
+			$previewOpen.get() &&
+			ctx.width > PREVIEW_MIN_WIDTH &&
+			width >= PREVIEW_MIN_PANEL;
+
+		$previewInset.set(this._component.visible ? width : 0);
 
 		if (this._component.visible) {
 			this.show($selectedDirent.get());

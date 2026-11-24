@@ -8,6 +8,7 @@ import { SHORTCUTS, toggleMark } from "../lib/shortcuts";
 import {
 	$dirents,
 	$markedNames,
+	$previewInset,
 	$selectedDirent,
 	clearMarks,
 } from "../lib/store";
@@ -85,7 +86,9 @@ export class DirentList extends core.Renderable {
 
 	protected override renderSelf(buffer: core.OptimizedBuffer): void {
 		const rowWidth: number =
-			this.width - (this._scrollBar.visible ? this._scrollBar.width : 0);
+			this.width -
+			$previewInset.get() -
+			(this._scrollBar.visible ? this._scrollBar.width : 0);
 		const textWidth: number = rowWidth - 2;
 		const end: number = Math.min(
 			this._dirents.length,
@@ -311,10 +314,18 @@ export class DirentList extends core.Renderable {
 			this.requestRender();
 		});
 
+		const unbindPreviewInset = $previewInset.subscribe(
+			(inset: number): void => {
+				this._scrollBar.right = inset;
+				this.requestRender();
+			},
+		);
+
 		this.once(core.RenderableEvents.DESTROYED, (): void => {
 			unbindDirents();
 			unbindSelectedDirent();
 			unbindMarkedNames();
+			unbindPreviewInset();
 		});
 	}
 }
